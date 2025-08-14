@@ -24,7 +24,10 @@ defmodule CalendarComponent.MixProject do
       {:tzdata, "~> 1.1.3"},
       {:jason, "~> 1.4.4"},
       {:esbuild, "~> 0.10.0"},
-      {:phoenix_live_view, "~> 1.1.4"}
+      {:phoenix_live_view, "~> 1.1.4"},
+      {:styler, "~> 1.5", only: [:dev, :test], runtime: false},
+      {:mimerl, "~> 1.4"}
+
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
     ]
