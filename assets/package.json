@@ -1,0 +1,14 @@
+{
+  "name": "calendar_component",
+  "version": "1.0.0",
+  "type": "module",
+  "author": "",
+  "license": "ISC",
+  "description": "A calendar component for Phoenix applications",
+  "dependencies": {
+    "phoenix": "../deps/phoenix",
+    "phoenix_html": "../deps/phoenix_html",
+    "phoenix_live_view": "../deps/phoenix_live_view",
+    "@event-calendar/core": "^4.5.1"
+  }
+}
