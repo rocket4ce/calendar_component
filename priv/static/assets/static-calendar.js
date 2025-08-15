@@ -10412,30 +10412,42 @@ function pluginsForView(view2) {
 }
 function parseCallbacks(options) {
   const callbacks = {};
-  if (options.eventClick && typeof options.eventClick === "string") {
-    try {
-      callbacks.eventClick = new Function("info", options.eventClick);
-    } catch (e) {
-      console.warn("Invalid eventClick callback:", e);
+  function parseCallback(callbackString, paramName) {
+    if (!callbackString || typeof callbackString !== "string") {
+      return null;
     }
+    try {
+      let functionBody = callbackString.trim();
+      if (functionBody.startsWith("function")) {
+        const match = functionBody.match(new RegExp("function\\s*\\([^)]*\\)\\s*\\{(.*)\\}$", "s"));
+        if (match) {
+          functionBody = match[1];
+        } else {
+          console.warn(`Invalid function format: ${callbackString}`);
+          return null;
+        }
+      }
+      return new Function(paramName, functionBody);
+    } catch (e) {
+      console.warn(`Invalid ${paramName} callback:`, e, "String was:", callbackString);
+      return null;
+    }
+  }
+  if (options.eventClick && typeof options.eventClick === "string") {
+    const callback = parseCallback(options.eventClick, "info");
+    if (callback) callbacks.eventClick = callback;
   } else if (typeof options.eventClick === "function") {
     callbacks.eventClick = options.eventClick;
   }
   if (options.dateClick && typeof options.dateClick === "string") {
-    try {
-      callbacks.dateClick = new Function("info", options.dateClick);
-    } catch (e) {
-      console.warn("Invalid dateClick callback:", e);
-    }
+    const callback = parseCallback(options.dateClick, "info");
+    if (callback) callbacks.dateClick = callback;
   } else if (typeof options.dateClick === "function") {
     callbacks.dateClick = options.dateClick;
   }
   if (options.datesSet && typeof options.datesSet === "string") {
-    try {
-      callbacks.datesSet = new Function("dateInfo", options.datesSet);
-    } catch (e) {
-      console.warn("Invalid datesSet callback:", e);
-    }
+    const callback = parseCallback(options.datesSet, "dateInfo");
+    if (callback) callbacks.datesSet = callback;
   } else if (typeof options.datesSet === "function") {
     callbacks.datesSet = options.datesSet;
   }

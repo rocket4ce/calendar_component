@@ -34,35 +34,56 @@ function pluginsForView(view) {
 function parseCallbacks(options) {
   const callbacks = {}
 
+  // Helper function to parse a callback string
+  function parseCallback(callbackString, paramName) {
+    if (!callbackString || typeof callbackString !== 'string') {
+      return null
+    }
+
+    try {
+      // Clean the string and extract function body
+      let functionBody = callbackString.trim()
+
+      // If it's a complete function declaration, extract the body
+      if (functionBody.startsWith('function')) {
+        // Match function(params) { body } and extract body
+        const match = functionBody.match(/function\s*\([^)]*\)\s*\{(.*)\}$/s)
+        if (match) {
+          functionBody = match[1]
+        } else {
+          console.warn(`Invalid function format: ${callbackString}`)
+          return null
+        }
+      }
+
+      // Create function with the body
+      return new Function(paramName, functionBody)
+    } catch (e) {
+      console.warn(`Invalid ${paramName} callback:`, e, 'String was:', callbackString)
+      return null
+    }
+  }
+
   // Handle eventClick callback
   if (options.eventClick && typeof options.eventClick === 'string') {
-    try {
-      callbacks.eventClick = new Function('info', options.eventClick)
-    } catch (e) {
-      console.warn('Invalid eventClick callback:', e)
-    }
+    const callback = parseCallback(options.eventClick, 'info')
+    if (callback) callbacks.eventClick = callback
   } else if (typeof options.eventClick === 'function') {
     callbacks.eventClick = options.eventClick
   }
 
   // Handle dateClick callback
   if (options.dateClick && typeof options.dateClick === 'string') {
-    try {
-      callbacks.dateClick = new Function('info', options.dateClick)
-    } catch (e) {
-      console.warn('Invalid dateClick callback:', e)
-    }
+    const callback = parseCallback(options.dateClick, 'info')
+    if (callback) callbacks.dateClick = callback
   } else if (typeof options.dateClick === 'function') {
     callbacks.dateClick = options.dateClick
   }
 
   // Handle datesSet callback (for month changes)
   if (options.datesSet && typeof options.datesSet === 'string') {
-    try {
-      callbacks.datesSet = new Function('dateInfo', options.datesSet)
-    } catch (e) {
-      console.warn('Invalid datesSet callback:', e)
-    }
+    const callback = parseCallback(options.datesSet, 'dateInfo')
+    if (callback) callbacks.datesSet = callback
   } else if (typeof options.datesSet === 'function') {
     callbacks.datesSet = options.datesSet
   }
