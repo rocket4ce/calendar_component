@@ -494,6 +494,280 @@ defp create_resource_events do
 end
 ```
 
+#### 4) Drag and Drop Calendar with Event Management
+
+```elixir
+defmodule MyAppWeb.DragDropCalendarLive do
+  use MyAppWeb, :live_view
+  alias Phoenix.LiveView.JS
+
+  def render(assigns) do
+    ~H"""
+    <div class="drag-drop-calendar">
+      <h1>Drag & Drop Calendar</h1>
+
+      <div class="alert alert-info" :if={@drop_message}>
+        <%= @drop_message %>
+      </div>
+
+      <.calendar
+        id="dragdrop-calendar"
+        events={@events}
+        on_event_click={
+          JS.push("event_selected")
+          |> JS.add_class("ring-2 ring-blue-500", to: ".selected-event")
+        }
+        options={%{
+          view: "timeGridWeek",
+          editable: true,                    # Enable drag and drop
+          droppable: true,                   # Allow external drops
+          selectable: true,                  # Allow date selection
+          selectMirror: true,                # Show selection mirror
+          eventStartEditable: true,          # Allow event start time editing
+          eventDurationEditable: true,       # Allow event duration editing
+          eventResourceEditable: true,       # Allow resource changes (if using resources)
+          dayMaxEvents: true,                # Limit events per day
+          height: "600px",
+          scrollTime: "08:00:00",
+          slotMinTime: "07:00:00",
+          slotMaxTime: "22:00:00",
+          headerToolbar: %{
+            start: "prev,next today",
+            center: "title",
+            end: "dayGridMonth,timeGridWeek,timeGridDay"
+          },
+          # Drag and drop event handlers using Phoenix LiveView hooks
+          eventDrop: "handleEventDrop",      # Custom hook function
+          eventResize: "handleEventResize",  # Custom hook function
+          drop: "handleExternalDrop",        # External drop handler
+          eventReceive: "handleEventReceive" # Event received from external
+        }}
+      />
+
+      <!-- External draggable events -->
+      <div class="mt-6 p-4 bg-gray-100 rounded">
+        <h3 class="font-semibold mb-3">Drag these events to the calendar:</h3>
+        <div class="space-y-2">
+          <div
+            class="external-event bg-blue-500 text-white p-2 rounded cursor-move"
+            data-event='{"title": "New Meeting", "duration": "01:00", "color": "#3B82F6"}'
+          >
+            📅 New Meeting (1 hour)
+          </div>
+          <div
+            class="external-event bg-green-500 text-white p-2 rounded cursor-move"
+            data-event='{"title": "Team Standup", "duration": "00:30", "color": "#10B981"}'
+          >
+            🤝 Team Standup (30 min)
+          </div>
+          <div
+            class="external-event bg-purple-500 text-white p-2 rounded cursor-move"
+            data-event='{"title": "Code Review", "duration": "02:00", "color": "#8B5CF6"}'
+          >
+            💻 Code Review (2 hours)
+          </div>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  def mount(_params, _session, socket) do
+    events = create_draggable_events()
+    {:ok, assign(socket, events: events, drop_message: nil)}
+  end
+
+  # Handle when an existing event is moved (drag and drop)
+  @impl true
+  def handle_event("event_dropped", params, socket) do
+    %{
+      "id" => id,
+      "start" => new_start,
+      "end" => new_end,
+      "resourceId" => resource_id
+    } = params
+
+    # Update the event in your data store
+    updated_events =
+      Enum.map(socket.assigns.events, fn event ->
+        if event.id == String.to_integer(id) do
+          event
+          |> Map.put(:start, new_start)
+          |> Map.put(:end, new_end)
+          |> maybe_put_resource(resource_id)
+        else
+          event
+        end
+      end)
+
+    message = "Event moved to #{format_datetime(new_start)}"
+
+    {:noreply, assign(socket, events: updated_events, drop_message: message)}
+  end
+
+  # Handle when an event is resized
+  @impl true
+  def handle_event("event_resized", params, socket) do
+    %{
+      "id" => id,
+      "start" => new_start,
+      "end" => new_end
+    } = params
+
+    updated_events =
+      Enum.map(socket.assigns.events, fn event ->
+        if event.id == String.to_integer(id) do
+          event
+          |> Map.put(:start, new_start)
+          |> Map.put(:end, new_end)
+        else
+          event
+        end
+      end)
+
+    message = "Event resized: #{format_datetime(new_start)} - #{format_datetime(new_end)}"
+
+    {:noreply, assign(socket, events: updated_events, drop_message: message)}
+  end
+
+  # Handle when an external event is dropped onto the calendar
+  @impl true
+  def handle_event("external_dropped", params, socket) do
+    %{
+      "title" => title,
+      "start" => start_time,
+      "end" => end_time,
+      "color" => color
+    } = params
+
+    new_event = %{
+      id: System.unique_integer([:positive]),
+      title: title,
+      start: start_time,
+      end: end_time,
+      color: color
+    }
+
+    updated_events = [new_event | socket.assigns.events]
+    message = "New event '#{title}' added at #{format_datetime(start_time)}"
+
+    {:noreply, assign(socket, events: updated_events, drop_message: message)}
+  end
+
+  @impl true
+  def handle_event("event_selected", %{"id" => id}, socket) do
+    {:noreply, put_flash(socket, :info, "Selected event: #{id}")}
+  end
+
+  # Helper functions
+  defp create_draggable_events do
+    today = Date.utc_today()
+    [
+      %{
+        id: 1,
+        title: "Daily Standup",
+        start: "#{today}T09:00:00",
+        end: "#{today}T09:30:00",
+        color: "#10B981"
+      },
+      %{
+        id: 2,
+        title: "Sprint Planning",
+        start: "#{today}T10:00:00",
+        end: "#{today}T12:00:00",
+        color: "#3B82F6"
+      },
+      %{
+        id: 3,
+        title: "Lunch Break",
+        start: "#{Date.add(today, 1)}T12:00:00",
+        end: "#{Date.add(today, 1)}T13:00:00",
+        color: "#F59E0B"
+      }
+    ]
+  end
+
+  defp maybe_put_resource(event, nil), do: event
+  defp maybe_put_resource(event, ""), do: event
+  defp maybe_put_resource(event, resource_id), do: Map.put(event, :resourceId, String.to_integer(resource_id))
+
+  defp format_datetime(datetime_str) do
+    case DateTime.from_iso8601(datetime_str) do
+      {:ok, dt, _} -> Calendar.strftime(dt, "%B %d at %I:%M %p")
+      _ -> datetime_str
+    end
+  end
+end
+```
+
+You'll also need to add custom JavaScript hooks for drag and drop handling:
+
+```javascript
+// In your assets/js/app.js - Add these custom hooks
+let Hooks = {}
+
+// Hook for handling drag and drop events in LiveView calendars
+Hooks.LiveCalendar = {
+  mounted() {
+    this.handleCalendarEvents()
+  },
+
+  updated() {
+    this.handleCalendarEvents()
+  },
+
+  handleCalendarEvents() {
+    // Add custom drag and drop event handlers
+    if (this.calendar) {
+      this.calendar.setOption('eventDrop', (info) => {
+        this.pushEvent("event_dropped", {
+          id: info.event.id,
+          start: info.event.start.toISOString(),
+          end: info.event.end ? info.event.end.toISOString() : info.event.start.toISOString(),
+          resourceId: info.newResource ? info.newResource.id : null
+        })
+      })
+
+      this.calendar.setOption('eventResize', (info) => {
+        this.pushEvent("event_resized", {
+          id: info.event.id,
+          start: info.event.start.toISOString(),
+          end: info.event.end.toISOString()
+        })
+      })
+
+      this.calendar.setOption('drop', (info) => {
+        const eventData = JSON.parse(info.draggedEl.dataset.event)
+        const endTime = new Date(info.date.getTime() + (parseInt(eventData.duration.split(':')[0]) * 60 * 60 * 1000) + (parseInt(eventData.duration.split(':')[1]) * 60 * 1000))
+
+        this.pushEvent("external_dropped", {
+          title: eventData.title,
+          start: info.date.toISOString(),
+          end: endTime.toISOString(),
+          color: eventData.color
+        })
+
+        // Remove the dragged element
+        info.draggedEl.remove()
+      })
+    }
+  }
+}
+
+// Initialize external draggable events
+document.addEventListener('DOMContentLoaded', function() {
+  const draggableElements = document.querySelectorAll('.external-event')
+  draggableElements.forEach(el => {
+    new Draggable(el, {
+      itemSelector: '.external-event',
+      data: el.dataset.event
+    })
+  })
+})
+
+let liveSocket = new LiveSocket("/live", Socket, { hooks: Hooks })
+```
+
 ### Controller Examples (Static Calendar)
 
 #### 1) Basic static calendar with secure callbacks
@@ -723,6 +997,7 @@ end
 ```
 
 ```javascript
+```javascript
 // Resource calendar handlers
 window.MyApp = {
   Resources: {
@@ -737,6 +1012,365 @@ window.MyApp = {
     }
   }
 };
+```
+
+#### 4) Drag and Drop Static Calendar
+
+```elixir
+# Controller
+defmodule MyAppWeb.DragDropController do
+  use MyAppWeb, :controller
+  import LiveCalendar.Components
+
+  def index(conn, _params) do
+    events = create_draggable_events()
+    render(conn, "index.html", events: events)
+  end
+
+  def update_event(conn, %{"id" => id} = params) do
+    # Handle AJAX request to update event after drag/drop
+    case Events.update_event(id, params) do
+      {:ok, _event} ->
+        conn
+        |> put_status(200)
+        |> json(%{success: true, message: "Event updated successfully"})
+
+      {:error, _} ->
+        conn
+        |> put_status(400)
+        |> json(%{success: false, message: "Failed to update event"})
+    end
+  end
+
+  def create_event(conn, params) do
+    # Handle AJAX request to create new event from external drop
+    case Events.create_event(params) do
+      {:ok, event} ->
+        conn
+        |> put_status(201)
+        |> json(%{success: true, event: event, message: "Event created successfully"})
+
+      {:error, changeset} ->
+        conn
+        |> put_status(400)
+        |> json(%{success: false, errors: translate_errors(changeset)})
+    end
+  end
+
+  defp create_draggable_events do
+    today = Date.utc_today()
+    [
+      %{
+        id: 1,
+        title: "Morning Standup",
+        start: "#{today}T09:00:00",
+        end: "#{today}T09:30:00",
+        color: "#10B981",
+        editable: true
+      },
+      %{
+        id: 2,
+        title: "Project Review",
+        start: "#{today}T14:00:00",
+        end: "#{today}T16:00:00",
+        color: "#3B82F6",
+        editable: true
+      },
+      %{
+        id: 3,
+        title: "Team Lunch",
+        start: "#{Date.add(today, 1)}T12:00:00",
+        end: "#{Date.add(today, 1)}T13:00:00",
+        color: "#F59E0B",
+        editable: false  # Not draggable
+      }
+    ]
+  end
+end
+```
+
+```elixir
+# Template: drag_drop/index.html.heex
+<div class="drag-drop-container">
+  <div class="row">
+    <!-- External draggable events -->
+    <div class="col-md-3">
+      <div class="external-events p-4 bg-gray-100 rounded">
+        <h4 class="font-semibold mb-3">Drag Events to Calendar</h4>
+        <p class="text-sm text-gray-600 mb-4">Drag these items onto the calendar to create new events</p>
+
+        <div class="space-y-2">
+          <div
+            class="external-event bg-blue-500 text-white p-2 rounded cursor-move hover:bg-blue-600"
+            data-event='{"title": "Quick Meeting", "duration": "00:30", "color": "#3B82F6"}'
+          >
+            📅 Quick Meeting (30min)
+          </div>
+
+          <div
+            class="external-event bg-green-500 text-white p-2 rounded cursor-move hover:bg-green-600"
+            data-event='{"title": "Code Review", "duration": "01:00", "color": "#10B981"}'
+          >
+            🔍 Code Review (1hr)
+          </div>
+
+          <div
+            class="external-event bg-purple-500 text-white p-2 rounded cursor-move hover:bg-purple-600"
+            data-event='{"title": "Design Session", "duration": "02:00", "color": "#8B5CF6"}'
+          >
+            🎨 Design Session (2hrs)
+          </div>
+
+          <div
+            class="external-event bg-red-500 text-white p-2 rounded cursor-move hover:bg-red-600"
+            data-event='{"title": "Client Call", "duration": "00:45", "color": "#EF4444"}'
+          >
+            📞 Client Call (45min)
+          </div>
+        </div>
+      </div>
+
+      <!-- Status messages -->
+      <div id="drag-messages" class="mt-4">
+        <div id="success-message" class="alert alert-success" style="display: none;"></div>
+        <div id="error-message" class="alert alert-danger" style="display: none;"></div>
+      </div>
+    </div>
+
+    <!-- Calendar -->
+    <div class="col-md-9">
+      <.static_calendar
+        id="dragdrop-static-calendar"
+        events={@events}
+        options={%{
+          view: "timeGridWeek",
+          height: "700px",
+          editable: true,                    # Enable drag and drop for existing events
+          droppable: true,                   # Allow external drops
+          selectable: true,                  # Allow date/time selection
+          selectMirror: true,                # Show selection feedback
+          eventStartEditable: true,          # Allow changing event start time
+          eventDurationEditable: true,       # Allow resizing events
+          dayMaxEvents: true,                # Auto-limit events per day in month view
+          scrollTime: "08:00:00",
+          slotMinTime: "07:00:00",
+          slotMaxTime: "22:00:00",
+          headerToolbar: %{
+            start: "prev,next today",
+            center: "title",
+            end: "dayGridMonth,timeGridWeek,timeGridDay"
+          },
+          businessHours: %{              # Highlight business hours
+            daysOfWeek: [1, 2, 3, 4, 5], # Monday - Friday
+            startTime: "09:00",
+            endTime: "17:00"
+          },
+          # Secure callback functions for drag and drop
+          eventDrop: "MyApp.DragDrop.handleEventDrop",
+          eventResize: "MyApp.DragDrop.handleEventResize",
+          drop: "MyApp.DragDrop.handleExternalDrop",
+          eventClick: "MyApp.DragDrop.handleEventClick",
+          select: "MyApp.DragDrop.handleDateSelect"
+        }}
+      />
+    </div>
+  </div>
+</div>
+```
+
+```javascript
+// In your app.js - Drag and drop handlers for static calendar
+import { initStaticCalendars } from "calendar_component/static";
+
+window.MyApp = {
+  DragDrop: {
+    // Handle when existing event is moved
+    handleEventDrop(info) {
+      const eventData = {
+        id: info.event.id,
+        start: info.event.start.toISOString(),
+        end: info.event.end ? info.event.end.toISOString() : info.event.start.toISOString()
+      };
+
+      // Send AJAX request to update event
+      fetch(`/events/${info.event.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify(eventData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          this.showMessage('success', `Event "${info.event.title}" moved successfully!`);
+        } else {
+          this.showMessage('error', 'Failed to move event. Please try again.');
+          info.revert(); // Revert the move if server update failed
+        }
+      })
+      .catch(error => {
+        console.error('Error updating event:', error);
+        this.showMessage('error', 'Network error. Please try again.');
+        info.revert();
+      });
+    },
+
+    // Handle when event is resized
+    handleEventResize(info) {
+      const eventData = {
+        id: info.event.id,
+        start: info.event.start.toISOString(),
+        end: info.event.end.toISOString()
+      };
+
+      fetch(`/events/${info.event.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify(eventData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          this.showMessage('success', `Event "${info.event.title}" resized successfully!`);
+        } else {
+          this.showMessage('error', 'Failed to resize event. Please try again.');
+          info.revert();
+        }
+      })
+      .catch(error => {
+        console.error('Error resizing event:', error);
+        this.showMessage('error', 'Network error. Please try again.');
+        info.revert();
+      });
+    },
+
+    // Handle external event drop (create new event)
+    handleExternalDrop(info) {
+      try {
+        const eventData = JSON.parse(info.draggedEl.dataset.event);
+        const duration = eventData.duration.split(':');
+        const endTime = new Date(info.date.getTime() +
+          (parseInt(duration[0]) * 60 * 60 * 1000) +
+          (parseInt(duration[1]) * 60 * 1000));
+
+        const newEventData = {
+          title: eventData.title,
+          start: info.date.toISOString(),
+          end: endTime.toISOString(),
+          color: eventData.color
+        };
+
+        // Create new event via AJAX
+        fetch('/events', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+          },
+          body: JSON.stringify(newEventData)
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            this.showMessage('success', `Event "${eventData.title}" created successfully!`);
+            // Remove the dragged element from external events
+            info.draggedEl.remove();
+          } else {
+            this.showMessage('error', 'Failed to create event. Please try again.');
+          }
+        })
+        .catch(error => {
+          console.error('Error creating event:', error);
+          this.showMessage('error', 'Network error. Please try again.');
+        });
+      } catch (error) {
+        console.error('Error processing drop:', error);
+        this.showMessage('error', 'Invalid event data. Please try again.');
+      }
+    },
+
+    // Handle event click
+    handleEventClick(info) {
+      if (confirm(`Edit event: "${info.event.title}"?`)) {
+        window.location.href = `/events/${info.event.id}/edit`;
+      }
+    },
+
+    // Handle date/time selection
+    handleDateSelect(info) {
+      const title = prompt('Enter event title:');
+      if (title && title.trim()) {
+        const newEventData = {
+          title: title.trim(),
+          start: info.start.toISOString(),
+          end: info.end.toISOString(),
+          color: '#3B82F6'
+        };
+
+        fetch('/events', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+          },
+          body: JSON.stringify(newEventData)
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            this.showMessage('success', `Event "${title}" created successfully!`);
+            // Refresh the page to show the new event
+            setTimeout(() => location.reload(), 1500);
+          } else {
+            this.showMessage('error', 'Failed to create event. Please try again.');
+          }
+        })
+        .catch(error => {
+          console.error('Error creating event:', error);
+          this.showMessage('error', 'Network error. Please try again.');
+        });
+      }
+    },
+
+    // Utility function to show messages
+    showMessage(type, message) {
+      const messageDiv = document.getElementById(`${type}-message`);
+      messageDiv.textContent = message;
+      messageDiv.style.display = 'block';
+
+      // Hide other message types
+      const otherType = type === 'success' ? 'error' : 'success';
+      document.getElementById(`${otherType}-message`).style.display = 'none';
+
+      // Auto-hide after 5 seconds
+      setTimeout(() => {
+        messageDiv.style.display = 'none';
+      }, 5000);
+    }
+  }
+};
+
+// Initialize external draggable events and static calendars
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize static calendars first
+  initStaticCalendars();
+
+  // Make external events draggable (requires a drag library like Draggable)
+  const draggableEvents = document.querySelectorAll('.external-event');
+  draggableEvents.forEach(eventEl => {
+    eventEl.draggable = true;
+    eventEl.addEventListener('dragstart', function(e) {
+      // Store the event data for the drop handler
+      e.dataTransfer.setData('text/plain', eventEl.dataset.event);
+    });
+  });
+});
+```
 ```
 
 #### 4) Simple calendar with minimal callbacks
@@ -756,6 +1390,58 @@ For simple use cases, you can use limited function body strings:
 ```
 
 ⚠️ **Security Note**: Function body strings are limited to 200 characters and dangerous keywords are blocked. For complex logic, always use global function references.
+
+});
+```
+
+#### 5) Simple calendar with minimal callbacks
+
+For simple use cases, you can use limited function body strings:
+
+```elixir
+<.static_calendar
+  id="simple-calendar"
+  events={@events}
+  options={%{
+    view: "dayGridMonth",
+    eventClick: "alert('Event: ' + info.event.title)",
+    dateClick: "console.log('Clicked:', info.dateStr)"
+  }}
+/>
+```
+
+⚠️ **Security Note**: Function body strings are limited to 200 characters and dangerous keywords are blocked. For complex logic like drag and drop, always use global function references.
+
+## Drag and Drop Best Practices
+
+### For LiveView Calendars:
+- ✅ Use Phoenix.LiveView.JS commands for immediate feedback
+- ✅ Handle server events for data persistence
+- ✅ Implement proper error handling with rollback
+- ✅ Use custom hooks for complex drag interactions
+- ✅ Combine client-side updates with server-side validation
+
+### For Static Calendars:
+- ✅ Use secure global function references for callbacks
+- ✅ Implement AJAX requests for server updates
+- ✅ Provide user feedback with success/error messages
+- ✅ Handle network errors gracefully with event reversion
+- ✅ Use CSRF protection for all server requests
+- ✅ Validate all event data on the server side
+
+### Security Considerations:
+- 🔒 Always validate event data on the server
+- 🔒 Use CSRF tokens for AJAX requests
+- 🔒 Sanitize user input (event titles, descriptions)
+- 🔒 Implement proper authorization for event modifications
+- 🔒 Never trust client-side data for business logic
+
+### Performance Tips:
+- ⚡ Debounce rapid drag operations
+- ⚡ Use optimistic UI updates with server confirmation
+- ⚡ Implement proper loading states during operations
+- ⚡ Cache event data to reduce server requests
+- ⚡ Use efficient data structures for large event sets
 
 ## Important Notes
 
