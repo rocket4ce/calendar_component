@@ -1,6 +1,22 @@
 # CalendarComponent
 
-Librería de componentes Phoenix LiveView que renderiza un calendario interactivo basado en EventCalendar y un hook de LiveView. Se distribuye como librería (no una app completa) e incluye assets JS/CSS colocalizados.
+Librería de componentes Phoenix LiveView que renderiza un calendarioconst liveSocket = new LiveSocket("/live", Socket, { hooks: CalendarHooks })
+liveSocket.connect()
+```
+
+Para **controladores tradicionales** (calendarios estáticos), importa e inicializa:
+
+```js
+// assets/js/app.js
+import { initStaticCalendars } from "calendar_component"
+
+// Inicializar calendarios estáticos cuando el DOM esté listo
+document.addEventListener("DOMContentLoaded", () => {
+  initStaticCalendars()
+})
+```
+
+**Nota importante**: Esta librería compila automáticamente el CSS junto con el JavaScript. No necesitas importar el CSS por separado. Los archivos se encuentran en `priv/static/assets/calendar-hooks.js` y `priv/static/assets/calendar-hooks.css`, pero el CSS se incluye automáticamente al importar el JavaScript.ado en EventCalendar y un hook de LiveView. Se distribuye como librería (no una app completa) e incluye assets JS/CSS colocalizados.
 
 [![Hex.pm](https://img.shields.io/hexpm/v/calendar_component.svg)](https://hex.pm/packages/calendar_component)
 [![Hexdocs](https://img.shields.io/badge/docs-hexdocs.pm-blue)](https://hexdocs.pm/calendar_component)
@@ -176,17 +192,12 @@ Si tienes problemas o preguntas:
 - [Phoenix LiveView](https://github.com/phoenixframework/phoenix_live_view) por la plataforma reactiva
 - La comunidad de Elixir por el soporte continuo
 
-## Build assets
+## Compilar assets
 
-Run the esbuild task to (re)compile the JS hooks and CSS output:
+Ejecuta la tarea de esbuild para (re)compilar los hooks JS y CSS:
 
 ```bash
 mix assets.build
-```
-
-La documentación actual menciona usar:
-```javascript
-import {Hooks as calendar_hook} from "calendar_component";
 ```
 
 ## Ejemplos completos
