@@ -1,6 +1,6 @@
 # CalendarComponent
 
-Phoenix LiveView component library that renders an interactive calendar powered by EventCalendar and a LiveView JavaScript hook. It ships as a library (not a full Phoenix app) and compiles colocated JS/CSS assets.
+**TODO: Add description**
 
 ## Usage
 
@@ -11,11 +11,11 @@ alias Phoenix.LiveView.JS
 
 ~H"""
 <.calendar
-	id="calendar"
-	events={@events}
-	on_event_click={JS.push("event_clicked", value: %{id: event.id})}
-	on_date_click={JS.push("date_clicked", value: %{date: date})}
-	on_month_change={JS.push("month_changed", value: %{month: month})}
+  id="calendar"
+  events={@events}
+  on_event_click={JS.push("event_clicked", value: %{id: event.id})}
+  on_date_click={JS.push("date_clicked", value: %{date: date})}
+  on_month_change={JS.push("month_changed", value: %{month: month})}
 />
 """
 ```
@@ -50,9 +50,9 @@ Note: This library compiles a hook at `priv/static/assets/calendar-hooks.js` and
 
 - Pass any EventCalendar options via the `:options` assign of `<.calendar ... />`. They are forwarded to the JS calendar.
 - Special integration key: `options.lv` lets you rename the server events the hook will push:
-	- `lv.onEventClick` (default: `"event_clicked"`)
-	- `lv.onDateClick` (default: `"date_clicked"`)
-	- `lv.onMonthChange` (default: `"month_changed"`)
+  - `lv.onEventClick` (default: `"event_clicked"`)
+  - `lv.onDateClick` (default: `"date_clicked"`)
+  - `lv.onMonthChange` (default: `"month_changed"`)
 - If you provide JS handlers in `options.eventClick`, `options.dateClick`, or `options.datesSet`, the hook composes them and still pushes to LiveView.
 - The hook auto-picks plugins based on `options.view` (`timeGrid*`, `dayGrid*`, `list*`). You can also pass `options.plugins` explicitly if needed.
 
@@ -67,17 +67,20 @@ Refer to `docs/event_calendar.md` for the full list of EventCalendar options and
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed by adding `calendar_component` to your list of dependencies in `mix.exs`:
+If [available in Hex](https://hex.pm/docs/publish), the package can be installed
+by adding `calendar_component` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
-	[
-		{:calendar_component, "~> 0.1.0"}
-	]
+  [
+    {:calendar_component, "~> 0.1.0"}
+  ]
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc) and published on [HexDocs](https://hexdocs.pm). Once published, the docs can be found at <https://hexdocs.pm/calendar_component>.
+Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
+and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
+be found at <https://hexdocs.pm/calendar_component>.
 
 ## Build assets
 
@@ -89,21 +92,21 @@ mix assets.build
 
 ## Phoenix examples
 
-### 1) Basic: static render with events
+### 1) Básico: render estático con eventos
 
 LiveView module:
 
 ```elixir
 defmodule MyAppWeb.CalendarLive do
-	use MyAppWeb, :live_view
+  use MyAppWeb, :live_view
 
-	def mount(_params, _session, socket) do
-		events = [
-			%{id: 1, title: "Meeting", start: "2025-08-01T09:00:00"},
-			%{id: 2, title: "Demo", start: "2025-08-02"}
-		]
-		{:ok, assign(socket, events: events)}
-	end
+  def mount(_params, _session, socket) do
+    events = [
+      %{id: 1, title: "Reunión", start: "2025-08-01T09:00:00"},
+      %{id: 2, title: "Demo", start: "2025-08-02"}
+    ]
+    {:ok, assign(socket, events: events)}
+  end
 end
 ```
 
@@ -113,35 +116,35 @@ HEEx:
 <.calendar id="calendar" events={@events} />
 ```
 
-### 2) Handling calendar events (event/date/month)
+### 2) Manejo de eventos del calendario (click de evento/fecha/mes)
 
-Use the default event names the hook pushes: "event_clicked", "date_clicked", "month_changed".
+Usa los nombres por defecto que el hook envía: "event_clicked", "date_clicked", "month_changed".
 
 ```elixir
 @impl true
 def handle_event("event_clicked", %{"id" => id}, socket) do
-	{:noreply, put_flash(socket, :info, "Event #{id} clicked")}
+  {:noreply, put_flash(socket, :info, "Evento #{id} clickeado")}
 end
 
 @impl true
 def handle_event("date_clicked", %{"date" => iso}, socket) do
-	{:noreply, put_flash(socket, :info, "Date #{iso}")}
+  {:noreply, put_flash(socket, :info, "Fecha #{iso}")}
 end
 
 @impl true
 def handle_event("month_changed", %{"month" => m, "year" => y}, socket) do
-	{:noreply, socket}
+  {:noreply, socket}
 end
 ```
 
-### 3) Customize view and toolbar
+### 3) Personalizar vista y toolbar
 
 ```elixir
 opts = %{
-	view: "dayGridMonth",
-	headerToolbar: %{start: "title", end: "today prev,next"},
-	nowIndicator: true,
-	firstDay: 1
+  view: "dayGridMonth",
+  headerToolbar: %{start: "title", end: "today prev,next"},
+  nowIndicator: true,
+  firstDay: 1
 }
 
 ~H"""
@@ -149,17 +152,17 @@ opts = %{
 """
 ```
 
-### 4) Live update events (add after date click)
+### 4) Actualizar eventos en vivo (agregar tras click en fecha)
 
 ```elixir
 @impl true
 def handle_event("date_clicked", %{"date" => iso}, socket) do
-	new = %{id: System.unique_integer([:positive]), title: "New", start: iso}
-	{:noreply, update(socket, :events, fn ev -> [new | ev] end)}
+  new = %{id: System.unique_integer([:positive]), title: "Nuevo", start: iso}
+  {:noreply, update(socket, :events, fn ev -> [new | ev] end)}
 end
 ```
 
-### 5) Rename events the hook pushes (options.lv)
+### 5) Renombrar eventos que el hook empuja (options.lv)
 
 ```elixir
 opts = %{lv: %{onEventClick: "my_event_click", onDateClick: "my_date_click", onMonthChange: "my_month"}}
@@ -172,14 +175,14 @@ opts = %{lv: %{onEventClick: "my_event_click", onDateClick: "my_date_click", onM
 def handle_event("my_event_click", payload, socket), do: {:noreply, socket}
 ```
 
-### 6) List view and localization
+### 6) List view y localización
 
 ```elixir
 opts = %{
-	view: "listWeek",
-	locale: "es",
-	height: "auto",
-	dayMaxEvents: true
+  view: "listWeek",
+  locale: "es",
+  height: "auto",
+  dayMaxEvents: true
 }
 
 ~H"""
@@ -187,64 +190,54 @@ opts = %{
 """
 ```
 
-### 7) Resource Timeline (plugins and resources)
+### 7) Resource Timeline (plugins y recursos)
 
-For resource/timeline views, pass plugins explicitly in `options.plugins` and data in `options.resources`.
+Para vistas de recursos/timeline, pasa los plugins explícitamente en `options.plugins` y datos en `options.resources`.
 
 ```elixir
 resources = [
-	%{id: "r1", title: "Room A"},
-	%{id: "r2", title: "Room B"}
+  %{id: "r1", title: "Sala A"},
+  %{id: "r2", title: "Sala B"}
 ]
 
 events = [
-	%{id: "e1", title: "Booking", start: "2025-08-03T10:00:00", end: "2025-08-03T12:00:00", resourceId: "r1"}
+  %{id: "e1", title: "Reserva", start: "2025-08-03T10:00:00", end: "2025-08-03T12:00:00", resourceId: "r1"}
 ]
 
 opts = %{
-	view: "resourceTimelineWeek",
-	resources: resources,
-	plugins: :keep_plugins, # see note below
-	headerToolbar: %{start: "title", end: "today prev,next"}
+  view: "resourceTimelineWeek",
+  resources: resources,
+  plugins: :keep_plugins, # ver nota debajo
+  headerToolbar: %{start: "title", end: "today prev,next"}
 }
 
 ~H"""
 <.calendar id="cal_resources" events={events} options={opts} />
 """
 
-# Note: This package auto-selects plugins by `view` (timeGrid/dayGrid/list).
-# For ResourceTimeline/ResourceTimeGrid, ensure your asset includes the needed plugins.
-# If you use the hooks compiled by this library, consider copying the hook into your app
-# and importing the plugins from `@event-calendar/core` you need, for example:
+# Nota: Este paquete selecciona plugins por `view` (timeGrid/dayGrid/list) automáticamente.
+# Para ResourceTimeline/ResourceTimeGrid, asegúrate de que tu asset incluya los plugins necesarios.
+# Si usas los hooks compilados por esta librería, considera copiar el hook a tu app
+# e importar los plugins de `@event-calendar/core` que requieras, por ejemplo:
 #   import { ResourceTimeline, ResourceTimeGrid } from "@event-calendar/core"
-# and pass `options.plugins: [ResourceTimeline]`.
+# y pasar `options.plugins: [ResourceTimeline]`.
 ```
 
-### 8) Drag & drop and resize editing
+### 8) Edición drag & drop y resize
 
-Enable `editable: true` and handle `eventDrop`/`eventResize` on the server or client side.
+Habilita `editable: true` y maneja `eventDrop`/`eventResize` en el servidor o del lado del cliente.
 
 ```elixir
 opts = %{
-	view: "timeGridWeek",
-	editable: true,
-	eventDurationEditable: true
+  view: "timeGridWeek",
+  editable: true,
+  eventDurationEditable: true
 }
 
 ~H"""
 <.calendar id="cal_edit" events={@events} options={opts} />
 """
 
-# On the server side, the hook does not push these events automatically.
-# You can handle it client-side with `options.eventDrop`/`eventResize` and
-# use `pushEvent` manually (by copying/extending the hook in your app) or send via AJAX.
-```
-
-## Acknowledgments
-
-This library builds on EventCalendar by Vlad Kurko: https://github.com/vkurko/calendar/
-Thanks to the EventCalendar project for providing a lightweight, flexible calendar core.
-
-## License
-
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+# Del lado del servidor, el hook no empuja automáticamente estos eventos.
+# Puedes manejarlo del lado del cliente con `options.eventDrop`/`eventResize` y
+# usar `pushEvent` manualmente (copiando el hook a tu app para extenderlo) o enviar vía AJAX.
