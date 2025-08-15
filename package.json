@@ -1,6 +1,6 @@
 {
   "name": "calendar_component",
-  "version": "0.1.8",
+  "version": "0.2.0",
   "description": "Phoenix LiveView calendar component with EventCalendar integration",
   "main": "index.js",
   "module": "index.js",

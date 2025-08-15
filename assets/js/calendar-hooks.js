@@ -10,6 +10,8 @@ import {
 	List,
 	Interaction
 } from "@event-calendar/core"
+import ResourceTimeGrid from "@event-calendar/resource-time-grid"
+import ResourceTimeline from "@event-calendar/resource-timeline"
 import "@event-calendar/core/index.css"
 
 function parseJSON(value, fallback) {
@@ -26,18 +28,93 @@ function pluginsForView(view) {
 		if (view.startsWith("timeGrid")) set.add(TimeGrid)
 		if (view.startsWith("dayGrid")) set.add(DayGrid)
 		if (view.startsWith("list")) set.add(List)
+		if (view.startsWith("resourceTimeGrid")) set.add(ResourceTimeGrid)
+		if (view.startsWith("resourceTimeline")) set.add(ResourceTimeline)
 	}
 	// Default to TimeGrid for week/day views
 	if (set.size === 1) set.add(TimeGrid)
 	return Array.from(set)
 }
 
+function validateEvent(event) {
+	if (!event) return null
+
+	// Ensure we have valid dates
+	if (event.start && typeof event.start === 'string') {
+		try {
+			new Date(event.start).toISOString()
+		} catch (e) {
+			console.warn('Invalid start date for event:', event.id, event.start)
+			return null
+		}
+	}
+
+	if (event.end && typeof event.end === 'string') {
+		try {
+			new Date(event.end).toISOString()
+		} catch (e) {
+			console.warn('Invalid end date for event:', event.id, event.end)
+			event = { ...event, end: undefined } // Remove invalid end date
+		}
+	}
+
+	return event
+}
+
+function validateEventsForResources(events, options) {
+	const view = options.view || "timeGridWeek"
+	const isResourceView = view.startsWith("resource")
+
+	if (!isResourceView) {
+		return events.map(validateEvent).filter(Boolean)
+	}
+
+	// For resource views, ensure we have resources defined
+	if (!options.resources || !Array.isArray(options.resources) || options.resources.length === 0) {
+		console.warn('Resource view requires options.resources to be defined')
+		return []
+	}
+
+	const resourceIds = new Set()
+	function collectResourceIds(resources) {
+		resources.forEach(resource => {
+			resourceIds.add(resource.id)
+			if (resource.children) {
+				collectResourceIds(resource.children)
+			}
+		})
+	}
+	collectResourceIds(options.resources)
+
+	// Filter events and ensure they have valid resourceId
+	return events.map(event => {
+		const validated = validateEvent(event)
+		if (!validated) return null
+
+		// For resource views, events must have a valid resourceId
+		if (validated.resourceId === undefined || validated.resourceId === null) {
+			console.warn('Event in resource view missing resourceId:', validated.id)
+			return null
+		}
+
+		if (!resourceIds.has(validated.resourceId)) {
+			console.warn('Event has invalid resourceId:', validated.id, validated.resourceId)
+			return null
+		}
+
+		return validated
+	}).filter(Boolean)
+}
+
 const LiveCalendar = {
 		mounted() {
-			const events = parseJSON(this.el.dataset.events, [])
+			const rawEvents = parseJSON(this.el.dataset.events, [])
 			const options = parseJSON(this.el.dataset.options, {})
 			const view = options.view || "timeGridWeek"
 			const plugins = pluginsForView(view)
+
+			// Validate events based on view type and resources
+			const events = validateEventsForResources(rawEvents, options)
 
 			// Extract LiveView integration options
 			const lv = options.lv || {}
@@ -82,13 +159,17 @@ const LiveCalendar = {
 
 	updated() {
 		if (!this._ec) return
-		const events = parseJSON(this.el.dataset.events, [])
-			const options = parseJSON(this.el.dataset.options, {})
+		const rawEvents = parseJSON(this.el.dataset.events, [])
+		const options = parseJSON(this.el.dataset.options, {})
+
+		// Validate events based on current view type and resources
+		const events = validateEventsForResources(rawEvents, options)
+
 		try {
 			this._ec.setOption("events", events)
-				for (const [k, v] of Object.entries(options || {})) {
+			for (const [k, v] of Object.entries(options || {})) {
 				if (k === "events") continue
-					if (k === "lv") continue
+				if (k === "lv") continue
 				this._ec.setOption(k, v)
 			}
 		} catch (_e) {

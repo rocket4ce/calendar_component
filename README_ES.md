@@ -18,7 +18,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 **Nota importante**:
 
-A partir de la versión **0.1.9**, el CSS se incluye automáticamente cuando importas el JavaScript del componente. Los archivos CSS ahora se generan correctamente como `main.css` y `static-main.css` y se cargan automáticamente.
+A partir de la versión **0.2.0**, la librería incluye soporte completo para vistas de recursos (`resourceTimeGridWeek`, `resourceTimelineWeek`) con validación de eventos y manejo de errores apropiado. El CSS se incluye automáticamente cuando importas el componente JavaScript.
+
+Para vistas de recursos, asegúrate de:
+1. Definir `options.resources` con objetos de recursos válidos
+2. Asignar `resourceId` a los eventos que coincida con IDs de recursos existentes
+3. Usar strings de fecha ISO válidos para start/end de eventos
 
 Si aún tienes problemas con el CSS, puedes importarlo manualmente en tu `assets/css/app.css`:
 
@@ -156,7 +161,7 @@ by adding `calendar_component` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:calendar_component, "~> 0.1.9"}
+    {:calendar_component, "~> 0.2.0"}
   ]
 end
 ```

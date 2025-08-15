@@ -102,7 +102,12 @@ liveSocket.connect()
 
 **Important note**:
 
-Starting with version **0.1.9**, CSS is automatically included when you import the JavaScript component. CSS files are now properly generated as `main.css` and `static-main.css` and loaded automatically.
+Starting with version **0.2.0**, the library includes full support for resource views (`resourceTimeGridWeek`, `resourceTimelineWeek`) with proper event validation and error handling. CSS is automatically included when you import the JavaScript component.
+
+For resource views, make sure to:
+1. Define `options.resources` with valid resource objects
+2. Assign `resourceId` to events that matches existing resource IDs
+3. Use valid ISO date strings for event start/end times
 
 If you still have CSS issues, you can manually import it in your `assets/css/app.css`:
 
@@ -135,7 +140,7 @@ Add `calendar_component` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:calendar_component, "~> 0.1.9"}
+    {:calendar_component, "~> 0.2.0"}
   ]
 end
 ```
