@@ -146,8 +146,12 @@ const LiveCalendar = {
 		mounted() {
 			const rawEvents = parseJSON(this.el.dataset.events, [])
 			const options = parseJSON(this.el.dataset.options, {})
+			const jsCallbacks = parseJSON(this.el.dataset.jsCallbacks, {})
 			const view = options.view || "timeGridWeek"
 			const plugins = getAllPluginsFromOptions(options)
+
+			// Store JS callbacks for use in event handlers
+			this._jsCallbacks = jsCallbacks
 
 			// Validate events based on view type and resources
 			const events = validateEventsForResources(rawEvents, options)
@@ -169,19 +173,46 @@ const LiveCalendar = {
 			const merged = {
 				view,
 				events,
-				// Compose user handlers with LiveView pushes
+				// Compose user handlers with LiveView pushes and JS commands
 				eventClick: (arg) => {
 					try { userEventClick?.(arg) } catch (_e) {}
+
+					// Execute JS command if provided
+					if (this._jsCallbacks?.onEventClick) {
+						try {
+							this.liveSocket.execJS(this.el, this._jsCallbacks.onEventClick, "click")
+						} catch (_e) {}
+					}
+
+					// Still push the event for backwards compatibility
 					const payload = { id: arg?.event?.id, event: safeEvent(arg?.event) }
 					this.pushEvent(onEventClickName, payload)
 				},
 				dateClick: (arg) => {
 					try { userDateClick?.(arg) } catch (_e) {}
+
+					// Execute JS command if provided
+					if (this._jsCallbacks?.onDateClick) {
+						try {
+							this.liveSocket.execJS(this.el, this._jsCallbacks.onDateClick, "click")
+						} catch (_e) {}
+					}
+
+					// Still push the event for backwards compatibility
 					const payload = { date: arg?.date?.toISOString?.() || arg?.date || null }
 					this.pushEvent(onDateClickName, payload)
 				},
 				datesSet: (arg) => {
 					try { userDatesSet?.(arg) } catch (_e) {}
+
+					// Execute JS command if provided
+					if (this._jsCallbacks?.onMonthChange) {
+						try {
+							this.liveSocket.execJS(this.el, this._jsCallbacks.onMonthChange, "change")
+						} catch (_e) {}
+					}
+
+					// Still push the event for backwards compatibility
 					const start = toISODate(arg?.start)
 					const month = arg?.start?.getMonth ? arg.start.getMonth() + 1 : null
 					const year = arg?.start?.getFullYear?.() || null
@@ -197,6 +228,7 @@ const LiveCalendar = {
 		if (!this._ec) return
 		const rawEvents = parseJSON(this.el.dataset.events, [])
 		const options = parseJSON(this.el.dataset.options, {})
+		const jsCallbacks = parseJSON(this.el.dataset.jsCallbacks, {})
 
 		// Validate events based on current view type and resources
 		const events = validateEventsForResources(rawEvents, options)
@@ -211,6 +243,9 @@ const LiveCalendar = {
 		} catch (_e) {
 			// no-op fallback if calendar not ready
 		}
+
+		// Store updated JS callbacks for next interaction
+		this._jsCallbacks = jsCallbacks
 	},
 
 	destroyed() {

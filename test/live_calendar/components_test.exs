@@ -3,6 +3,8 @@ defmodule LiveCalendar.ComponentsTest do
 
   import Phoenix.LiveViewTest
 
+  alias Phoenix.LiveView.JS
+
   test "renders minimal calendar container with id and hook" do
     html = render_component(&LiveCalendar.Components.calendar/1, id: "calendar")
 
@@ -55,7 +57,7 @@ defmodule LiveCalendar.ComponentsTest do
   end
 
   test "accepts JS callback assigns (no-op in markup)" do
-    js = %Phoenix.LiveView.JS{}
+    js = %JS{}
 
     html =
       render_component(&LiveCalendar.Components.calendar/1,
@@ -68,5 +70,37 @@ defmodule LiveCalendar.ComponentsTest do
     assert html =~ ~s(id="cal5")
     # Callbacks are not rendered; they are passed via options or handled client-side
     refute html =~ "on_event_click"
+    # But JS callbacks should be passed as data attribute
+    assert html =~ ~s(data-js-callbacks)
+  end
+
+  test "converts Phoenix.LiveView.JS structs to JavaScript strings" do
+    js_push = JS.push("my_event", value: %{test: true})
+
+    html =
+      render_component(&LiveCalendar.Components.calendar/1,
+        id: "cal6",
+        on_event_click: js_push
+      )
+
+    assert html =~ ~s(id="cal6")
+    assert html =~ ~s(data-js-callbacks)
+
+    # Should contain the encoded JS command (HTML-encoded)
+    assert html =~ ~s(&quot;onEventClick&quot;)
+    assert html =~ ~s(my_event)
+  end
+
+  test "handles nil JS callbacks gracefully" do
+    html =
+      render_component(&LiveCalendar.Components.calendar/1,
+        id: "cal7",
+        on_event_click: nil,
+        on_date_click: nil,
+        on_month_change: nil
+      )
+
+    assert html =~ ~s(id="cal7")
+    assert html =~ ~s(data-js-callbacks="{}")
   end
 end

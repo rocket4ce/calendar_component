@@ -22,7 +22,39 @@ def mount(_params, _session, socket) do
 end
 ```
 
-## 2) Handle event click, date click, and month change
+## 2) Handle events with Phoenix.LiveView.JS (Phoenix 1.8+)
+
+The calendar component supports Phoenix.LiveView.JS commands for client-side interactions with Phoenix LiveView 1.8+. This allows for rich client-side behavior without server round-trips:
+
+```elixir
+alias Phoenix.LiveView.JS
+
+<.calendar
+  id="calendar"
+  events={@events}
+  on_event_click={JS.push("select_event") |> JS.show(to: "#event-modal")}
+  on_date_click={JS.push("create_event") |> JS.add_class("highlight", to: ".selected-date")}
+  on_month_change={JS.push("month_changed") |> JS.dispatch("calendar:month_changed")}
+/>
+```
+
+The JavaScript commands are executed on the client first, then the server events are handled:
+
+```elixir
+@impl true
+def handle_event("select_event", %{"id" => id}, socket) do
+  # Server-side logic after client-side JS commands
+  {:noreply, assign(socket, selected_event: id)}
+end
+
+@impl true
+def handle_event("create_event", %{"date" => date}, socket) do
+  # Server-side logic after client-side JS commands
+  {:noreply, assign(socket, new_event_date: date)}
+end
+```
+
+## 3) Traditional event handling (backwards compatible)
 
 By default, the hook pushes these events to the server: "event_clicked", "date_clicked", and "month_changed".
 
@@ -37,7 +69,7 @@ def handle_event("date_clicked", %{"date" => iso}, socket), do: {:noreply, socke
 def handle_event("month_changed", %{"month" => m, "year" => y}, socket), do: {:noreply, socket}
 ```
 
-## 3) EventCalendar options
+## 4) EventCalendar options
 
 Pass any supported EventCalendar option via `:options`:
 

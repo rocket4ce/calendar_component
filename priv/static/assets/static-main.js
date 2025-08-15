@@ -11916,46 +11916,78 @@ function validateEventsForResources(events2, options) {
 }
 function parseCallbacks(options) {
   const callbacks = {};
-  function parseCallback(callbackString, paramName) {
-    if (!callbackString || typeof callbackString !== "string") {
+  function resolveCallback(callback, paramName, callbackType) {
+    if (!callback) return null;
+    if (typeof callback === "function") {
+      return callback;
+    }
+    if (typeof callback === "string") {
+      if (!callback.includes("(") && !callback.includes("{") && !callback.includes(";")) {
+        return resolveGlobalFunction(callback, callbackType);
+      }
+      if (isSimpleFunctionBody(callback)) {
+        return parseStringFunction(`function(${paramName}) { ${callback} }`, paramName, callbackType);
+      }
+      console.error(`SECURITY: Complete function strings are not allowed for ${callbackType}. Use global function references instead.`);
       return null;
     }
+    console.warn(`Invalid ${callbackType} callback format:`, callback);
+    return null;
+  }
+  function isSimpleFunctionBody(body) {
+    const dangerous = ["function", "eval", "setTimeout", "setInterval", "new Function", "constructor", "__proto__", "prototype"];
+    const bodyLower = body.toLowerCase();
+    for (const danger of dangerous) {
+      if (bodyLower.includes(danger)) {
+        console.error(`SECURITY: Dangerous keyword "${danger}" detected in callback body`);
+        return false;
+      }
+    }
+    if (body.length > 200) {
+      console.error("SECURITY: Function body too long (max 200 chars). Use global function reference.");
+      return false;
+    }
+    return true;
+  }
+  function resolveGlobalFunction(functionPath, callbackType) {
     try {
-      let functionBody = callbackString.trim();
-      if (functionBody.startsWith("function")) {
-        const match = functionBody.match(new RegExp("function\\s*\\([^)]*\\)\\s*\\{(.*)\\}$", "s"));
-        if (match) {
-          functionBody = match[1];
-        } else {
-          console.warn(`Invalid function format: ${callbackString}`);
+      const parts = functionPath.split(".");
+      let fn = window;
+      for (const part of parts) {
+        if (part === "window") continue;
+        if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(part)) {
+          console.warn(`Invalid function name part: ${part} for ${callbackType}`);
+          return null;
+        }
+        fn = fn[part];
+        if (!fn) {
+          console.warn(`Global function not found: ${functionPath} for ${callbackType}`);
           return null;
         }
       }
-      return new Function(paramName, functionBody);
+      if (typeof fn === "function") {
+        return fn;
+      } else {
+        console.warn(`${functionPath} is not a function for ${callbackType}`);
+        return null;
+      }
     } catch (e) {
-      console.warn(`Invalid ${paramName} callback:`, e, "String was:", callbackString);
+      console.warn(`Error resolving global function ${functionPath} for ${callbackType}:`, e);
       return null;
     }
   }
-  if (options.eventClick && typeof options.eventClick === "string") {
-    const callback = parseCallback(options.eventClick, "info");
-    if (callback) callbacks.eventClick = callback;
-  } else if (typeof options.eventClick === "function") {
-    callbacks.eventClick = options.eventClick;
+  function parseStringFunction(functionString, paramName, callbackType) {
+    try {
+      return new Function(paramName, functionString.replace(/^function\([^)]*\)\s*\{/, "").replace(/\}$/, ""));
+    } catch (e) {
+      console.warn(`Invalid ${callbackType} callback string:`, e, "String was:", functionString);
+      return null;
+    }
   }
-  if (options.dateClick && typeof options.dateClick === "string") {
-    const callback = parseCallback(options.dateClick, "info");
-    if (callback) callbacks.dateClick = callback;
-  } else if (typeof options.dateClick === "function") {
-    callbacks.dateClick = options.dateClick;
-  }
-  if (options.datesSet && typeof options.datesSet === "string") {
-    const callback = parseCallback(options.datesSet, "dateInfo");
-    if (callback) callbacks.datesSet = callback;
-  } else if (typeof options.datesSet === "function") {
-    callbacks.datesSet = options.datesSet;
-  }
-  return callbacks;
+  callbacks.eventClick = resolveCallback(options.eventClick, "info", "eventClick");
+  callbacks.dateClick = resolveCallback(options.dateClick, "info", "dateClick");
+  callbacks.datesSet = resolveCallback(options.datesSet, "dateInfo", "datesSet");
+  return Object.fromEntries(Object.entries(callbacks).filter(([_, v]) => v !== null));
 }
 function initStaticCalendar(element2) {
   const rawEvents = parseJSON(element2.dataset.events, []);

@@ -3,12 +3,67 @@
 [![Hex.pm](https:Register the JS hook in your app's LiveSocket:
 
 ```js
+```js
 import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import CalendarHooks from "calendar_component"
 
 const liveSocket = new LiveSocket("/live", Socket, { hooks: CalendarHooks })
 liveSocket.connect()
+```
+
+## Phoenix LiveView 1.8+ JS Commands Support
+
+This library fully supports Phoenix.LiveView.JS commands for rich client-side interactions compatible with Phoenix LiveView 1.8+. You can compose JS commands for immediate client-side feedback combined with server-side event handling:
+
+```elixir
+alias Phoenix.LiveView.JS
+
+~H"""
+<.calendar
+  id="calendar"
+  events={@events}
+  on_event_click={JS.push("select_event") |> JS.show(to: "#event-modal")}
+  on_date_click={JS.push("create_event") |> JS.add_class("highlight", to: ".selected")}
+  on_month_change={JS.push("month_changed") |> JS.dispatch("calendar:month_changed")}
+/>
+"""
+```
+
+The JS commands execute on the client immediately, then the server events are handled for persistence and state management.
+
+## Usage
+
+### With LiveView
+
+Render the calendar component in HEEx and wire events with Phoenix LiveView JS:
+
+```elixir
+alias Phoenix.LiveView.JS
+
+~H"""
+<.calendar
+	id="calendar"
+	events={@events}
+	on_event_click={JS.push("event_clicked", value: %{id: event.id})}
+	on_date_click={JS.push("date_clicked", value: %{date: date})}
+	on_month_change={JS.push("month_changed", value: %{month: month})}
+/>
+"""
+```
+
+Server-side handlers (example):
+
+```elixir
+@impl true
+def handle_event("event_clicked", %{"id" => id}, socket), do: {:noreply, socket}
+
+@impl true
+def handle_event("date_clicked", %{"date" => date}, socket), do: {:noreply, socket}
+
+@impl true
+def handle_event("month_changed", %{"month" => month, "year" => year}, socket), do: {:noreply, socket}
+```
 ```s.io/hexpm/v/calendar_component.svg)](https://hex.pm/packages/calendar_component)
 [![Docs](https://img.shields.io/badge/docs-hexdocs.pm-blue)](https://hexdocs.pm/calendar_component)
 
@@ -49,7 +104,7 @@ def handle_event("month_changed", %{"month" => month, "year" => year}, socket), 
 
 ### With Regular Phoenix Controllers
 
-For traditional Phoenix controllers (without LiveView), use the static calendar component:
+For traditional Phoenix controllers (without LiveView), use the static calendar component with improved callback support:
 
 ```elixir
 # In your controller
@@ -62,6 +117,66 @@ defmodule MyAppWeb.EventController do
       %{id: 1, title: "Meeting", start: "2025-08-01T09:00:00"},
       %{id: 2, title: "Demo", start: "2025-08-02"}
     ]
+    render(conn, :index, events: events)
+  end
+end
+```
+
+```elixir
+# In your template (.html.heex)
+<.static_calendar
+  id="my-calendar"
+  events={@events}
+  options={%{
+    view: "dayGridMonth",
+    eventClick: "MyApp.Calendar.handleEventClick",
+    dateClick: "MyApp.Calendar.handleDateClick",
+    datesSet: "MyApp.Calendar.handleMonthChange"
+  }}
+/>
+```
+
+```javascript
+// In your app.js - Clean, maintainable JavaScript callbacks
+import { initStaticCalendars } from "calendar_component/static";
+
+window.MyApp = {
+  Calendar: {
+    handleEventClick(info) {
+      console.log('Event clicked:', info.event.title);
+      // Add your event handling logic
+    },
+
+    handleDateClick(info) {
+      console.log('Date clicked:', info.dateStr);
+      // Add your date click logic
+    },
+
+    handleMonthChange(info) {
+      console.log('Month changed to:', info.start);
+      // Add your month navigation logic
+    }
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => initStaticCalendars());
+```
+
+#### Multiple Callback Formats Supported
+
+The static calendar supports secure callback formats:
+
+**1. Global Function References (Recommended & Secure):**
+```elixir
+options: %{eventClick: "MyApp.handleEvent"}
+```
+
+**2. Simple Function Body Strings (Limited for Security):**
+```elixir
+options: %{eventClick: "console.log('Event:', info.event.title)"}
+```
+
+**Security Note**: Function strings are limited to simple expressions (max 200 chars) with dangerous keywords blocked to prevent code injection. For complex logic, always use global function references.
 
     render(conn, "index.html", events: events)
   end

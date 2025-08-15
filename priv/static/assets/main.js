@@ -11921,8 +11921,10 @@ var LiveCalendar = {
   mounted() {
     const rawEvents = parseJSON(this.el.dataset.events, []);
     const options = parseJSON(this.el.dataset.options, {});
+    const jsCallbacks = parseJSON(this.el.dataset.jsCallbacks, {});
     const view2 = options.view || "timeGridWeek";
     const plugins = getAllPluginsFromOptions(options);
+    this._jsCallbacks = jsCallbacks;
     const events2 = validateEventsForResources(rawEvents, options);
     const lv = options.lv || {};
     const onEventClickName = lv.onEventClick || "event_clicked";
@@ -11935,34 +11937,52 @@ var LiveCalendar = {
     const merged = __spreadValues({
       view: view2,
       events: events2,
-      // Compose user handlers with LiveView pushes
+      // Compose user handlers with LiveView pushes and JS commands
       eventClick: (arg) => {
-        var _a4;
+        var _a4, _b3;
         try {
           userEventClick == null ? void 0 : userEventClick(arg);
         } catch (_e) {
         }
-        const payload = { id: (_a4 = arg == null ? void 0 : arg.event) == null ? void 0 : _a4.id, event: safeEvent(arg == null ? void 0 : arg.event) };
+        if ((_a4 = this._jsCallbacks) == null ? void 0 : _a4.onEventClick) {
+          try {
+            this.liveSocket.execJS(this.el, this._jsCallbacks.onEventClick, "click");
+          } catch (_e) {
+          }
+        }
+        const payload = { id: (_b3 = arg == null ? void 0 : arg.event) == null ? void 0 : _b3.id, event: safeEvent(arg == null ? void 0 : arg.event) };
         this.pushEvent(onEventClickName, payload);
       },
       dateClick: (arg) => {
-        var _a4, _b3;
+        var _a4, _b3, _c2;
         try {
           userDateClick == null ? void 0 : userDateClick(arg);
         } catch (_e) {
         }
-        const payload = { date: ((_b3 = (_a4 = arg == null ? void 0 : arg.date) == null ? void 0 : _a4.toISOString) == null ? void 0 : _b3.call(_a4)) || (arg == null ? void 0 : arg.date) || null };
+        if ((_a4 = this._jsCallbacks) == null ? void 0 : _a4.onDateClick) {
+          try {
+            this.liveSocket.execJS(this.el, this._jsCallbacks.onDateClick, "click");
+          } catch (_e) {
+          }
+        }
+        const payload = { date: ((_c2 = (_b3 = arg == null ? void 0 : arg.date) == null ? void 0 : _b3.toISOString) == null ? void 0 : _c2.call(_b3)) || (arg == null ? void 0 : arg.date) || null };
         this.pushEvent(onDateClickName, payload);
       },
       datesSet: (arg) => {
-        var _a4, _b3, _c2;
+        var _a4, _b3, _c2, _d;
         try {
           userDatesSet == null ? void 0 : userDatesSet(arg);
         } catch (_e) {
         }
+        if ((_a4 = this._jsCallbacks) == null ? void 0 : _a4.onMonthChange) {
+          try {
+            this.liveSocket.execJS(this.el, this._jsCallbacks.onMonthChange, "change");
+          } catch (_e) {
+          }
+        }
         const start = toISODate(arg == null ? void 0 : arg.start);
-        const month = ((_a4 = arg == null ? void 0 : arg.start) == null ? void 0 : _a4.getMonth) ? arg.start.getMonth() + 1 : null;
-        const year = ((_c2 = (_b3 = arg == null ? void 0 : arg.start) == null ? void 0 : _b3.getFullYear) == null ? void 0 : _c2.call(_b3)) || null;
+        const month = ((_b3 = arg == null ? void 0 : arg.start) == null ? void 0 : _b3.getMonth) ? arg.start.getMonth() + 1 : null;
+        const year = ((_d = (_c2 = arg == null ? void 0 : arg.start) == null ? void 0 : _c2.getFullYear) == null ? void 0 : _d.call(_c2)) || null;
         this.pushEvent(onMonthChangeName, { month, year, start });
       }
     }, baseOptions);
@@ -11972,6 +11992,7 @@ var LiveCalendar = {
     if (!this._ec) return;
     const rawEvents = parseJSON(this.el.dataset.events, []);
     const options = parseJSON(this.el.dataset.options, {});
+    const jsCallbacks = parseJSON(this.el.dataset.jsCallbacks, {});
     const events2 = validateEventsForResources(rawEvents, options);
     try {
       this._ec.setOption("events", events2);
@@ -11982,6 +12003,7 @@ var LiveCalendar = {
       }
     } catch (_e) {
     }
+    this._jsCallbacks = jsCallbacks;
   },
   destroyed() {
     if (this._ec) {
