@@ -23,3 +23,5 @@ calendar_component-*.tar
 /tmp/
 /assets/node_modules/
 /assets/package-lock.json
+.todos.md
+/.github/PLAN.md
