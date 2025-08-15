@@ -35,7 +35,7 @@ defmodule CalendarComponent.MixProject do
       {:tzdata, "~> 1.1.3"},
       {:jason, "~> 1.4.4"},
       {:esbuild, "~> 0.10.0"},
-      {:phoenix_live_view, "~> 1.1.4"},
+      {:phoenix_live_view, ">= 1.1.3"},
       {:lazy_html, ">= 0.1.0", only: :test},
       {:styler, "~> 1.5", only: [:dev, :test], runtime: false},
       {:mimerl, "~> 1.4"},
