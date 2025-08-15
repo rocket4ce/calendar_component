@@ -1,6 +1,6 @@
 {
   "name": "calendar_component",
-  "version": "0.1.6",
+  "version": "0.1.8",
   "description": "Phoenix LiveView calendar component with EventCalendar integration",
   "main": "index.js",
   "module": "index.js",
@@ -11,22 +11,22 @@
       "require": "./index.js"
     },
     "./hooks": {
-      "import": "./priv/static/assets/calendar-hooks.js",
-      "require": "./priv/static/assets/calendar-hooks.js"
+      "import": "./priv/static/assets/main.js",
+      "require": "./priv/static/assets/main.js"
     },
     "./static": {
-      "import": "./priv/static/assets/static-calendar.js",
-      "require": "./priv/static/assets/static-calendar.js"
+      "import": "./priv/static/assets/static-main.js",
+      "require": "./priv/static/assets/static-main.js"
     },
-    "./css": "./priv/static/assets/calendar-hooks.css",
-    "./static-css": "./priv/static/assets/static-calendar.css"
+    "./css": "./priv/static/assets/main.css",
+    "./static-css": "./priv/static/assets/static-main.css"
   },
   "files": [
     "index.js",
-    "priv/static/assets/calendar-hooks.js",
-    "priv/static/assets/calendar-hooks.css",
-    "priv/static/assets/static-calendar.js",
-    "priv/static/assets/static-calendar.css"
+    "priv/static/assets/main.js",
+    "priv/static/assets/main.css",
+    "priv/static/assets/static-main.js",
+    "priv/static/assets/static-main.css"
   ],
   "keywords": [
     "phoenix",

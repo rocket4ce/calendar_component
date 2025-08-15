@@ -1,7 +1,7 @@
 defmodule CalendarComponent.MixProject do
   use Mix.Project
 
-  @version "0.1.6"
+  @version "0.1.9"
 
   def project do
     [

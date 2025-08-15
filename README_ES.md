@@ -16,7 +16,16 @@ document.addEventListener("DOMContentLoaded", () => {
 })
 ```
 
-**Nota importante**: Esta librería compila automáticamente el CSS junto con el JavaScript. No necesitas importar el CSS por separado. Los archivos se encuentran en `priv/static/assets/calendar-hooks.js` y `priv/static/assets/calendar-hooks.css`, pero el CSS se incluye automáticamente al importar el JavaScript.ado en EventCalendar y un hook de LiveView. Se distribuye como librería (no una app completa) e incluye assets JS/CSS colocalizados.
+**Nota importante**: 
+
+A partir de la versión **0.1.9**, el CSS se incluye automáticamente cuando importas el JavaScript del componente. Los archivos CSS ahora se generan correctamente como `main.css` y `static-main.css` y se cargan automáticamente.
+
+Si aún tienes problemas con el CSS, puedes importarlo manualmente en tu `assets/css/app.css`:
+
+```css
+/* En assets/css/app.css - Solo si es necesario */
+@import "../../deps/calendar_component/priv/static/assets/main.css";
+```ado en EventCalendar y un hook de LiveView. Se distribuye como librería (no una app completa) e incluye assets JS/CSS colocalizados.
 
 [![Hex.pm](https://img.shields.io/hexpm/v/calendar_component.svg)](https://hex.pm/packages/calendar_component)
 [![Hexdocs](https://img.shields.io/badge/docs-hexdocs.pm-blue)](https://hexdocs.pm/calendar_component)
@@ -147,7 +156,7 @@ by adding `calendar_component` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:calendar_component, "~> 0.1.6"}
+    {:calendar_component, "~> 0.1.9"}
   ]
 end
 ```

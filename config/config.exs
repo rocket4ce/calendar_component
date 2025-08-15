@@ -4,12 +4,13 @@ config :esbuild,
   version: "0.25.0",
   calendar_component: [
     args:
-      ~w(js/calendar-hooks.js --bundle --target=es2016 --format=esm --outdir=../priv/static/assets --external:phoenix --external:phoenix_html --external:phoenix_live_view),
+      ~w(js/main.js --bundle --target=es2016 --format=esm --outdir=../priv/static/assets --outbase=js --external:phoenix --external:phoenix_html --external:phoenix_live_view --loader:.css=css),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ],
   static_calendar: [
-    args: ~w(js/static-calendar.js --bundle --target=es2016 --format=esm --outdir=../priv/static/assets),
+    args:
+      ~w(js/static-main.js --bundle --target=es2016 --format=esm --outdir=../priv/static/assets --outbase=js --loader:.css=css),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]

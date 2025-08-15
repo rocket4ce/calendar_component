@@ -100,9 +100,16 @@ const liveSocket = new LiveSocket("/live", Socket, { hooks: Hooks })
 liveSocket.connect()
 ```
 
-Note: This library compiles a hook at `priv/static/assets/calendar-hooks.js` and CSS at `priv/static/assets/calendar-hooks.css`. Ensure the asset is served/loaded in your host app (or copy the hook code into your app assets and register it).
+**Important note**: 
 
-### Options mapping
+Starting with version **0.1.9**, CSS is automatically included when you import the JavaScript component. CSS files are now properly generated as `main.css` and `static-main.css` and loaded automatically.
+
+If you still have CSS issues, you can manually import it in your `assets/css/app.css`:
+
+```css
+/* In assets/css/app.css - Only if necessary */
+@import "../../deps/calendar_component/priv/static/assets/main.css";
+```### Options mapping
 
 - Pass any EventCalendar options via the `:options` assign of `<.calendar ... />`. They are forwarded to the JS calendar.
 - Special integration key: `options.lv` lets you rename the server events the hook will push:
@@ -128,7 +135,7 @@ Add `calendar_component` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:calendar_component, "~> 0.1.6"}
+    {:calendar_component, "~> 0.1.9"}
   ]
 end
 ```

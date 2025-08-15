@@ -59,6 +59,9 @@ var __async = (__this, __arguments, generator) => {
   });
 };
 
+// js/calendar-hooks.js
+import "phoenix_html";
+
 // node_modules/esm-env/dev-fallback.js
 var _a, _b;
 var node_env = (_b = (_a = globalThis.process) == null ? void 0 : _a.env) == null ? void 0 : _b.NODE_ENV;
@@ -10392,7 +10395,7 @@ function destroyCalendar(calendar) {
   return unmount(calendar);
 }
 
-// js/static-calendar.js
+// js/calendar-hooks.js
 function parseJSON(value, fallback2) {
   try {
     return value ? JSON.parse(value) : fallback2;
@@ -10410,103 +10413,103 @@ function pluginsForView(view2) {
   if (set2.size === 1) set2.add(TimeGrid);
   return Array.from(set2);
 }
-function parseCallbacks(options) {
-  const callbacks = {};
-  function parseCallback(callbackString, paramName) {
-    if (!callbackString || typeof callbackString !== "string") {
-      return null;
-    }
-    try {
-      let functionBody = callbackString.trim();
-      if (functionBody.startsWith("function")) {
-        const match = functionBody.match(new RegExp("function\\s*\\([^)]*\\)\\s*\\{(.*)\\}$", "s"));
-        if (match) {
-          functionBody = match[1];
-        } else {
-          console.warn(`Invalid function format: ${callbackString}`);
-          return null;
+var LiveCalendar = {
+  mounted() {
+    const events2 = parseJSON(this.el.dataset.events, []);
+    const options = parseJSON(this.el.dataset.options, {});
+    const view2 = options.view || "timeGridWeek";
+    const plugins = pluginsForView(view2);
+    const lv = options.lv || {};
+    const onEventClickName = lv.onEventClick || "event_clicked";
+    const onDateClickName = lv.onDateClick || "date_clicked";
+    const onMonthChangeName = lv.onMonthChange || "month_changed";
+    const userEventClick = typeof options.eventClick === "function" ? options.eventClick : null;
+    const userDateClick = typeof options.dateClick === "function" ? options.dateClick : null;
+    const userDatesSet = typeof options.datesSet === "function" ? options.datesSet : null;
+    const _a3 = options, { lv: _lv } = _a3, baseOptions = __objRest(_a3, ["lv"]);
+    const merged = __spreadValues({
+      view: view2,
+      events: events2,
+      // Compose user handlers with LiveView pushes
+      eventClick: (arg) => {
+        var _a4;
+        try {
+          userEventClick == null ? void 0 : userEventClick(arg);
+        } catch (_e) {
         }
+        const payload = { id: (_a4 = arg == null ? void 0 : arg.event) == null ? void 0 : _a4.id, event: safeEvent(arg == null ? void 0 : arg.event) };
+        this.pushEvent(onEventClickName, payload);
+      },
+      dateClick: (arg) => {
+        var _a4, _b3;
+        try {
+          userDateClick == null ? void 0 : userDateClick(arg);
+        } catch (_e) {
+        }
+        const payload = { date: ((_b3 = (_a4 = arg == null ? void 0 : arg.date) == null ? void 0 : _a4.toISOString) == null ? void 0 : _b3.call(_a4)) || (arg == null ? void 0 : arg.date) || null };
+        this.pushEvent(onDateClickName, payload);
+      },
+      datesSet: (arg) => {
+        var _a4, _b3, _c2;
+        try {
+          userDatesSet == null ? void 0 : userDatesSet(arg);
+        } catch (_e) {
+        }
+        const start = toISODate(arg == null ? void 0 : arg.start);
+        const month = ((_a4 = arg == null ? void 0 : arg.start) == null ? void 0 : _a4.getMonth) ? arg.start.getMonth() + 1 : null;
+        const year = ((_c2 = (_b3 = arg == null ? void 0 : arg.start) == null ? void 0 : _b3.getFullYear) == null ? void 0 : _c2.call(_b3)) || null;
+        this.pushEvent(onMonthChangeName, { month, year, start });
       }
-      return new Function(paramName, functionBody);
-    } catch (e) {
-      console.warn(`Invalid ${paramName} callback:`, e, "String was:", callbackString);
-      return null;
-    }
-  }
-  if (options.eventClick && typeof options.eventClick === "string") {
-    const callback = parseCallback(options.eventClick, "info");
-    if (callback) callbacks.eventClick = callback;
-  } else if (typeof options.eventClick === "function") {
-    callbacks.eventClick = options.eventClick;
-  }
-  if (options.dateClick && typeof options.dateClick === "string") {
-    const callback = parseCallback(options.dateClick, "info");
-    if (callback) callbacks.dateClick = callback;
-  } else if (typeof options.dateClick === "function") {
-    callbacks.dateClick = options.dateClick;
-  }
-  if (options.datesSet && typeof options.datesSet === "string") {
-    const callback = parseCallback(options.datesSet, "dateInfo");
-    if (callback) callbacks.datesSet = callback;
-  } else if (typeof options.datesSet === "function") {
-    callbacks.datesSet = options.datesSet;
-  }
-  return callbacks;
-}
-function initStaticCalendar(element2) {
-  const events2 = parseJSON(element2.dataset.events, []);
-  const options = parseJSON(element2.dataset.options, {});
-  const view2 = options.view || "dayGridMonth";
-  const plugins = options.plugins || pluginsForView(view2);
-  const callbacks = parseCallbacks(options);
-  const calendarOptions = __spreadValues(__spreadValues({
-    view: view2,
-    events: events2
-  }, options), callbacks);
-  const calendar = createCalendar(element2, plugins, calendarOptions);
-  element2._calendarInstance = calendar;
-  return calendar;
-}
-function initStaticCalendars() {
-  const calendars = document.querySelectorAll(".static-calendar");
-  const instances = [];
-  calendars.forEach((element2) => {
-    if (element2._calendarInstance) return;
+    }, baseOptions);
+    this._ec = createCalendar(this.el, plugins, merged);
+  },
+  updated() {
+    if (!this._ec) return;
+    const events2 = parseJSON(this.el.dataset.events, []);
+    const options = parseJSON(this.el.dataset.options, {});
     try {
-      const calendar = initStaticCalendar(element2);
-      instances.push(calendar);
-    } catch (error) {
-      console.error("Failed to initialize calendar:", error, element2);
+      this._ec.setOption("events", events2);
+      for (const [k, v] of Object.entries(options || {})) {
+        if (k === "events") continue;
+        if (k === "lv") continue;
+        this._ec.setOption(k, v);
+      }
+    } catch (_e) {
     }
-  });
-  return instances;
-}
-function destroyStaticCalendar(element2) {
-  if (element2._calendarInstance) {
-    destroyCalendar(element2._calendarInstance);
-    element2._calendarInstance = null;
+  },
+  destroyed() {
+    if (this._ec) {
+      try {
+        destroyCalendar(this._ec);
+      } catch (_e) {
+      }
+      this._ec = null;
+    }
   }
-}
-function updateStaticCalendarEvents(element2, events2) {
-  if (element2._calendarInstance) {
-    element2._calendarInstance.setOption("events", events2);
-  }
-}
-if (typeof document !== "undefined") {
-  document.addEventListener("DOMContentLoaded", initStaticCalendars);
-}
-var static_calendar_default = {
-  initStaticCalendar,
-  initStaticCalendars,
-  destroyStaticCalendar,
-  updateStaticCalendarEvents
 };
+function toISODate(d) {
+  var _a3;
+  try {
+    return ((_a3 = d == null ? void 0 : d.toISOString) == null ? void 0 : _a3.call(d)) || null;
+  } catch (_e) {
+    return null;
+  }
+}
+function safeEvent(ev) {
+  if (!ev) return null;
+  const { id, title, start, end, allDay } = ev;
+  return { id, title, start, end, allDay };
+}
+var Hooks = { LiveCalendar };
+if (typeof window !== "undefined") {
+  window.LiveCalendarHooks = Hooks;
+}
+var calendar_hooks_default = Hooks;
+
+// js/main.js
+var main_default = calendar_hooks_default;
 export {
-  static_calendar_default as default,
-  destroyStaticCalendar,
-  initStaticCalendar,
-  initStaticCalendars,
-  updateStaticCalendarEvents
+  main_default as default
 };
 /*! Bundled license information:
 
