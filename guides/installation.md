@@ -10,7 +10,7 @@ Add the library to your dependencies and fetch packages:
 # mix.exs
 
   [
-    {:calendar_component, "~> 0.1.0"}
+    {:calendar_component, "~> 0.1.1"}
   ]
 end
 ```
