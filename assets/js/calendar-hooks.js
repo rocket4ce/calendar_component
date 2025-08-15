@@ -36,6 +36,42 @@ function pluginsForView(view) {
 	return Array.from(set)
 }
 
+function getAllPluginsFromOptions(options) {
+	const set = new Set([Interaction])
+
+	// Check initial view
+	const view = options.view || "timeGridWeek"
+	if (view.startsWith("timeGrid")) set.add(TimeGrid)
+	if (view.startsWith("dayGrid")) set.add(DayGrid)
+	if (view.startsWith("list")) set.add(List)
+	if (view.startsWith("resourceTimeGrid")) set.add(ResourceTimeGrid)
+	if (view.startsWith("resourceTimeline")) set.add(ResourceTimeline)
+
+	// Check headerToolbar for additional views
+	const headerToolbar = options.headerToolbar || {}
+	const toolbarValues = Object.values(headerToolbar).join(" ")
+
+	if (toolbarValues.includes("dayGridMonth") || toolbarValues.includes("dayGridWeek")) set.add(DayGrid)
+	if (toolbarValues.includes("timeGridWeek") || toolbarValues.includes("timeGridDay")) set.add(TimeGrid)
+	if (toolbarValues.includes("listWeek") || toolbarValues.includes("listMonth") || toolbarValues.includes("listDay")) set.add(List)
+	if (toolbarValues.includes("resourceTimeGrid")) set.add(ResourceTimeGrid)
+	if (toolbarValues.includes("resourceTimeline")) set.add(ResourceTimeline)
+
+	// Check footerToolbar as well
+	const footerToolbar = options.footerToolbar || {}
+	const footerValues = Object.values(footerToolbar).join(" ")
+
+	if (footerValues.includes("dayGridMonth") || footerValues.includes("dayGridWeek")) set.add(DayGrid)
+	if (footerValues.includes("timeGridWeek") || footerValues.includes("timeGridDay")) set.add(TimeGrid)
+	if (footerValues.includes("listWeek") || footerValues.includes("listMonth") || footerValues.includes("listDay")) set.add(List)
+	if (footerValues.includes("resourceTimeGrid")) set.add(ResourceTimeGrid)
+	if (footerValues.includes("resourceTimeline")) set.add(ResourceTimeline)
+
+	// Default to TimeGrid for week/day views if nothing else is specified
+	if (set.size === 1) set.add(TimeGrid)
+	return Array.from(set)
+}
+
 function validateEvent(event) {
 	if (!event) return null
 
@@ -111,7 +147,7 @@ const LiveCalendar = {
 			const rawEvents = parseJSON(this.el.dataset.events, [])
 			const options = parseJSON(this.el.dataset.options, {})
 			const view = options.view || "timeGridWeek"
-			const plugins = pluginsForView(view)
+			const plugins = getAllPluginsFromOptions(options)
 
 			// Validate events based on view type and resources
 			const events = validateEventsForResources(rawEvents, options)

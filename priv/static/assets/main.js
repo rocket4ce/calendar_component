@@ -23624,15 +23624,28 @@ function parseJSON(value, fallback2) {
     return fallback2;
   }
 }
-function pluginsForView(view2) {
+function getAllPluginsFromOptions(options) {
   const set2 = /* @__PURE__ */ new Set([index$3]);
-  if (typeof view2 === "string") {
-    if (view2.startsWith("timeGrid")) set2.add(TimeGrid);
-    if (view2.startsWith("dayGrid")) set2.add(index$4);
-    if (view2.startsWith("list")) set2.add(index$2);
-    if (view2.startsWith("resourceTimeGrid")) set2.add(index3);
-    if (view2.startsWith("resourceTimeline")) set2.add(index4);
-  }
+  const view2 = options.view || "timeGridWeek";
+  if (view2.startsWith("timeGrid")) set2.add(TimeGrid);
+  if (view2.startsWith("dayGrid")) set2.add(index$4);
+  if (view2.startsWith("list")) set2.add(index$2);
+  if (view2.startsWith("resourceTimeGrid")) set2.add(index3);
+  if (view2.startsWith("resourceTimeline")) set2.add(index4);
+  const headerToolbar = options.headerToolbar || {};
+  const toolbarValues = Object.values(headerToolbar).join(" ");
+  if (toolbarValues.includes("dayGridMonth") || toolbarValues.includes("dayGridWeek")) set2.add(index$4);
+  if (toolbarValues.includes("timeGridWeek") || toolbarValues.includes("timeGridDay")) set2.add(TimeGrid);
+  if (toolbarValues.includes("listWeek") || toolbarValues.includes("listMonth") || toolbarValues.includes("listDay")) set2.add(index$2);
+  if (toolbarValues.includes("resourceTimeGrid")) set2.add(index3);
+  if (toolbarValues.includes("resourceTimeline")) set2.add(index4);
+  const footerToolbar = options.footerToolbar || {};
+  const footerValues = Object.values(footerToolbar).join(" ");
+  if (footerValues.includes("dayGridMonth") || footerValues.includes("dayGridWeek")) set2.add(index$4);
+  if (footerValues.includes("timeGridWeek") || footerValues.includes("timeGridDay")) set2.add(TimeGrid);
+  if (footerValues.includes("listWeek") || footerValues.includes("listMonth") || footerValues.includes("listDay")) set2.add(index$2);
+  if (footerValues.includes("resourceTimeGrid")) set2.add(index3);
+  if (footerValues.includes("resourceTimeline")) set2.add(index4);
   if (set2.size === 1) set2.add(TimeGrid);
   return Array.from(set2);
 }
@@ -23695,7 +23708,7 @@ var LiveCalendar = {
     const rawEvents = parseJSON(this.el.dataset.events, []);
     const options = parseJSON(this.el.dataset.options, {});
     const view2 = options.view || "timeGridWeek";
-    const plugins = pluginsForView(view2);
+    const plugins = getAllPluginsFromOptions(options);
     const events2 = validateEventsForResources(rawEvents, options);
     const lv = options.lv || {};
     const onEventClickName = lv.onEventClick || "event_clicked";
