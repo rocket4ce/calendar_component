@@ -81,7 +81,6 @@ defmodule CalendarComponent.MixProject do
       source_ref: "v#{@version}",
       extras: [
         "README.md": [title: "Overview"],
-        "README_ES.md": [title: "Descripción (ES)"],
         "guides/installation.md": [title: "Installation"],
         "guides/usage.md": [title: "Usage"]
       ],
