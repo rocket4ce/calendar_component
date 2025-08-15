@@ -81,8 +81,8 @@ defmodule CalendarComponent.MixProject do
       extras: [
         "README.md": [title: "Overview"],
         "README_ES.md": [title: "Descripción (ES)"],
-  "guides/installation.md": [title: "Installation"],
-  "guides/usage.md": [title: "Usage"]
+        "guides/installation.md": [title: "Installation"],
+        "guides/usage.md": [title: "Usage"]
       ],
       groups_for_extras: [
         Guides: [
