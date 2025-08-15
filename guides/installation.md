@@ -49,9 +49,9 @@ In your Phoenix app, register the hook when creating the `LiveSocket` (make sure
 ```javascript
 import { Socket } from "phoenix"
 import { LiveSocket } from "phoenix_live_view"
+import {Hooks as calendar_hook} from "calendar_component";
 
-const Hooks = window.LiveCalendarHooks || {}
-const liveSocket = new LiveSocket("/live", Socket, { hooks: Hooks })
+const liveSocket = new LiveSocket("/live", Socket, { hooks: calendar_hook })
 liveSocket.connect()
 ```
 

@@ -93,6 +93,11 @@ Run the esbuild task to (re)compile the JS hooks and CSS output:
 mix assets.build
 ```
 
+La documentación actual menciona usar:
+```javascript
+import {Hooks as calendar_hook} from "calendar_component";
+```
+
 ## Phoenix examples
 
 ### 1) Básico: render estático con eventos

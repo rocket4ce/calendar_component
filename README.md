@@ -75,7 +75,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 ```elixir
 def deps do
 	[
-		{:calendar_component, "~> 0.1.2"}
+		{:calendar_component, "~> 0.1.1"}
 	]
 end
 ```
@@ -88,6 +88,10 @@ Run the esbuild task to (re)compile the JS hooks and CSS output:
 
 ```bash
 mix assets.build
+```
+
+```javascript
+import {Hooks as calendar_hook} from "calendar_component";
 ```
 
 ## Phoenix examples
