@@ -88,9 +88,10 @@ defmodule CalendarComponent.MixProject do
       groups_for_extras: [
         Guides: [
           "guides/installation.md",
-          "guides/usage.md"
+          "guides/usage.md",
+          "guides/static_calendar_usage.md"
         ],
-        Readme: ["README.md", "README_ES.md"]
+        Readme: ["README.md"]
       ]
     ]
   end
