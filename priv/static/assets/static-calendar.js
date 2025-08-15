@@ -10447,15 +10447,11 @@ function initStaticCalendar(element2) {
   const view2 = options.view || "dayGridMonth";
   const plugins = options.plugins || pluginsForView(view2);
   const callbacks = parseCallbacks(options);
-  const calendarOptions = {
-    target: element2,
-    plugins,
-    options: __spreadValues(__spreadValues({
-      view: view2,
-      events: events2
-    }, options), callbacks)
-  };
-  const calendar = createCalendar(calendarOptions);
+  const calendarOptions = __spreadValues(__spreadValues({
+    view: view2,
+    events: events2
+  }, options), callbacks);
+  const calendar = createCalendar(element2, plugins, calendarOptions);
   element2._calendarInstance = calendar;
   return calendar;
 }
