@@ -103,8 +103,8 @@ function to_array(value, n) {
     return Array.from(value);
   }
   const array = [];
-  for (const element5 of value) {
-    array.push(element5);
+  for (const element2 of value) {
+    array.push(element2);
     if (array.length === n) break;
   }
   return array;
@@ -930,10 +930,10 @@ function derived_safe_equal(fn) {
   signal.equals = safe_equals;
   return signal;
 }
-function destroy_derived_effects(derived6) {
-  var effects = derived6.effects;
+function destroy_derived_effects(derived3) {
+  var effects = derived3.effects;
   if (effects !== null) {
-    derived6.effects = null;
+    derived3.effects = null;
     for (var i = 0; i < effects.length; i += 1) {
       destroy_effect(
         /** @type {Effect} */
@@ -943,8 +943,8 @@ function destroy_derived_effects(derived6) {
   }
 }
 var stack = [];
-function get_derived_parent_effect(derived6) {
-  var parent = derived6.parent;
+function get_derived_parent_effect(derived3) {
+  var parent = derived3.parent;
   while (parent !== null) {
     if ((parent.f & DERIVED) === 0) {
       return (
@@ -956,20 +956,20 @@ function get_derived_parent_effect(derived6) {
   }
   return null;
 }
-function execute_derived(derived6) {
+function execute_derived(derived3) {
   var value;
   var prev_active_effect = active_effect;
-  set_active_effect(get_derived_parent_effect(derived6));
+  set_active_effect(get_derived_parent_effect(derived3));
   if (dev_fallback_default) {
     let prev_inspect_effects = inspect_effects;
     set_inspect_effects(/* @__PURE__ */ new Set());
     try {
-      if (stack.includes(derived6)) {
+      if (stack.includes(derived3)) {
         derived_references_self();
       }
-      stack.push(derived6);
-      destroy_derived_effects(derived6);
-      value = update_reaction(derived6);
+      stack.push(derived3);
+      destroy_derived_effects(derived3);
+      value = update_reaction(derived3);
     } finally {
       set_active_effect(prev_active_effect);
       set_inspect_effects(prev_inspect_effects);
@@ -977,28 +977,28 @@ function execute_derived(derived6) {
     }
   } else {
     try {
-      destroy_derived_effects(derived6);
-      value = update_reaction(derived6);
+      destroy_derived_effects(derived3);
+      value = update_reaction(derived3);
     } finally {
       set_active_effect(prev_active_effect);
     }
   }
   return value;
 }
-function update_derived(derived6) {
-  var value = execute_derived(derived6);
-  if (!derived6.equals(value)) {
-    derived6.v = value;
-    derived6.wv = increment_write_version();
+function update_derived(derived3) {
+  var value = execute_derived(derived3);
+  if (!derived3.equals(value)) {
+    derived3.v = value;
+    derived3.wv = increment_write_version();
   }
   if (is_destroying_effect) {
     return;
   }
   if (batch_deriveds !== null) {
-    batch_deriveds.set(derived6, derived6.v);
+    batch_deriveds.set(derived3, derived3.v);
   } else {
-    var status = (skip_reaction || (derived6.f & UNOWNED) !== 0) && derived6.deps !== null ? MAYBE_DIRTY : CLEAN;
-    set_signal_status(derived6, status);
+    var status = (skip_reaction || (derived3.f & UNOWNED) !== 0) && derived3.deps !== null ? MAYBE_DIRTY : CLEAN;
+    set_signal_status(derived3, status);
   }
 }
 
@@ -1060,14 +1060,14 @@ var batch_deriveds = null;
 var effect_pending_updates = /* @__PURE__ */ new Set();
 var tasks = [];
 function dequeue() {
-  const task4 = (
+  const task2 = (
     /** @type {() => void} */
     tasks.shift()
   );
   if (tasks.length > 0) {
     queueMicrotask(dequeue);
   }
-  task4();
+  task2();
 }
 var queued_root_effects = [];
 var last_scheduled_effect = null;
@@ -1243,9 +1243,9 @@ var _Batch = class _Batch {
   deactivate() {
     current_batch = null;
     previous_batch = null;
-    for (const update5 of effect_pending_updates) {
-      effect_pending_updates.delete(update5);
-      update5();
+    for (const update2 of effect_pending_updates) {
+      effect_pending_updates.delete(update2);
+      update2();
       if (current_batch !== null) {
         break;
       }
@@ -1313,11 +1313,11 @@ var _Batch = class _Batch {
     return current_batch;
   }
   /** @param {() => void} task */
-  static enqueue(task4) {
+  static enqueue(task2) {
     if (tasks.length === 0) {
       queueMicrotask(dequeue);
     }
-    tasks.unshift(task4);
+    tasks.unshift(task2);
   }
 };
 _previous = new WeakMap();
@@ -1443,17 +1443,17 @@ function flush_effects() {
         if (dev_fallback_default) {
           var updates = /* @__PURE__ */ new Map();
           for (const source2 of batch.current.keys()) {
-            for (const [stack2, update5] of (_a3 = source2.updated) != null ? _a3 : []) {
+            for (const [stack2, update2] of (_a3 = source2.updated) != null ? _a3 : []) {
               var entry = updates.get(stack2);
               if (!entry) {
-                entry = { error: update5.error, count: 0 };
+                entry = { error: update2.error, count: 0 };
                 updates.set(stack2, entry);
               }
-              entry.count += update5.count;
+              entry.count += update2.count;
             }
           }
-          for (const update5 of updates.values()) {
-            console.error(update5.error);
+          for (const update2 of updates.values()) {
+            console.error(update2.error);
           }
         }
         infinite_loop_guard();
@@ -1970,8 +1970,8 @@ function init_array_prototype_warnings() {
   }
   const { indexOf, lastIndexOf, includes } = array_prototype2;
   array_prototype2.indexOf = function(item, from_index) {
-    const index5 = indexOf.call(this, item, from_index);
-    if (index5 === -1) {
+    const index3 = indexOf.call(this, item, from_index);
+    if (index3 === -1) {
       for (let i = from_index != null ? from_index : 0; i < this.length; i += 1) {
         if (get_proxied_value(this[i]) === item) {
           state_proxy_equality_mismatch("array.indexOf(...)");
@@ -1979,11 +1979,11 @@ function init_array_prototype_warnings() {
         }
       }
     }
-    return index5;
+    return index3;
   };
   array_prototype2.lastIndexOf = function(item, from_index) {
-    const index5 = lastIndexOf.call(this, item, from_index != null ? from_index : this.length - 1);
-    if (index5 === -1) {
+    const index3 = lastIndexOf.call(this, item, from_index != null ? from_index : this.length - 1);
+    if (index3 === -1) {
       for (let i = 0; i <= (from_index != null ? from_index : this.length - 1); i += 1) {
         if (get_proxied_value(this[i]) === item) {
           state_proxy_equality_mismatch("array.lastIndexOf(...)");
@@ -1991,7 +1991,7 @@ function init_array_prototype_warnings() {
         }
       }
     }
-    return index5;
+    return index3;
   };
   array_prototype2.includes = function(item, from_index) {
     const has = includes.call(this, item, from_index);
@@ -2067,10 +2067,10 @@ function child(node, is_text) {
   if (child2 === null) {
     child2 = hydrate_node.appendChild(create_text());
   } else if (is_text && child2.nodeType !== TEXT_NODE) {
-    var text5 = create_text();
-    child2 == null ? void 0 : child2.before(text5);
-    set_hydrate_node(text5);
-    return text5;
+    var text2 = create_text();
+    child2 == null ? void 0 : child2.before(text2);
+    set_hydrate_node(text2);
+    return text2;
   }
   set_hydrate_node(child2);
   return child2;
@@ -2089,10 +2089,10 @@ function first_child(fragment, is_text) {
     return first;
   }
   if (is_text && ((_a3 = hydrate_node) == null ? void 0 : _a3.nodeType) !== TEXT_NODE) {
-    var text5 = create_text();
-    (_b3 = hydrate_node) == null ? void 0 : _b3.before(text5);
-    set_hydrate_node(text5);
-    return text5;
+    var text2 = create_text();
+    (_b3 = hydrate_node) == null ? void 0 : _b3.before(text2);
+    set_hydrate_node(text2);
+    return text2;
   }
   return hydrate_node;
 }
@@ -2108,14 +2108,14 @@ function sibling(node, count = 1, is_text = false) {
     return next_sibling;
   }
   if (is_text && (next_sibling == null ? void 0 : next_sibling.nodeType) !== TEXT_NODE) {
-    var text5 = create_text();
+    var text2 = create_text();
     if (next_sibling === null) {
-      last_sibling == null ? void 0 : last_sibling.after(text5);
+      last_sibling == null ? void 0 : last_sibling.after(text2);
     } else {
-      next_sibling.before(text5);
+      next_sibling.before(text2);
     }
-    set_hydrate_node(text5);
-    return text5;
+    set_hydrate_node(text2);
+    return text2;
   }
   set_hydrate_node(next_sibling);
   return (
@@ -2220,11 +2220,11 @@ function create_effect(type, fn, sync, push2 = true) {
       push_effect(effect2, parent);
     }
     if (active_reaction !== null && (active_reaction.f & DERIVED) !== 0 && (type & ROOT_EFFECT) === 0) {
-      var derived6 = (
+      var derived3 = (
         /** @type {Derived} */
         active_reaction
       );
-      ((_a3 = derived6.effects) != null ? _a3 : derived6.effects = []).push(effect2);
+      ((_a3 = derived3.effects) != null ? _a3 : derived3.effects = []).push(effect2);
     }
   }
   return effect2;
@@ -2571,22 +2571,22 @@ function is_dirty(reaction) {
       var is_unowned_connected = is_unowned && active_effect !== null && !skip_reaction;
       var length = dependencies.length;
       if ((is_disconnected || is_unowned_connected) && (active_effect === null || (active_effect.f & DESTROYED) === 0)) {
-        var derived6 = (
+        var derived3 = (
           /** @type {Derived} */
           reaction
         );
-        var parent = derived6.parent;
+        var parent = derived3.parent;
         for (i = 0; i < length; i++) {
           dependency = dependencies[i];
-          if (is_disconnected || !((_a3 = dependency == null ? void 0 : dependency.reactions) == null ? void 0 : _a3.includes(derived6))) {
-            ((_b3 = dependency.reactions) != null ? _b3 : dependency.reactions = []).push(derived6);
+          if (is_disconnected || !((_a3 = dependency == null ? void 0 : dependency.reactions) == null ? void 0 : _a3.includes(derived3))) {
+            ((_b3 = dependency.reactions) != null ? _b3 : dependency.reactions = []).push(derived3);
           }
         }
         if (is_disconnected) {
-          derived6.f ^= DISCONNECTED;
+          derived3.f ^= DISCONNECTED;
         }
         if (is_unowned_connected && parent !== null && (parent.f & UNOWNED) === 0) {
-          derived6.f ^= UNOWNED;
+          derived3.f ^= UNOWNED;
         }
       }
       for (i = 0; i < length; i++) {
@@ -2740,13 +2740,13 @@ function update_reaction(reaction) {
 function remove_reaction(signal, dependency) {
   let reactions = dependency.reactions;
   if (reactions !== null) {
-    var index5 = index_of.call(reactions, signal);
-    if (index5 !== -1) {
+    var index3 = index_of.call(reactions, signal);
+    if (index3 !== -1) {
       var new_length = reactions.length - 1;
       if (new_length === 0) {
         reactions = dependency.reactions = null;
       } else {
-        reactions[index5] = reactions[new_length];
+        reactions[index3] = reactions[new_length];
         reactions.pop();
       }
     }
@@ -2866,13 +2866,13 @@ function get(signal) {
   } else if (is_derived && /** @type {Derived} */
   signal.deps === null && /** @type {Derived} */
   signal.effects === null) {
-    var derived6 = (
+    var derived3 = (
       /** @type {Derived} */
       signal
     );
-    var parent = derived6.parent;
+    var parent = derived3.parent;
     if (parent !== null && (parent.f & UNOWNED) === 0) {
-      derived6.f ^= UNOWNED;
+      derived3.f ^= UNOWNED;
     }
   }
   if (dev_fallback_default) {
@@ -2913,23 +2913,23 @@ function get(signal) {
       return old_values.get(signal);
     }
     if (is_derived) {
-      derived6 = /** @type {Derived} */
+      derived3 = /** @type {Derived} */
       signal;
-      var value = derived6.v;
-      if ((derived6.f & CLEAN) === 0 && derived6.reactions !== null || depends_on_old_values(derived6)) {
-        value = execute_derived(derived6);
+      var value = derived3.v;
+      if ((derived3.f & CLEAN) === 0 && derived3.reactions !== null || depends_on_old_values(derived3)) {
+        value = execute_derived(derived3);
       }
-      old_values.set(derived6, value);
+      old_values.set(derived3, value);
       return value;
     }
   } else if (is_derived) {
-    derived6 = /** @type {Derived} */
+    derived3 = /** @type {Derived} */
     signal;
-    if ((_d = batch_deriveds) == null ? void 0 : _d.has(derived6)) {
-      return batch_deriveds.get(derived6);
+    if ((_d = batch_deriveds) == null ? void 0 : _d.has(derived3)) {
+      return batch_deriveds.get(derived3);
     }
-    if (is_dirty(derived6)) {
-      update_derived(derived6);
+    if (is_dirty(derived3)) {
+      update_derived(derived3);
     }
   }
   if ((signal.f & ERROR_VALUE) !== 0) {
@@ -2937,10 +2937,10 @@ function get(signal) {
   }
   return signal.v;
 }
-function depends_on_old_values(derived6) {
-  if (derived6.v === UNINITIALIZED) return true;
-  if (derived6.deps === null) return false;
-  for (const dep of derived6.deps) {
+function depends_on_old_values(derived3) {
+  if (derived3.v === UNINITIALIZED) return true;
+  if (derived3.deps === null) return false;
+  for (const dep of derived3.deps) {
     if (old_values.has(dep)) {
       return true;
     }
@@ -3287,6 +3287,20 @@ function from_html(content, flags2) {
     return clone;
   };
 }
+function text(value = "") {
+  if (!hydrating) {
+    var t = create_text(value + "");
+    assign_nodes(t, t);
+    return t;
+  }
+  var node = hydrate_node;
+  if (node.nodeType !== TEXT_NODE) {
+    node.before(node = create_text());
+    set_hydrate_node(node);
+  }
+  assign_nodes(node, node);
+  return node;
+}
 function comment() {
   if (hydrating) {
     assign_nodes(hydrate_node, null);
@@ -3316,12 +3330,12 @@ function append(anchor, dom) {
 
 // node_modules/svelte/src/internal/client/render.js
 var should_intro = true;
-function set_text(text5, value) {
+function set_text(text2, value) {
   var _a3;
   var str = value == null ? "" : typeof value === "object" ? value + "" : value;
-  if (str !== ((_a3 = text5.__t) != null ? _a3 : text5.__t = text5.nodeValue)) {
-    text5.__t = str;
-    text5.nodeValue = str + "";
+  if (str !== ((_a3 = text2.__t) != null ? _a3 : text2.__t = text2.nodeValue)) {
+    text2.__t = str;
+    text2.nodeValue = str + "";
   }
 }
 function mount(component2, options) {
@@ -3353,7 +3367,7 @@ function hydrate(component2, options) {
       anchor
     );
     hydrate_next();
-    const instance4 = _mount(component2, __spreadProps(__spreadValues({}, options), { anchor }));
+    const instance = _mount(component2, __spreadProps(__spreadValues({}, options), { anchor }));
     if (hydrate_node === null || hydrate_node.nodeType !== COMMENT_NODE || /** @type {Comment} */
     hydrate_node.data !== HYDRATION_END) {
       hydration_mismatch();
@@ -3362,7 +3376,7 @@ function hydrate(component2, options) {
     set_hydrating(false);
     return (
       /**  @type {Exports} */
-      instance4
+      instance
     );
   } catch (error) {
     if (error instanceof Error && error.message.split("\n").some((line) => line.startsWith("https://svelte.dev/e/"))) {
@@ -3928,7 +3942,7 @@ function reconcile(each_effect, array, state2, offscreen_items, anchor, render_f
   }
   offscreen_items.clear();
 }
-function update_item(item, value, index5, type) {
+function update_item(item, value, index3, type) {
   if ((type & EACH_ITEM_REACTIVE) !== 0) {
     internal_set(item.v, value);
   }
@@ -3936,21 +3950,21 @@ function update_item(item, value, index5, type) {
     internal_set(
       /** @type {Value<number>} */
       item.i,
-      index5
+      index3
     );
   } else {
-    item.i = index5;
+    item.i = index3;
   }
 }
-function create_item(anchor, state2, prev, next2, value, key2, index5, render_fn, flags2, get_collection, deferred2) {
+function create_item(anchor, state2, prev, next2, value, key2, index3, render_fn, flags2, get_collection, deferred2) {
   var previous_each_item = current_each_item;
   var reactive = (flags2 & EACH_ITEM_REACTIVE) !== 0;
   var mutable = (flags2 & EACH_ITEM_IMMUTABLE) === 0;
   var v = reactive ? mutable ? mutable_source(value, false, false) : source(value) : value;
-  var i = (flags2 & EACH_INDEX_REACTIVE) === 0 ? index5 : source(index5);
+  var i = (flags2 & EACH_INDEX_REACTIVE) === 0 ? index3 : source(index3);
   if (dev_fallback_default && reactive) {
     v.trace = () => {
-      var collection_index = typeof i === "number" ? index5 : i.v;
+      var collection_index = typeof i === "number" ? index3 : i.v;
       get_collection()[collection_index];
     };
   }
@@ -4342,47 +4356,47 @@ var CLASS = Symbol("class");
 var STYLE = Symbol("style");
 var IS_CUSTOM_ELEMENT = Symbol("is custom element");
 var IS_HTML = Symbol("is html");
-function set_attribute2(element5, attribute, value, skip_warning) {
-  var attributes = get_attributes(element5);
+function set_attribute2(element2, attribute, value, skip_warning) {
+  var attributes = get_attributes(element2);
   if (hydrating) {
-    attributes[attribute] = element5.getAttribute(attribute);
-    if (attribute === "src" || attribute === "srcset" || attribute === "href" && element5.nodeName === "LINK") {
+    attributes[attribute] = element2.getAttribute(attribute);
+    if (attribute === "src" || attribute === "srcset" || attribute === "href" && element2.nodeName === "LINK") {
       if (!skip_warning) {
-        check_src_in_dev_hydration(element5, attribute, value != null ? value : "");
+        check_src_in_dev_hydration(element2, attribute, value != null ? value : "");
       }
       return;
     }
   }
   if (attributes[attribute] === (attributes[attribute] = value)) return;
   if (attribute === "loading") {
-    element5[LOADING_ATTR_SYMBOL] = value;
+    element2[LOADING_ATTR_SYMBOL] = value;
   }
   if (value == null) {
-    element5.removeAttribute(attribute);
-  } else if (typeof value !== "string" && get_setters(element5).includes(attribute)) {
-    element5[attribute] = value;
+    element2.removeAttribute(attribute);
+  } else if (typeof value !== "string" && get_setters(element2).includes(attribute)) {
+    element2[attribute] = value;
   } else {
-    element5.setAttribute(attribute, value);
+    element2.setAttribute(attribute, value);
   }
 }
-function get_attributes(element5) {
+function get_attributes(element2) {
   var _a3;
   return (
     /** @type {Record<string | symbol, unknown>} **/
     // @ts-expect-error
-    (_a3 = element5.__attributes) != null ? _a3 : element5.__attributes = {
-      [IS_CUSTOM_ELEMENT]: element5.nodeName.includes("-"),
-      [IS_HTML]: element5.namespaceURI === NAMESPACE_HTML
+    (_a3 = element2.__attributes) != null ? _a3 : element2.__attributes = {
+      [IS_CUSTOM_ELEMENT]: element2.nodeName.includes("-"),
+      [IS_HTML]: element2.namespaceURI === NAMESPACE_HTML
     }
   );
 }
 var setters_cache = /* @__PURE__ */ new Map();
-function get_setters(element5) {
-  var setters = setters_cache.get(element5.nodeName);
+function get_setters(element2) {
+  var setters = setters_cache.get(element2.nodeName);
   if (setters) return setters;
-  setters_cache.set(element5.nodeName, setters = []);
+  setters_cache.set(element2.nodeName, setters = []);
   var descriptors;
-  var proto = element5;
+  var proto = element2;
   var element_proto = Element.prototype;
   while (element_proto !== proto) {
     descriptors = get_descriptors(proto);
@@ -4395,14 +4409,14 @@ function get_setters(element5) {
   }
   return setters;
 }
-function check_src_in_dev_hydration(element5, attribute, value) {
+function check_src_in_dev_hydration(element2, attribute, value) {
   var _a3;
   if (!dev_fallback_default) return;
-  if (attribute === "srcset" && srcset_url_equal(element5, value)) return;
-  if (src_url_equal((_a3 = element5.getAttribute(attribute)) != null ? _a3 : "", value)) return;
+  if (attribute === "srcset" && srcset_url_equal(element2, value)) return;
+  if (src_url_equal((_a3 = element2.getAttribute(attribute)) != null ? _a3 : "", value)) return;
   hydration_attribute_changed(
     attribute,
-    element5.outerHTML.replace(element5.innerHTML, element5.innerHTML && "..."),
+    element2.outerHTML.replace(element2.innerHTML, element2.innerHTML && "..."),
     String(value)
   );
 }
@@ -4413,8 +4427,8 @@ function src_url_equal(element_src, url) {
 function split_srcset(srcset) {
   return srcset.split(",").map((src) => src.trim().split(" ").filter(Boolean));
 }
-function srcset_url_equal(element5, srcset) {
-  var element_urls = split_srcset(element5.srcset);
+function srcset_url_equal(element2, srcset) {
+  var element_urls = split_srcset(element2.srcset);
   var urls = split_srcset(srcset);
   return urls.length === element_urls.length && urls.every(
     ([url, width], i) => width === element_urls[i][1] && // We need to test both ways because Vite will create an a full URL with
@@ -4441,7 +4455,7 @@ function bind_prop(props, prop2, value) {
 function is_bound_this(bound_value, element_or_component) {
   return bound_value === element_or_component || (bound_value == null ? void 0 : bound_value[STATE_SYMBOL]) === element_or_component;
 }
-function bind_this(element_or_component = {}, update5, get_value, get_parts) {
+function bind_this(element_or_component = {}, update2, get_value, get_parts) {
   effect(() => {
     var old_parts;
     var parts;
@@ -4450,9 +4464,9 @@ function bind_this(element_or_component = {}, update5, get_value, get_parts) {
       parts = (get_parts == null ? void 0 : get_parts()) || [];
       untrack(() => {
         if (element_or_component !== get_value(...parts)) {
-          update5(element_or_component, ...parts);
+          update2(element_or_component, ...parts);
           if (old_parts && is_bound_this(get_value(...old_parts), element_or_component)) {
-            update5(null, ...old_parts);
+            update2(null, ...old_parts);
           }
         }
       });
@@ -4460,7 +4474,7 @@ function bind_this(element_or_component = {}, update5, get_value, get_parts) {
     return () => {
       queue_micro_task(() => {
         if (parts && is_bound_this(get_value(...parts), element_or_component)) {
-          update5(null, ...parts);
+          update2(null, ...parts);
         }
       });
     };
@@ -4528,15 +4542,15 @@ function observe_all(context, props) {
 }
 
 // node_modules/svelte/src/store/utils.js
-function subscribe_to_store(store, run6, invalidate) {
+function subscribe_to_store(store, run3, invalidate) {
   if (store == null) {
-    run6(void 0);
+    run3(void 0);
     if (invalidate) invalidate(void 0);
     return noop;
   }
   const unsub = untrack(
     () => store.subscribe(
-      run6,
+      run3,
       // @ts-expect-error
       invalidate
     )
@@ -4572,19 +4586,19 @@ function writable(value, start = noop) {
       }
     }
   }
-  function update5(fn) {
+  function update2(fn) {
     set2(fn(
       /** @type {T} */
       value
     ));
   }
-  function subscribe4(run6, invalidate = noop) {
-    const subscriber = [run6, invalidate];
+  function subscribe(run3, invalidate = noop) {
+    const subscriber = [run3, invalidate];
     subscribers.add(subscriber);
     if (subscribers.size === 1) {
-      stop = start(set2, update5) || noop;
+      stop = start(set2, update2) || noop;
     }
-    run6(
+    run3(
       /** @type {T} */
       value
     );
@@ -4596,7 +4610,7 @@ function writable(value, start = noop) {
       }
     };
   }
-  return { set: set2, update: update5, subscribe: subscribe4 };
+  return { set: set2, update: update2, subscribe };
 }
 function derived2(stores, fn, initial_value) {
   const single = !Array.isArray(stores);
@@ -4605,7 +4619,7 @@ function derived2(stores, fn, initial_value) {
     throw new Error("derived() expects stores as input, got a falsy value");
   }
   const auto = fn.length < 2;
-  return readable(initial_value, (set2, update5) => {
+  return readable(initial_value, (set2, update2) => {
     let started = false;
     const values = [];
     let pending2 = 0;
@@ -4615,7 +4629,7 @@ function derived2(stores, fn, initial_value) {
         return;
       }
       cleanup();
-      const result = fn(single ? values[0] : values, set2, update5);
+      const result = fn(single ? values[0] : values, set2, update2);
       if (auto) {
         set2(result);
       } else {
@@ -5017,7 +5031,7 @@ if (typeof HTMLElement === "function") {
       return __async(this, null, function* () {
         this.$$cn = true;
         if (!this.$$c) {
-          let create_slot2 = function(name) {
+          let create_slot = function(name) {
             return (anchor) => {
               const slot2 = document.createElement("slot");
               if (name !== "default") slot2.name = name;
@@ -5033,10 +5047,10 @@ if (typeof HTMLElement === "function") {
           for (const name of this.$$s) {
             if (name in existing_slots) {
               if (name === "default" && !this.$$d.children) {
-                this.$$d.children = create_slot2(name);
+                this.$$d.children = create_slot(name);
                 $$slots.default = true;
               } else {
-                $$slots[name] = create_slot2(name);
+                $$slots[name] = create_slot(name);
               }
             }
           }
@@ -5099,12 +5113,12 @@ if (typeof HTMLElement === "function") {
      * @param {string} _oldValue
      * @param {string} newValue
      */
-    attributeChangedCallback(attr5, _oldValue, newValue) {
+    attributeChangedCallback(attr2, _oldValue, newValue) {
       var _a3;
       if (this.$$r) return;
-      attr5 = this.$$g_p(attr5);
-      this.$$d[attr5] = get_custom_element_value(attr5, newValue, this.$$p_d, "toProp");
-      (_a3 = this.$$c) == null ? void 0 : _a3.$set({ [attr5]: this.$$d[attr5] });
+      attr2 = this.$$g_p(attr2);
+      this.$$d[attr2] = get_custom_element_value(attr2, newValue, this.$$p_d, "toProp");
+      (_a3 = this.$$c) == null ? void 0 : _a3.$set({ [attr2]: this.$$d[attr2] });
     }
     disconnectedCallback() {
       this.$$cn = false;
@@ -5159,9 +5173,9 @@ function get_custom_element_value(prop2, value, props_definition, transform) {
     }
   }
 }
-function get_custom_elements_slots(element5) {
+function get_custom_elements_slots(element2) {
   const result = {};
-  element5.childNodes.forEach((node) => {
+  element2.childNodes.forEach((node) => {
     result[
       /** @type {Element} node */
       node.slot || "default"
@@ -5257,8 +5271,8 @@ var _SvelteSet = class _SvelteSet extends Set {
       tag(__privateGet(this, _size), "SvelteSet.size");
     }
     if (value) {
-      for (var element5 of value) {
-        super.add(element5);
+      for (var element2 of value) {
+        super.add(element2);
       }
       __privateGet(this, _size).v = super.size;
     }
@@ -5715,6 +5729,9 @@ function entries(object) {
 function floor(value) {
   return Math.floor(value);
 }
+function ceil(value) {
+  return Math.ceil(value);
+}
 function min(...args) {
   return Math.min(...args);
 }
@@ -5783,8 +5800,8 @@ function createElement(tag2, className, content, attrs = []) {
   } else if (content.html) {
     el.innerHTML = content.html;
   }
-  for (let attr5 of attrs) {
-    el.setAttribute(...attr5);
+  for (let attr2 of attrs) {
+    el.setAttribute(...attr2);
   }
   return el;
 }
@@ -6021,12 +6038,12 @@ function prepareEventChunks$1(chunks, hiddenDays) {
   }
   return longChunks;
 }
-function repositionEvent$1(chunk, longChunks, height22) {
+function repositionEvent$1(chunk, longChunks, height2) {
   chunk.top = 0;
   if (chunk.prev) {
     chunk.top = chunk.prev.bottom + 1;
   }
-  chunk.bottom = chunk.top + height22;
+  chunk.bottom = chunk.top + height2;
   let margin = 1;
   let key2 = chunk.date.getTime();
   if (longChunks[key2]) {
@@ -6081,20 +6098,20 @@ function ghostEvent(display) {
 function pointerEvent(display) {
   return display === "pointer";
 }
-function btnTextDay(text5) {
-  return btnText(text5, "day");
+function btnTextDay(text2) {
+  return btnText(text2, "day");
 }
-function btnTextWeek(text5) {
-  return btnText(text5, "week");
+function btnTextWeek(text2) {
+  return btnText(text2, "week");
 }
-function btnTextMonth(text5) {
-  return btnText(text5, "month");
+function btnTextMonth(text2) {
+  return btnText(text2, "month");
 }
-function btnTextYear(text5) {
-  return btnText(text5, "year");
+function btnTextYear(text2) {
+  return btnText(text2, "year");
 }
-function btnText(text5, period) {
-  return __spreadProps(__spreadValues({}, text5), {
+function btnText(text2, period) {
+  return __spreadProps(__spreadValues({}, text2), {
     next: "Next " + period,
     prev: "Previous " + period
   });
@@ -6224,9 +6241,31 @@ function _getParts(source2, parts) {
   }
   return result;
 }
+function viewResources(state2) {
+  return derived2(
+    [state2.resources, state2.filterResourcesWithEvents, state2._filteredEvents, state2._activeRange],
+    ([$resources, $filterResourcesWithEvents, $_filteredEvents, $_activeRange]) => {
+      let result = $resources.filter((resource) => !getPayload(resource).hidden);
+      if ($filterResourcesWithEvents) {
+        result = $resources.filter((resource) => {
+          for (let event2 of $_filteredEvents) {
+            if (event2.display !== "background" && event2.resourceIds.includes(resource.id) && event2.start < $_activeRange.end && event2.end > $_activeRange.start) {
+              return true;
+            }
+          }
+          return false;
+        });
+      }
+      if (!result.length) {
+        result = createResources([{}]);
+      }
+      return result;
+    }
+  );
+}
 function createTimes(date, $slotDuration, $slotLabelInterval, $_slotTimeLimits, $_intlSlotLabel) {
   date = cloneDate(date);
-  let times22 = [];
+  let times2 = [];
   let end = cloneDate(date);
   addDuration(date, $_slotTimeLimits.min);
   addDuration(end, $_slotTimeLimits.max);
@@ -6235,7 +6274,7 @@ function createTimes(date, $slotDuration, $slotLabelInterval, $_slotTimeLimits, 
   }
   let label2 = cloneDate(date);
   while (date < end) {
-    times22.push([
+    times2.push([
       toISOString(date),
       $_intlSlotLabel.format(date),
       date >= label2
@@ -6245,7 +6284,7 @@ function createTimes(date, $slotDuration, $slotLabelInterval, $_slotTimeLimits, 
     }
     addDuration(date, $slotDuration);
   }
-  return times22;
+  return times2;
 }
 function createSlotTimeLimits($slotMinTime, $slotMaxTime, $flexibleSlotTimeLimits, $_viewDates, $_filteredEvents) {
   let min$1 = createDuration($slotMinTime);
@@ -6883,13 +6922,13 @@ function Buttons($$anchor, $$props) {
                 {
                   var consequent_3 = ($$anchor6) => {
                     var button_3 = root_8$1();
-                    var text5 = child(button_3, true);
+                    var text2 = child(button_3, true);
                     reset(button_3);
                     template_effect(() => {
                       var _a3, _b3;
                       set_class(button_3, 1, `${(_a3 = ($theme(), untrack(() => $theme().button))) != null ? _a3 : ""} ec-${(_b3 = get(button)) != null ? _b3 : ""}`);
                       button_3.disabled = get(todayDisabled);
-                      set_text(text5, ($buttonText(), get(button), untrack(() => $buttonText()[get(button)])));
+                      set_text(text2, ($buttonText(), get(button), untrack(() => $buttonText()[get(button)])));
                     });
                     event("click", button_3, () => store_set(date, cloneDate(today2)));
                     append($$anchor6, button_3);
@@ -7145,7 +7184,7 @@ function Calendar($$anchor, $$props) {
   const $theme = () => store_get(theme, "$theme", $$stores);
   const $_scrollable = () => store_get(_scrollable, "$_scrollable", $$stores);
   const $_iClass = () => store_get(_iClass, "$_iClass", $$stores);
-  const $height = () => store_get(height22, "$height", $$stores);
+  const $height = () => store_get(height2, "$height", $$stores);
   const $view = () => store_get(view2, "$view", $$stores);
   let plugins = prop($$props, "plugins", 19, () => []), options = prop($$props, "options", 19, () => ({}));
   let state2 = new State(plugins(), options());
@@ -7159,7 +7198,7 @@ function Calendar($$anchor, $$props) {
     date,
     duration,
     hiddenDays,
-    height: height22,
+    height: height2,
     theme,
     view: view2
   } = state2;
@@ -7245,14 +7284,14 @@ function Calendar($$anchor, $$props) {
     store_set(date, prevDate($date(), $duration(), $hiddenDays()));
     return this;
   }
-  let View22 = user_derived($_viewComponent);
+  let View2 = user_derived($_viewComponent);
   var fragment = root$q();
   var div = first_child(fragment);
   let styles;
   var node = child(div);
   Toolbar(node, {});
   var node_1 = sibling(node, 2);
-  component(node_1, () => get(View22), ($$anchor2, View_1) => {
+  component(node_1, () => get(View2), ($$anchor2, View_1) => {
     View_1($$anchor2, {});
   });
   reset(div);
@@ -7293,10 +7332,10 @@ function days(state2) {
   return derived2([state2.date, state2.firstDay, state2.hiddenDays], ([$date, $firstDay, $hiddenDays]) => {
     let days2 = [];
     let day = cloneDate($date);
-    let max22 = 7;
-    while (day.getUTCDay() !== $firstDay && max22) {
+    let max2 = 7;
+    while (day.getUTCDay() !== $firstDay && max2) {
       subtractDay(day);
-      --max22;
+      --max2;
     }
     for (let i = 0; i < 7; ++i) {
       if (!$hiddenDays.includes(day.getUTCDay())) {
@@ -7620,7 +7659,7 @@ function Event$4($$anchor, $$props) {
     let dayEl = ancestor(get(el), 2);
     let h = height(dayEl) - height(dayEl.firstElementChild) - footHeight(dayEl);
     set(hidden, $$props.chunk.bottom > h);
-    let update5 = false;
+    let update2 = false;
     for (let date of $$props.chunk.dates) {
       let hiddenEvents = $_hiddenEvents()[date.getTime()];
       if (hiddenEvents) {
@@ -7631,11 +7670,11 @@ function Event$4($$anchor, $$props) {
           hiddenEvents.delete($$props.chunk.event);
         }
         if (size !== hiddenEvents.size) {
-          update5 = true;
+          update2 = true;
         }
       }
     }
-    if (update5) {
+    if (update2) {
       store_set(_hiddenEvents, $_hiddenEvents());
     }
   }
@@ -7870,11 +7909,11 @@ function Day$4($$anchor, $$props) {
   let moreLink = user_derived(() => {
     let moreLink2 = "";
     if (!get(disabled) && hiddenEvents.size) {
-      let text5 = "+" + hiddenEvents.size + " more";
+      let text2 = "+" + hiddenEvents.size + " more";
       if ($moreLinkContent()) {
-        moreLink2 = isFunction($moreLinkContent()) ? $moreLinkContent()({ num: hiddenEvents.size, text: text5 }) : $moreLinkContent();
+        moreLink2 = isFunction($moreLinkContent()) ? $moreLinkContent()({ num: hiddenEvents.size, text: text2 }) : $moreLinkContent();
       } else {
-        moreLink2 = text5;
+        moreLink2 = text2;
       }
     }
     return moreLink2;
@@ -9525,16 +9564,16 @@ function groupEventChunks(chunks) {
   }
 }
 function createAllDayContent(allDayContent) {
-  let text5 = "all-day";
+  let text2 = "all-day";
   let content;
   if (allDayContent) {
-    content = isFunction(allDayContent) ? allDayContent({ text: text5 }) : allDayContent;
+    content = isFunction(allDayContent) ? allDayContent({ text: text2 }) : allDayContent;
     if (typeof content === "string") {
       content = { html: content };
     }
   } else {
     content = {
-      html: text5
+      html: text2
     };
   }
   return content;
@@ -9692,11 +9731,11 @@ function Event$2($$anchor, $$props) {
     let start = ($$props.chunk.start - $$props.date) / 1e3;
     let end = ($$props.chunk.end - $$props.date) / 1e3;
     let top = (start - offset) / step * $slotHeight();
-    let height22 = (end - start) / step * $slotHeight() || $slotHeight();
+    let height2 = (end - start) / step * $slotHeight() || $slotHeight();
     let maxHeight = ($_slotTimeLimits().max.seconds - start) / step * $slotHeight();
     style["top"] = `${top}px`;
-    style["min-height"] = `${height22}px`;
-    style["height"] = `${height22}px`;
+    style["min-height"] = `${height2}px`;
+    style["height"] = `${height2}px`;
     style["max-height"] = `${maxHeight}px`;
     if (!bgEvent(get(display)) && !helperEvent(get(display)) || ghostEvent(get(display))) {
       style["z-index"] = `${$$props.chunk.column + 1}`;
@@ -10348,6 +10387,58 @@ var TimeGrid = {
   }
 };
 var root$9 = from_html(`<span></span>`);
+function Label$1($$anchor, $$props) {
+  push($$props, true);
+  const [$$stores, $$cleanup] = setup_stores();
+  const $resourceLabelContent = () => store_get(resourceLabelContent, "$resourceLabelContent", $$stores);
+  const $_intlDayHeaderAL = () => store_get(_intlDayHeaderAL, "$_intlDayHeaderAL", $$stores);
+  const $resourceLabelDidMount = () => store_get(resourceLabelDidMount, "$resourceLabelDidMount", $$stores);
+  let date = prop($$props, "date", 3, void 0), setLabel = prop($$props, "setLabel", 3, void 0);
+  let {
+    resourceLabelContent,
+    resourceLabelDidMount,
+    _intlDayHeaderAL
+  } = getContext("state");
+  let el = state(void 0);
+  let content = user_derived(() => {
+    if ($resourceLabelContent()) {
+      return isFunction($resourceLabelContent()) ? $resourceLabelContent()({
+        resource: $$props.resource,
+        date: date() ? toLocalDate(date()) : void 0
+      }) : $resourceLabelContent();
+    } else {
+      return $$props.resource.title;
+    }
+  });
+  let ariaLabel = state(void 0);
+  user_effect(() => {
+    get(content);
+    untrack(() => {
+      if (date()) {
+        set(ariaLabel, $_intlDayHeaderAL().format(date()) + ", " + get(el).innerText);
+      } else if (setLabel()) {
+        set(ariaLabel, void 0);
+        setLabel()(get(el).innerText);
+      }
+    });
+  });
+  onMount(() => {
+    if (isFunction($resourceLabelDidMount())) {
+      $resourceLabelDidMount()({
+        resource: $$props.resource,
+        date: date() ? toLocalDate(date()) : void 0,
+        el: get(el)
+      });
+    }
+  });
+  var span = root$9();
+  bind_this(span, ($$value) => set(el, $$value), () => get(el));
+  action(span, ($$node, $$action_arg) => setContent == null ? void 0 : setContent($$node, $$action_arg), () => get(content));
+  template_effect(() => set_attribute2(span, "aria-label", get(ariaLabel)));
+  append($$anchor, span);
+  pop();
+  $$cleanup();
+}
 var root_3$1 = from_html(`<div><time></time></div>`);
 var root_4$1 = from_html(`<div><!></div>`);
 var root_7 = from_html(`<div role="columnheader"><!></div>`);
@@ -10359,9648 +10450,309 @@ var root_15 = from_html(`<div><!></div>`);
 var root_9 = from_html(`<div><div><!> <div></div></div></div>`);
 var root_17 = from_html(`<div></div>`);
 var root$8 = from_html(`<div><!> <div></div></div> <!> <!>`, 1);
-var root$7 = from_html(`<span></span>`);
-var root_1$4 = from_html(`<span></span>`);
-var root_2$2 = from_html(`<button><!></button>`);
-var root$6 = from_html(`<!> <span><!></span>`, 1);
-delegate(["click"]);
-var root_1$3 = from_html(`<div role="rowheader"><!> <!></div>`);
-var root$5 = from_html(`<div><div></div> <div></div></div>`);
-var root_3 = from_html(`<div role="columnheader"><time></time></div>`);
-var root_2$1 = from_html(`<div><time></time></div> <div></div>`, 1);
-var root_4 = from_html(`<div role="columnheader"><time></time></div>`);
-var root_1$2 = from_html(`<div><!></div>`);
-var root$4 = from_html(`<div><div role="row"></div> <div></div></div>`);
-var root_1$1 = from_html(`<!> <!> <!> <!>`, 1);
-var root$3 = from_html(`<div role="cell"><div><!></div></div>`);
-delegate(["pointerdown"]);
-var root$2 = from_html(`<div role="row"></div>`);
-var root_2 = from_html(`<div></div>`);
-var root$1 = from_html(`<div><div><div></div> <!></div></div>`);
-var root_1 = from_html(`<div></div>`);
-var root = from_html(`<div><!> <div><!> <!> <!></div></div>`);
-function createCalendar(target, plugins, options) {
-  return mount(Calendar, {
-    target,
-    props: {
-      plugins,
-      options
-    }
-  });
-}
-function destroyCalendar(calendar) {
-  return unmount(calendar);
-}
-
-// node_modules/@event-calendar/resource-time-grid/node_modules/svelte/src/runtime/internal/utils.js
-function noop3() {
-}
-function run3(fn) {
-  return fn();
-}
-function blank_object() {
-  return /* @__PURE__ */ Object.create(null);
-}
-function run_all2(fns) {
-  fns.forEach(run3);
-}
-function is_function2(thing) {
-  return typeof thing === "function";
-}
-function safe_not_equal2(a, b) {
-  return a != a ? b == b : a !== b || a && typeof a === "object" || typeof a === "function";
-}
-function is_empty(obj) {
-  return Object.keys(obj).length === 0;
-}
-function subscribe(store, ...callbacks) {
-  if (store == null) {
-    for (const callback of callbacks) {
-      callback(void 0);
-    }
-    return noop3;
-  }
-  const unsub = store.subscribe(...callbacks);
-  return unsub.unsubscribe ? () => unsub.unsubscribe() : unsub;
-}
-function component_subscribe(component2, store, callback) {
-  component2.$$.on_destroy.push(subscribe(store, callback));
-}
-function action_destroyer(action_result) {
-  return action_result && is_function2(action_result.destroy) ? action_result.destroy : noop3;
-}
-
-// node_modules/@event-calendar/resource-time-grid/node_modules/svelte/src/runtime/internal/globals.js
-var globals = typeof window !== "undefined" ? window : typeof globalThis !== "undefined" ? globalThis : (
-  // @ts-ignore Node typings have this
-  global
-);
-
-// node_modules/@event-calendar/resource-time-grid/node_modules/svelte/src/runtime/internal/ResizeObserverSingleton.js
-var ResizeObserverSingleton = class _ResizeObserverSingleton {
-  /** @param {ResizeObserverOptions} options */
-  constructor(options) {
-    /**
-     * @private
-     * @readonly
-     * @type {WeakMap<Element, import('./private.js').Listener>}
-     */
-    __publicField(this, "_listeners", "WeakMap" in globals ? /* @__PURE__ */ new WeakMap() : void 0);
-    /**
-     * @private
-     * @type {ResizeObserver}
-     */
-    __publicField(this, "_observer");
-    /** @type {ResizeObserverOptions} */
-    __publicField(this, "options");
-    this.options = options;
-  }
-  /**
-   * @param {Element} element
-   * @param {import('./private.js').Listener} listener
-   * @returns {() => void}
-   */
-  observe(element5, listener) {
-    this._listeners.set(element5, listener);
-    this._getObserver().observe(element5, this.options);
-    return () => {
-      this._listeners.delete(element5);
-      this._observer.unobserve(element5);
-    };
-  }
-  /**
-   * @private
-   */
-  _getObserver() {
-    var _a3;
-    return (_a3 = this._observer) != null ? _a3 : this._observer = new ResizeObserver((entries2) => {
-      var _a4;
-      for (const entry of entries2) {
-        _ResizeObserverSingleton.entries.set(entry.target, entry);
-        (_a4 = this._listeners.get(entry.target)) == null ? void 0 : _a4(entry);
-      }
-    });
-  }
-};
-ResizeObserverSingleton.entries = "WeakMap" in globals ? /* @__PURE__ */ new WeakMap() : void 0;
-
-// node_modules/@event-calendar/resource-time-grid/node_modules/svelte/src/runtime/internal/dom.js
-var is_hydrating = false;
-function start_hydrating() {
-  is_hydrating = true;
-}
-function end_hydrating() {
-  is_hydrating = false;
-}
-function append2(target, node) {
-  target.appendChild(node);
-}
-function insert(target, node, anchor) {
-  target.insertBefore(node, anchor || null);
-}
-function detach(node) {
-  if (node.parentNode) {
-    node.parentNode.removeChild(node);
-  }
-}
-function destroy_each(iterations, detaching) {
-  for (let i = 0; i < iterations.length; i += 1) {
-    if (iterations[i]) iterations[i].d(detaching);
-  }
-}
-function element2(name) {
-  return document.createElement(name);
-}
-function text2(data) {
-  return document.createTextNode(data);
-}
-function space() {
-  return text2(" ");
-}
-function empty() {
-  return text2("");
-}
-function attr2(node, attribute, value) {
-  if (value == null) node.removeAttribute(attribute);
-  else if (node.getAttribute(attribute) !== value) node.setAttribute(attribute, value);
-}
-function children(element5) {
-  return Array.from(element5.childNodes);
-}
-function custom_event(type, detail, { bubbles = false, cancelable = false } = {}) {
-  return new CustomEvent(type, { detail, bubbles, cancelable });
-}
-function get_custom_elements_slots2(element5) {
-  const result = {};
-  element5.childNodes.forEach(
-    /** @param {Element} node */
-    (node) => {
-      result[node.slot || "default"] = true;
-    }
-  );
-  return result;
-}
-
-// node_modules/@event-calendar/resource-time-grid/node_modules/svelte/src/runtime/internal/lifecycle.js
-var current_component;
-function set_current_component(component2) {
-  current_component = component2;
-}
-function get_current_component() {
-  if (!current_component) throw new Error("Function called outside component initialization");
-  return current_component;
-}
-function onMount2(fn) {
-  get_current_component().$$.on_mount.push(fn);
-}
-function afterUpdate(fn) {
-  get_current_component().$$.after_update.push(fn);
-}
-function createEventDispatcher() {
-  const component2 = get_current_component();
-  return (type, detail, { cancelable = false } = {}) => {
-    const callbacks = component2.$$.callbacks[type];
-    if (callbacks) {
-      const event2 = custom_event(
-        /** @type {string} */
-        type,
-        detail,
-        { cancelable }
-      );
-      callbacks.slice().forEach((fn) => {
-        fn.call(component2, event2);
-      });
-      return !event2.defaultPrevented;
-    }
-    return true;
-  };
-}
-function getContext2(key2) {
-  return get_current_component().$$.context.get(key2);
-}
-
-// node_modules/@event-calendar/resource-time-grid/node_modules/svelte/src/runtime/internal/scheduler.js
-var dirty_components = [];
-var binding_callbacks = [];
-var render_callbacks = [];
-var flush_callbacks = [];
-var resolved_promise = /* @__PURE__ */ Promise.resolve();
-var update_scheduled = false;
-function schedule_update() {
-  if (!update_scheduled) {
-    update_scheduled = true;
-    resolved_promise.then(flush);
-  }
-}
-function add_render_callback(fn) {
-  render_callbacks.push(fn);
-}
-var seen_callbacks = /* @__PURE__ */ new Set();
-var flushidx = 0;
-function flush() {
-  if (flushidx !== 0) {
-    return;
-  }
-  const saved_component = current_component;
-  do {
-    try {
-      while (flushidx < dirty_components.length) {
-        const component2 = dirty_components[flushidx];
-        flushidx++;
-        set_current_component(component2);
-        update2(component2.$$);
-      }
-    } catch (e) {
-      dirty_components.length = 0;
-      flushidx = 0;
-      throw e;
-    }
-    set_current_component(null);
-    dirty_components.length = 0;
-    flushidx = 0;
-    while (binding_callbacks.length) binding_callbacks.pop()();
-    for (let i = 0; i < render_callbacks.length; i += 1) {
-      const callback = render_callbacks[i];
-      if (!seen_callbacks.has(callback)) {
-        seen_callbacks.add(callback);
-        callback();
-      }
-    }
-    render_callbacks.length = 0;
-  } while (dirty_components.length);
-  while (flush_callbacks.length) {
-    flush_callbacks.pop()();
-  }
-  update_scheduled = false;
-  seen_callbacks.clear();
-  set_current_component(saved_component);
-}
-function update2($$) {
-  if ($$.fragment !== null) {
-    $$.update();
-    run_all2($$.before_update);
-    const dirty = $$.dirty;
-    $$.dirty = [-1];
-    $$.fragment && $$.fragment.p($$.ctx, dirty);
-    $$.after_update.forEach(add_render_callback);
-  }
-}
-function flush_render_callbacks(fns) {
-  const filtered = [];
-  const targets = [];
-  render_callbacks.forEach((c) => fns.indexOf(c) === -1 ? filtered.push(c) : targets.push(c));
-  targets.forEach((c) => c());
-  render_callbacks = filtered;
-}
-
-// node_modules/@event-calendar/resource-time-grid/node_modules/svelte/src/runtime/internal/transitions.js
-var outroing = /* @__PURE__ */ new Set();
-var outros;
-function group_outros() {
-  outros = {
-    r: 0,
-    c: [],
-    p: outros
-    // parent group
-  };
-}
-function check_outros() {
-  if (!outros.r) {
-    run_all2(outros.c);
-  }
-  outros = outros.p;
-}
-function transition_in(block2, local) {
-  if (block2 && block2.i) {
-    outroing.delete(block2);
-    block2.i(local);
-  }
-}
-function transition_out(block2, local, detach4, callback) {
-  if (block2 && block2.o) {
-    if (outroing.has(block2)) return;
-    outroing.add(block2);
-    outros.c.push(() => {
-      outroing.delete(block2);
-      if (callback) {
-        if (detach4) block2.d(1);
-        callback();
-      }
-    });
-    block2.o(local);
-  } else if (callback) {
-    callback();
-  }
-}
-
-// node_modules/@event-calendar/resource-time-grid/node_modules/svelte/src/runtime/internal/each.js
-function ensure_array_like(array_like_or_iterator) {
-  return (array_like_or_iterator == null ? void 0 : array_like_or_iterator.length) !== void 0 ? array_like_or_iterator : Array.from(array_like_or_iterator);
-}
-
-// node_modules/@event-calendar/resource-time-grid/node_modules/svelte/src/shared/boolean_attributes.js
-var _boolean_attributes = (
-  /** @type {const} */
-  [
-    "allowfullscreen",
-    "allowpaymentrequest",
-    "async",
-    "autofocus",
-    "autoplay",
-    "checked",
-    "controls",
-    "default",
-    "defer",
-    "disabled",
-    "formnovalidate",
-    "hidden",
-    "inert",
-    "ismap",
-    "loop",
-    "multiple",
-    "muted",
-    "nomodule",
-    "novalidate",
-    "open",
-    "playsinline",
-    "readonly",
-    "required",
-    "reversed",
-    "selected"
-  ]
-);
-var boolean_attributes = /* @__PURE__ */ new Set([..._boolean_attributes]);
-
-// node_modules/@event-calendar/resource-time-grid/node_modules/svelte/src/runtime/internal/Component.js
-function create_component(block2) {
-  block2 && block2.c();
-}
-function mount_component(component2, target, anchor) {
-  const { fragment, after_update } = component2.$$;
-  fragment && fragment.m(target, anchor);
-  add_render_callback(() => {
-    const new_on_destroy = component2.$$.on_mount.map(run3).filter(is_function2);
-    if (component2.$$.on_destroy) {
-      component2.$$.on_destroy.push(...new_on_destroy);
-    } else {
-      run_all2(new_on_destroy);
-    }
-    component2.$$.on_mount = [];
-  });
-  after_update.forEach(add_render_callback);
-}
-function destroy_component(component2, detaching) {
-  const $$ = component2.$$;
-  if ($$.fragment !== null) {
-    flush_render_callbacks($$.after_update);
-    run_all2($$.on_destroy);
-    $$.fragment && $$.fragment.d(detaching);
-    $$.on_destroy = $$.fragment = null;
-    $$.ctx = [];
-  }
-}
-function make_dirty(component2, i) {
-  if (component2.$$.dirty[0] === -1) {
-    dirty_components.push(component2);
-    schedule_update();
-    component2.$$.dirty.fill(0);
-  }
-  component2.$$.dirty[i / 31 | 0] |= 1 << i % 31;
-}
-function init2(component2, options, instance4, create_fragment5, not_equal2, props, append_styles3 = null, dirty = [-1]) {
-  const parent_component = current_component;
-  set_current_component(component2);
-  const $$ = component2.$$ = {
-    fragment: null,
-    ctx: [],
-    // state
-    props,
-    update: noop3,
-    not_equal: not_equal2,
-    bound: blank_object(),
-    // lifecycle
-    on_mount: [],
-    on_destroy: [],
-    on_disconnect: [],
-    before_update: [],
-    after_update: [],
-    context: new Map(options.context || (parent_component ? parent_component.$$.context : [])),
-    // everything else
-    callbacks: blank_object(),
-    dirty,
-    skip_bound: false,
-    root: options.target || parent_component.$$.root
-  };
-  append_styles3 && append_styles3($$.root);
-  let ready = false;
-  $$.ctx = instance4 ? instance4(component2, options.props || {}, (i, ret, ...rest) => {
-    const value = rest.length ? rest[0] : ret;
-    if ($$.ctx && not_equal2($$.ctx[i], $$.ctx[i] = value)) {
-      if (!$$.skip_bound && $$.bound[i]) $$.bound[i](value);
-      if (ready) make_dirty(component2, i);
-    }
-    return ret;
-  }) : [];
-  $$.update();
-  ready = true;
-  run_all2($$.before_update);
-  $$.fragment = create_fragment5 ? create_fragment5($$.ctx) : false;
-  if (options.target) {
-    if (options.hydrate) {
-      start_hydrating();
-      const nodes = children(options.target);
-      $$.fragment && $$.fragment.l(nodes);
-      nodes.forEach(detach);
-    } else {
-      $$.fragment && $$.fragment.c();
-    }
-    if (options.intro) transition_in(component2.$$.fragment);
-    mount_component(component2, options.target, options.anchor);
-    end_hydrating();
-    flush();
-  }
-  set_current_component(parent_component);
-}
-var SvelteElement2;
-if (typeof HTMLElement === "function") {
-  SvelteElement2 = class extends HTMLElement {
-    constructor($$componentCtor, $$slots, use_shadow_dom) {
-      super();
-      /** The Svelte component constructor */
-      __publicField(this, "$$ctor");
-      /** Slots */
-      __publicField(this, "$$s");
-      /** The Svelte component instance */
-      __publicField(this, "$$c");
-      /** Whether or not the custom element is connected */
-      __publicField(this, "$$cn", false);
-      /** Component props data */
-      __publicField(this, "$$d", {});
-      /** `true` if currently in the process of reflecting component props back to attributes */
-      __publicField(this, "$$r", false);
-      /** @type {Record<string, CustomElementPropDefinition>} Props definition (name, reflected, type etc) */
-      __publicField(this, "$$p_d", {});
-      /** @type {Record<string, Function[]>} Event listeners */
-      __publicField(this, "$$l", {});
-      /** @type {Map<Function, Function>} Event listener unsubscribe functions */
-      __publicField(this, "$$l_u", /* @__PURE__ */ new Map());
-      this.$$ctor = $$componentCtor;
-      this.$$s = $$slots;
-      if (use_shadow_dom) {
-        this.attachShadow({ mode: "open" });
-      }
-    }
-    addEventListener(type, listener, options) {
-      this.$$l[type] = this.$$l[type] || [];
-      this.$$l[type].push(listener);
-      if (this.$$c) {
-        const unsub = this.$$c.$on(type, listener);
-        this.$$l_u.set(listener, unsub);
-      }
-      super.addEventListener(type, listener, options);
-    }
-    removeEventListener(type, listener, options) {
-      super.removeEventListener(type, listener, options);
-      if (this.$$c) {
-        const unsub = this.$$l_u.get(listener);
-        if (unsub) {
-          unsub();
-          this.$$l_u.delete(listener);
-        }
-      }
-      if (this.$$l[type]) {
-        const idx = this.$$l[type].indexOf(listener);
-        if (idx >= 0) {
-          this.$$l[type].splice(idx, 1);
-        }
-      }
-    }
-    connectedCallback() {
-      return __async(this, null, function* () {
-        this.$$cn = true;
-        if (!this.$$c) {
-          let create_slot2 = function(name) {
-            return () => {
-              let node;
-              const obj = {
-                c: function create() {
-                  node = element2("slot");
-                  if (name !== "default") {
-                    attr2(node, "name", name);
-                  }
-                },
-                /**
-                 * @param {HTMLElement} target
-                 * @param {HTMLElement} [anchor]
-                 */
-                m: function mount2(target, anchor) {
-                  insert(target, node, anchor);
-                },
-                d: function destroy(detaching) {
-                  if (detaching) {
-                    detach(node);
-                  }
-                }
-              };
-              return obj;
-            };
-          };
-          yield Promise.resolve();
-          if (!this.$$cn || this.$$c) {
-            return;
-          }
-          const $$slots = {};
-          const existing_slots = get_custom_elements_slots2(this);
-          for (const name of this.$$s) {
-            if (name in existing_slots) {
-              $$slots[name] = [create_slot2(name)];
-            }
-          }
-          for (const attribute of this.attributes) {
-            const name = this.$$g_p(attribute.name);
-            if (!(name in this.$$d)) {
-              this.$$d[name] = get_custom_element_value2(name, attribute.value, this.$$p_d, "toProp");
-            }
-          }
-          for (const key2 in this.$$p_d) {
-            if (!(key2 in this.$$d) && this[key2] !== void 0) {
-              this.$$d[key2] = this[key2];
-              delete this[key2];
-            }
-          }
-          this.$$c = new this.$$ctor({
-            target: this.shadowRoot || this,
-            props: __spreadProps(__spreadValues({}, this.$$d), {
-              $$slots,
-              $$scope: {
-                ctx: []
-              }
-            })
-          });
-          const reflect_attributes = () => {
-            this.$$r = true;
-            for (const key2 in this.$$p_d) {
-              this.$$d[key2] = this.$$c.$$.ctx[this.$$c.$$.props[key2]];
-              if (this.$$p_d[key2].reflect) {
-                const attribute_value = get_custom_element_value2(
-                  key2,
-                  this.$$d[key2],
-                  this.$$p_d,
-                  "toAttribute"
-                );
-                if (attribute_value == null) {
-                  this.removeAttribute(this.$$p_d[key2].attribute || key2);
-                } else {
-                  this.setAttribute(this.$$p_d[key2].attribute || key2, attribute_value);
-                }
-              }
-            }
-            this.$$r = false;
-          };
-          this.$$c.$$.after_update.push(reflect_attributes);
-          reflect_attributes();
-          for (const type in this.$$l) {
-            for (const listener of this.$$l[type]) {
-              const unsub = this.$$c.$on(type, listener);
-              this.$$l_u.set(listener, unsub);
-            }
-          }
-          this.$$l = {};
-        }
-      });
-    }
-    // We don't need this when working within Svelte code, but for compatibility of people using this outside of Svelte
-    // and setting attributes through setAttribute etc, this is helpful
-    attributeChangedCallback(attr5, _oldValue, newValue) {
-      var _a3;
-      if (this.$$r) return;
-      attr5 = this.$$g_p(attr5);
-      this.$$d[attr5] = get_custom_element_value2(attr5, newValue, this.$$p_d, "toProp");
-      (_a3 = this.$$c) == null ? void 0 : _a3.$set({ [attr5]: this.$$d[attr5] });
-    }
-    disconnectedCallback() {
-      this.$$cn = false;
-      Promise.resolve().then(() => {
-        if (!this.$$cn && this.$$c) {
-          this.$$c.$destroy();
-          this.$$c = void 0;
-        }
-      });
-    }
-    $$g_p(attribute_name) {
-      return Object.keys(this.$$p_d).find(
-        (key2) => this.$$p_d[key2].attribute === attribute_name || !this.$$p_d[key2].attribute && key2.toLowerCase() === attribute_name
-      ) || attribute_name;
-    }
-  };
-}
-function get_custom_element_value2(prop2, value, props_definition, transform) {
-  var _a3;
-  const type = (_a3 = props_definition[prop2]) == null ? void 0 : _a3.type;
-  value = type === "Boolean" && typeof value !== "boolean" ? value != null : value;
-  if (!transform || !props_definition[prop2]) {
-    return value;
-  } else if (transform === "toAttribute") {
-    switch (type) {
-      case "Object":
-      case "Array":
-        return value == null ? null : JSON.stringify(value);
-      case "Boolean":
-        return value ? "" : null;
-      case "Number":
-        return value == null ? null : value;
-      default:
-        return value;
-    }
-  } else {
-    switch (type) {
-      case "Object":
-      case "Array":
-        return value && JSON.parse(value);
-      case "Boolean":
-        return value;
-      // conversion already handled above
-      case "Number":
-        return value != null ? +value : value;
-      default:
-        return value;
-    }
-  }
-}
-var SvelteComponent = class {
-  constructor() {
-    /**
-     * ### PRIVATE API
-     *
-     * Do not use, may change at any time
-     *
-     * @type {any}
-     */
-    __publicField(this, "$$");
-    /**
-     * ### PRIVATE API
-     *
-     * Do not use, may change at any time
-     *
-     * @type {any}
-     */
-    __publicField(this, "$$set");
-  }
-  /** @returns {void} */
-  $destroy() {
-    destroy_component(this, 1);
-    this.$destroy = noop3;
-  }
-  /**
-   * @template {Extract<keyof Events, string>} K
-   * @param {K} type
-   * @param {((e: Events[K]) => void) | null | undefined} callback
-   * @returns {() => void}
-   */
-  $on(type, callback) {
-    if (!is_function2(callback)) {
-      return noop3;
-    }
-    const callbacks = this.$$.callbacks[type] || (this.$$.callbacks[type] = []);
-    callbacks.push(callback);
-    return () => {
-      const index5 = callbacks.indexOf(callback);
-      if (index5 !== -1) callbacks.splice(index5, 1);
-    };
-  }
-  /**
-   * @param {Partial<Props>} props
-   * @returns {void}
-   */
-  $set(props) {
-    if (this.$$set && !is_empty(props)) {
-      this.$$.skip_bound = true;
-      this.$$set(props);
-      this.$$.skip_bound = false;
-    }
-  }
-};
-
-// node_modules/@event-calendar/resource-time-grid/node_modules/svelte/src/runtime/store/index.js
-var subscriber_queue2 = [];
-function readable2(value, start) {
-  return {
-    subscribe: writable2(value, start).subscribe
-  };
-}
-function writable2(value, start = noop3) {
-  let stop;
-  const subscribers = /* @__PURE__ */ new Set();
-  function set2(new_value) {
-    if (safe_not_equal2(value, new_value)) {
-      value = new_value;
-      if (stop) {
-        const run_queue = !subscriber_queue2.length;
-        for (const subscriber of subscribers) {
-          subscriber[1]();
-          subscriber_queue2.push(subscriber, value);
-        }
-        if (run_queue) {
-          for (let i = 0; i < subscriber_queue2.length; i += 2) {
-            subscriber_queue2[i][0](subscriber_queue2[i + 1]);
-          }
-          subscriber_queue2.length = 0;
-        }
-      }
-    }
-  }
-  function update5(fn) {
-    set2(fn(value));
-  }
-  function subscribe4(run6, invalidate = noop3) {
-    const subscriber = [run6, invalidate];
-    subscribers.add(subscriber);
-    if (subscribers.size === 1) {
-      stop = start(set2, update5) || noop3;
-    }
-    run6(value);
-    return () => {
-      subscribers.delete(subscriber);
-      if (subscribers.size === 0 && stop) {
-        stop();
-        stop = null;
-      }
-    };
-  }
-  return { set: set2, update: update5, subscribe: subscribe4 };
-}
-function derived3(stores, fn, initial_value) {
-  const single = !Array.isArray(stores);
-  const stores_array = single ? [stores] : stores;
-  if (!stores_array.every(Boolean)) {
-    throw new Error("derived() expects stores as input, got a falsy value");
-  }
-  const auto = fn.length < 2;
-  return readable2(initial_value, (set2, update5) => {
-    let started = false;
-    const values = [];
-    let pending2 = 0;
-    let cleanup = noop3;
-    const sync = () => {
-      if (pending2) {
-        return;
-      }
-      cleanup();
-      const result = fn(single ? values[0] : values, set2, update5);
-      if (auto) {
-        set2(result);
-      } else {
-        cleanup = is_function2(result) ? result : noop3;
-      }
-    };
-    const unsubscribers = stores_array.map(
-      (store, i) => subscribe(
-        store,
-        (value) => {
-          values[i] = value;
-          pending2 &= ~(1 << i);
-          if (started) {
-            sync();
-          }
-        },
-        () => {
-          pending2 |= 1 << i;
-        }
-      )
-    );
-    started = true;
-    sync();
-    return function stop() {
-      run_all2(unsubscribers);
-      cleanup();
-      started = false;
-    };
-  });
-}
-
-// node_modules/@event-calendar/resource-time-grid/node_modules/@event-calendar/core/index.js
-function setContent2(node, content) {
-  let actions = {
-    update(content2) {
-      if (typeof content2 == "string") {
-        node.innerText = content2;
-      } else if (content2 == null ? void 0 : content2.domNodes) {
-        node.replaceChildren(...content2.domNodes);
-      } else if (content2 == null ? void 0 : content2.html) {
-        node.innerHTML = content2.html;
-      }
-    }
-  };
-  actions.update(content);
-  return actions;
-}
-function toLocalDate2(date) {
-  return new Date(
-    date.getUTCFullYear(),
-    date.getUTCMonth(),
-    date.getUTCDate(),
-    date.getUTCHours(),
-    date.getUTCMinutes(),
-    date.getUTCSeconds()
-  );
-}
-function toISOString2(date, len = 19) {
-  return date.toISOString().substring(0, len);
-}
-function symbol2() {
-  return Symbol("ec");
-}
-function isFunction2(value) {
-  return typeof value === "function";
-}
-var payloadProp2 = symbol2();
-function setPayload2(obj, payload) {
-  obj[payloadProp2] = payload;
-}
-function getPayload2(obj) {
-  return obj[payloadProp2];
-}
-function btnTextDay2(text5) {
-  return btnText2(text5, "day");
-}
-function btnTextWeek2(text5) {
-  return btnText2(text5, "week");
-}
-function btnText2(text5, period) {
-  return __spreadProps(__spreadValues({}, text5), {
-    next: "Next " + period,
-    prev: "Previous " + period
-  });
-}
-function themeView2(view2) {
-  return (theme) => __spreadProps(__spreadValues({}, theme), { view: view2 });
-}
-function createResources2(input) {
-  let result = [];
-  _createResources2(input, 0, result);
-  return result;
-}
-function _createResources2(input, level, flat) {
-  let result = [];
-  for (let item of input) {
-    let resource = createResource2(item);
-    result.push(resource);
-    flat.push(resource);
-    let payload = {
-      level,
-      children: [],
-      expanded: true,
-      hidden: false
-    };
-    setPayload2(resource, payload);
-    if (item.children) {
-      payload.children = _createResources2(item.children, level + 1, flat);
-    }
-  }
-  return result;
-}
-function createResource2(input) {
-  var _a3;
-  return {
-    id: String(input.id),
-    title: input.title || "",
-    eventBackgroundColor: input.eventBackgroundColor,
-    eventTextColor: input.eventTextColor,
-    extendedProps: (_a3 = input.extendedProps) != null ? _a3 : {}
-  };
-}
-function viewResources(state2) {
-  return derived3(
-    [state2.resources, state2.filterResourcesWithEvents, state2._events, state2._activeRange],
-    ([$resources, $filterResourcesWithEvents, $_events, $_activeRange]) => {
-      let result = $resources.filter((resource) => !getPayload2(resource).hidden);
-      if ($filterResourcesWithEvents) {
-        result = $resources.filter((resource) => {
-          for (let event2 of $_events) {
-            if (event2.display !== "background" && event2.resourceIds.includes(resource.id) && event2.start < $_activeRange.end && event2.end > $_activeRange.start) {
-              return true;
-            }
-          }
-          return false;
-        });
-      }
-      if (!result.length) {
-        result = createResources2([{}]);
-      }
-      return result;
-    }
-  );
-}
-
-// node_modules/@event-calendar/time-grid/node_modules/svelte/src/runtime/internal/utils.js
-function noop4() {
-}
-function assign3(tar, src) {
-  for (const k in src) tar[k] = src[k];
-  return (
-    /** @type {T & S} */
-    tar
-  );
-}
-function run4(fn) {
-  return fn();
-}
-function blank_object2() {
-  return /* @__PURE__ */ Object.create(null);
-}
-function run_all3(fns) {
-  fns.forEach(run4);
-}
-function is_function3(thing) {
-  return typeof thing === "function";
-}
-function safe_not_equal3(a, b) {
-  return a != a ? b == b : a !== b || a && typeof a === "object" || typeof a === "function";
-}
-function is_empty2(obj) {
-  return Object.keys(obj).length === 0;
-}
-function subscribe2(store, ...callbacks) {
-  if (store == null) {
-    for (const callback of callbacks) {
-      callback(void 0);
-    }
-    return noop4;
-  }
-  const unsub = store.subscribe(...callbacks);
-  return unsub.unsubscribe ? () => unsub.unsubscribe() : unsub;
-}
-function component_subscribe2(component2, store, callback) {
-  component2.$$.on_destroy.push(subscribe2(store, callback));
-}
-function create_slot(definition, ctx, $$scope, fn) {
-  if (definition) {
-    const slot_ctx = get_slot_context(definition, ctx, $$scope, fn);
-    return definition[0](slot_ctx);
-  }
-}
-function get_slot_context(definition, ctx, $$scope, fn) {
-  return definition[1] && fn ? assign3($$scope.ctx.slice(), definition[1](fn(ctx))) : $$scope.ctx;
-}
-function get_slot_changes(definition, $$scope, dirty, fn) {
-  if (definition[2] && fn) {
-    const lets = definition[2](fn(dirty));
-    if ($$scope.dirty === void 0) {
-      return lets;
-    }
-    if (typeof lets === "object") {
-      const merged = [];
-      const len = Math.max($$scope.dirty.length, lets.length);
-      for (let i = 0; i < len; i += 1) {
-        merged[i] = $$scope.dirty[i] | lets[i];
-      }
-      return merged;
-    }
-    return $$scope.dirty | lets;
-  }
-  return $$scope.dirty;
-}
-function update_slot_base(slot2, slot_definition, ctx, $$scope, slot_changes, get_slot_context_fn) {
-  if (slot_changes) {
-    const slot_context = get_slot_context(slot_definition, ctx, $$scope, get_slot_context_fn);
-    slot2.p(slot_context, slot_changes);
-  }
-}
-function get_all_dirty_from_scope($$scope) {
-  if ($$scope.ctx.length > 32) {
-    const dirty = [];
-    const length = $$scope.ctx.length / 32;
-    for (let i = 0; i < length; i++) {
-      dirty[i] = -1;
-    }
-    return dirty;
-  }
-  return -1;
-}
-function set_store_value2(store, ret, value) {
-  store.set(value);
-  return ret;
-}
-function action_destroyer2(action_result) {
-  return action_result && is_function3(action_result.destroy) ? action_result.destroy : noop4;
-}
-
-// node_modules/@event-calendar/time-grid/node_modules/svelte/src/runtime/internal/globals.js
-var globals2 = typeof window !== "undefined" ? window : typeof globalThis !== "undefined" ? globalThis : (
-  // @ts-ignore Node typings have this
-  global
-);
-
-// node_modules/@event-calendar/time-grid/node_modules/svelte/src/runtime/internal/ResizeObserverSingleton.js
-var ResizeObserverSingleton2 = class _ResizeObserverSingleton {
-  /** @param {ResizeObserverOptions} options */
-  constructor(options) {
-    /**
-     * @private
-     * @readonly
-     * @type {WeakMap<Element, import('./private.js').Listener>}
-     */
-    __publicField(this, "_listeners", "WeakMap" in globals2 ? /* @__PURE__ */ new WeakMap() : void 0);
-    /**
-     * @private
-     * @type {ResizeObserver}
-     */
-    __publicField(this, "_observer");
-    /** @type {ResizeObserverOptions} */
-    __publicField(this, "options");
-    this.options = options;
-  }
-  /**
-   * @param {Element} element
-   * @param {import('./private.js').Listener} listener
-   * @returns {() => void}
-   */
-  observe(element5, listener) {
-    this._listeners.set(element5, listener);
-    this._getObserver().observe(element5, this.options);
-    return () => {
-      this._listeners.delete(element5);
-      this._observer.unobserve(element5);
-    };
-  }
-  /**
-   * @private
-   */
-  _getObserver() {
-    var _a3;
-    return (_a3 = this._observer) != null ? _a3 : this._observer = new ResizeObserver((entries2) => {
-      var _a4;
-      for (const entry of entries2) {
-        _ResizeObserverSingleton.entries.set(entry.target, entry);
-        (_a4 = this._listeners.get(entry.target)) == null ? void 0 : _a4(entry);
-      }
-    });
-  }
-};
-ResizeObserverSingleton2.entries = "WeakMap" in globals2 ? /* @__PURE__ */ new WeakMap() : void 0;
-
-// node_modules/@event-calendar/time-grid/node_modules/svelte/src/runtime/internal/dom.js
-var is_hydrating2 = false;
-function start_hydrating2() {
-  is_hydrating2 = true;
-}
-function end_hydrating2() {
-  is_hydrating2 = false;
-}
-function append3(target, node) {
-  target.appendChild(node);
-}
-function insert2(target, node, anchor) {
-  target.insertBefore(node, anchor || null);
-}
-function detach2(node) {
-  if (node.parentNode) {
-    node.parentNode.removeChild(node);
-  }
-}
-function destroy_each2(iterations, detaching) {
-  for (let i = 0; i < iterations.length; i += 1) {
-    if (iterations[i]) iterations[i].d(detaching);
-  }
-}
-function element3(name) {
-  return document.createElement(name);
-}
-function text3(data) {
-  return document.createTextNode(data);
-}
-function space2() {
-  return text3(" ");
-}
-function empty2() {
-  return text3("");
-}
-function listen4(node, event2, handler, options) {
-  node.addEventListener(event2, handler, options);
-  return () => node.removeEventListener(event2, handler, options);
-}
-function attr3(node, attribute, value) {
-  if (value == null) node.removeAttribute(attribute);
-  else if (node.getAttribute(attribute) !== value) node.setAttribute(attribute, value);
-}
-function children2(element5) {
-  return Array.from(element5.childNodes);
-}
-function set_style3(node, key2, value, important) {
-  if (value == null) {
-    node.style.removeProperty(key2);
-  } else {
-    node.style.setProperty(key2, value, important ? "important" : "");
-  }
-}
-function get_custom_elements_slots3(element5) {
-  const result = {};
-  element5.childNodes.forEach(
-    /** @param {Element} node */
-    (node) => {
-      result[node.slot || "default"] = true;
-    }
-  );
-  return result;
-}
-function construct_svelte_component2(component2, props) {
-  return new component2(props);
-}
-
-// node_modules/@event-calendar/time-grid/node_modules/svelte/src/runtime/internal/lifecycle.js
-var current_component2;
-function set_current_component2(component2) {
-  current_component2 = component2;
-}
-function get_current_component2() {
-  if (!current_component2) throw new Error("Function called outside component initialization");
-  return current_component2;
-}
-function onMount3(fn) {
-  get_current_component2().$$.on_mount.push(fn);
-}
-function afterUpdate2(fn) {
-  get_current_component2().$$.after_update.push(fn);
-}
-function getContext3(key2) {
-  return get_current_component2().$$.context.get(key2);
-}
-
-// node_modules/@event-calendar/time-grid/node_modules/svelte/src/runtime/internal/scheduler.js
-var dirty_components2 = [];
-var binding_callbacks2 = [];
-var render_callbacks2 = [];
-var flush_callbacks2 = [];
-var resolved_promise2 = /* @__PURE__ */ Promise.resolve();
-var update_scheduled2 = false;
-function schedule_update2() {
-  if (!update_scheduled2) {
-    update_scheduled2 = true;
-    resolved_promise2.then(flush2);
-  }
-}
-function add_render_callback2(fn) {
-  render_callbacks2.push(fn);
-}
-var seen_callbacks2 = /* @__PURE__ */ new Set();
-var flushidx2 = 0;
-function flush2() {
-  if (flushidx2 !== 0) {
-    return;
-  }
-  const saved_component = current_component2;
-  do {
-    try {
-      while (flushidx2 < dirty_components2.length) {
-        const component2 = dirty_components2[flushidx2];
-        flushidx2++;
-        set_current_component2(component2);
-        update3(component2.$$);
-      }
-    } catch (e) {
-      dirty_components2.length = 0;
-      flushidx2 = 0;
-      throw e;
-    }
-    set_current_component2(null);
-    dirty_components2.length = 0;
-    flushidx2 = 0;
-    while (binding_callbacks2.length) binding_callbacks2.pop()();
-    for (let i = 0; i < render_callbacks2.length; i += 1) {
-      const callback = render_callbacks2[i];
-      if (!seen_callbacks2.has(callback)) {
-        seen_callbacks2.add(callback);
-        callback();
-      }
-    }
-    render_callbacks2.length = 0;
-  } while (dirty_components2.length);
-  while (flush_callbacks2.length) {
-    flush_callbacks2.pop()();
-  }
-  update_scheduled2 = false;
-  seen_callbacks2.clear();
-  set_current_component2(saved_component);
-}
-function update3($$) {
-  if ($$.fragment !== null) {
-    $$.update();
-    run_all3($$.before_update);
-    const dirty = $$.dirty;
-    $$.dirty = [-1];
-    $$.fragment && $$.fragment.p($$.ctx, dirty);
-    $$.after_update.forEach(add_render_callback2);
-  }
-}
-function flush_render_callbacks2(fns) {
-  const filtered = [];
-  const targets = [];
-  render_callbacks2.forEach((c) => fns.indexOf(c) === -1 ? filtered.push(c) : targets.push(c));
-  targets.forEach((c) => c());
-  render_callbacks2 = filtered;
-}
-
-// node_modules/@event-calendar/time-grid/node_modules/svelte/src/runtime/internal/transitions.js
-var outroing2 = /* @__PURE__ */ new Set();
-var outros2;
-function group_outros2() {
-  outros2 = {
-    r: 0,
-    c: [],
-    p: outros2
-    // parent group
-  };
-}
-function check_outros2() {
-  if (!outros2.r) {
-    run_all3(outros2.c);
-  }
-  outros2 = outros2.p;
-}
-function transition_in2(block2, local) {
-  if (block2 && block2.i) {
-    outroing2.delete(block2);
-    block2.i(local);
-  }
-}
-function transition_out2(block2, local, detach4, callback) {
-  if (block2 && block2.o) {
-    if (outroing2.has(block2)) return;
-    outroing2.add(block2);
-    outros2.c.push(() => {
-      outroing2.delete(block2);
-      if (callback) {
-        if (detach4) block2.d(1);
-        callback();
-      }
-    });
-    block2.o(local);
-  } else if (callback) {
-    callback();
-  }
-}
-
-// node_modules/@event-calendar/time-grid/node_modules/svelte/src/runtime/internal/each.js
-function ensure_array_like2(array_like_or_iterator) {
-  return (array_like_or_iterator == null ? void 0 : array_like_or_iterator.length) !== void 0 ? array_like_or_iterator : Array.from(array_like_or_iterator);
-}
-function outro_and_destroy_block(block2, lookup) {
-  transition_out2(block2, 1, 1, () => {
-    lookup.delete(block2.key);
-  });
-}
-function update_keyed_each(old_blocks, dirty, get_key, dynamic, ctx, list, lookup, node, destroy, create_each_block4, next2, get_context) {
-  let o = old_blocks.length;
-  let n = list.length;
-  let i = o;
-  const old_indexes = {};
-  while (i--) old_indexes[old_blocks[i].key] = i;
-  const new_blocks = [];
-  const new_lookup = /* @__PURE__ */ new Map();
-  const deltas = /* @__PURE__ */ new Map();
-  const updates = [];
-  i = n;
-  while (i--) {
-    const child_ctx = get_context(ctx, list, i);
-    const key2 = get_key(child_ctx);
-    let block2 = lookup.get(key2);
-    if (!block2) {
-      block2 = create_each_block4(key2, child_ctx);
-      block2.c();
-    } else if (dynamic) {
-      updates.push(() => block2.p(child_ctx, dirty));
-    }
-    new_lookup.set(key2, new_blocks[i] = block2);
-    if (key2 in old_indexes) deltas.set(key2, Math.abs(i - old_indexes[key2]));
-  }
-  const will_move = /* @__PURE__ */ new Set();
-  const did_move = /* @__PURE__ */ new Set();
-  function insert4(block2) {
-    transition_in2(block2, 1);
-    block2.m(node, next2);
-    lookup.set(block2.key, block2);
-    next2 = block2.first;
-    n--;
-  }
-  while (o && n) {
-    const new_block = new_blocks[n - 1];
-    const old_block = old_blocks[o - 1];
-    const new_key = new_block.key;
-    const old_key = old_block.key;
-    if (new_block === old_block) {
-      next2 = new_block.first;
-      o--;
-      n--;
-    } else if (!new_lookup.has(old_key)) {
-      destroy(old_block, lookup);
-      o--;
-    } else if (!lookup.has(new_key) || will_move.has(new_key)) {
-      insert4(new_block);
-    } else if (did_move.has(old_key)) {
-      o--;
-    } else if (deltas.get(new_key) > deltas.get(old_key)) {
-      did_move.add(new_key);
-      insert4(new_block);
-    } else {
-      will_move.add(old_key);
-      o--;
-    }
-  }
-  while (o--) {
-    const old_block = old_blocks[o];
-    if (!new_lookup.has(old_block.key)) destroy(old_block, lookup);
-  }
-  while (n) insert4(new_blocks[n - 1]);
-  run_all3(updates);
-  return new_blocks;
-}
-
-// node_modules/@event-calendar/time-grid/node_modules/svelte/src/shared/boolean_attributes.js
-var _boolean_attributes2 = (
-  /** @type {const} */
-  [
-    "allowfullscreen",
-    "allowpaymentrequest",
-    "async",
-    "autofocus",
-    "autoplay",
-    "checked",
-    "controls",
-    "default",
-    "defer",
-    "disabled",
-    "formnovalidate",
-    "hidden",
-    "inert",
-    "ismap",
-    "loop",
-    "multiple",
-    "muted",
-    "nomodule",
-    "novalidate",
-    "open",
-    "playsinline",
-    "readonly",
-    "required",
-    "reversed",
-    "selected"
-  ]
-);
-var boolean_attributes2 = /* @__PURE__ */ new Set([..._boolean_attributes2]);
-
-// node_modules/@event-calendar/time-grid/node_modules/svelte/src/runtime/internal/Component.js
-function create_component2(block2) {
-  block2 && block2.c();
-}
-function mount_component2(component2, target, anchor) {
-  const { fragment, after_update } = component2.$$;
-  fragment && fragment.m(target, anchor);
-  add_render_callback2(() => {
-    const new_on_destroy = component2.$$.on_mount.map(run4).filter(is_function3);
-    if (component2.$$.on_destroy) {
-      component2.$$.on_destroy.push(...new_on_destroy);
-    } else {
-      run_all3(new_on_destroy);
-    }
-    component2.$$.on_mount = [];
-  });
-  after_update.forEach(add_render_callback2);
-}
-function destroy_component2(component2, detaching) {
-  const $$ = component2.$$;
-  if ($$.fragment !== null) {
-    flush_render_callbacks2($$.after_update);
-    run_all3($$.on_destroy);
-    $$.fragment && $$.fragment.d(detaching);
-    $$.on_destroy = $$.fragment = null;
-    $$.ctx = [];
-  }
-}
-function make_dirty2(component2, i) {
-  if (component2.$$.dirty[0] === -1) {
-    dirty_components2.push(component2);
-    schedule_update2();
-    component2.$$.dirty.fill(0);
-  }
-  component2.$$.dirty[i / 31 | 0] |= 1 << i % 31;
-}
-function init3(component2, options, instance4, create_fragment5, not_equal2, props, append_styles3 = null, dirty = [-1]) {
-  const parent_component = current_component2;
-  set_current_component2(component2);
-  const $$ = component2.$$ = {
-    fragment: null,
-    ctx: [],
-    // state
-    props,
-    update: noop4,
-    not_equal: not_equal2,
-    bound: blank_object2(),
-    // lifecycle
-    on_mount: [],
-    on_destroy: [],
-    on_disconnect: [],
-    before_update: [],
-    after_update: [],
-    context: new Map(options.context || (parent_component ? parent_component.$$.context : [])),
-    // everything else
-    callbacks: blank_object2(),
-    dirty,
-    skip_bound: false,
-    root: options.target || parent_component.$$.root
-  };
-  append_styles3 && append_styles3($$.root);
-  let ready = false;
-  $$.ctx = instance4 ? instance4(component2, options.props || {}, (i, ret, ...rest) => {
-    const value = rest.length ? rest[0] : ret;
-    if ($$.ctx && not_equal2($$.ctx[i], $$.ctx[i] = value)) {
-      if (!$$.skip_bound && $$.bound[i]) $$.bound[i](value);
-      if (ready) make_dirty2(component2, i);
-    }
-    return ret;
-  }) : [];
-  $$.update();
-  ready = true;
-  run_all3($$.before_update);
-  $$.fragment = create_fragment5 ? create_fragment5($$.ctx) : false;
-  if (options.target) {
-    if (options.hydrate) {
-      start_hydrating2();
-      const nodes = children2(options.target);
-      $$.fragment && $$.fragment.l(nodes);
-      nodes.forEach(detach2);
-    } else {
-      $$.fragment && $$.fragment.c();
-    }
-    if (options.intro) transition_in2(component2.$$.fragment);
-    mount_component2(component2, options.target, options.anchor);
-    end_hydrating2();
-    flush2();
-  }
-  set_current_component2(parent_component);
-}
-var SvelteElement3;
-if (typeof HTMLElement === "function") {
-  SvelteElement3 = class extends HTMLElement {
-    constructor($$componentCtor, $$slots, use_shadow_dom) {
-      super();
-      /** The Svelte component constructor */
-      __publicField(this, "$$ctor");
-      /** Slots */
-      __publicField(this, "$$s");
-      /** The Svelte component instance */
-      __publicField(this, "$$c");
-      /** Whether or not the custom element is connected */
-      __publicField(this, "$$cn", false);
-      /** Component props data */
-      __publicField(this, "$$d", {});
-      /** `true` if currently in the process of reflecting component props back to attributes */
-      __publicField(this, "$$r", false);
-      /** @type {Record<string, CustomElementPropDefinition>} Props definition (name, reflected, type etc) */
-      __publicField(this, "$$p_d", {});
-      /** @type {Record<string, Function[]>} Event listeners */
-      __publicField(this, "$$l", {});
-      /** @type {Map<Function, Function>} Event listener unsubscribe functions */
-      __publicField(this, "$$l_u", /* @__PURE__ */ new Map());
-      this.$$ctor = $$componentCtor;
-      this.$$s = $$slots;
-      if (use_shadow_dom) {
-        this.attachShadow({ mode: "open" });
-      }
-    }
-    addEventListener(type, listener, options) {
-      this.$$l[type] = this.$$l[type] || [];
-      this.$$l[type].push(listener);
-      if (this.$$c) {
-        const unsub = this.$$c.$on(type, listener);
-        this.$$l_u.set(listener, unsub);
-      }
-      super.addEventListener(type, listener, options);
-    }
-    removeEventListener(type, listener, options) {
-      super.removeEventListener(type, listener, options);
-      if (this.$$c) {
-        const unsub = this.$$l_u.get(listener);
-        if (unsub) {
-          unsub();
-          this.$$l_u.delete(listener);
-        }
-      }
-      if (this.$$l[type]) {
-        const idx = this.$$l[type].indexOf(listener);
-        if (idx >= 0) {
-          this.$$l[type].splice(idx, 1);
-        }
-      }
-    }
-    connectedCallback() {
-      return __async(this, null, function* () {
-        this.$$cn = true;
-        if (!this.$$c) {
-          let create_slot2 = function(name) {
-            return () => {
-              let node;
-              const obj = {
-                c: function create() {
-                  node = element3("slot");
-                  if (name !== "default") {
-                    attr3(node, "name", name);
-                  }
-                },
-                /**
-                 * @param {HTMLElement} target
-                 * @param {HTMLElement} [anchor]
-                 */
-                m: function mount2(target, anchor) {
-                  insert2(target, node, anchor);
-                },
-                d: function destroy(detaching) {
-                  if (detaching) {
-                    detach2(node);
-                  }
-                }
-              };
-              return obj;
-            };
-          };
-          yield Promise.resolve();
-          if (!this.$$cn || this.$$c) {
-            return;
-          }
-          const $$slots = {};
-          const existing_slots = get_custom_elements_slots3(this);
-          for (const name of this.$$s) {
-            if (name in existing_slots) {
-              $$slots[name] = [create_slot2(name)];
-            }
-          }
-          for (const attribute of this.attributes) {
-            const name = this.$$g_p(attribute.name);
-            if (!(name in this.$$d)) {
-              this.$$d[name] = get_custom_element_value3(name, attribute.value, this.$$p_d, "toProp");
-            }
-          }
-          for (const key2 in this.$$p_d) {
-            if (!(key2 in this.$$d) && this[key2] !== void 0) {
-              this.$$d[key2] = this[key2];
-              delete this[key2];
-            }
-          }
-          this.$$c = new this.$$ctor({
-            target: this.shadowRoot || this,
-            props: __spreadProps(__spreadValues({}, this.$$d), {
-              $$slots,
-              $$scope: {
-                ctx: []
-              }
-            })
-          });
-          const reflect_attributes = () => {
-            this.$$r = true;
-            for (const key2 in this.$$p_d) {
-              this.$$d[key2] = this.$$c.$$.ctx[this.$$c.$$.props[key2]];
-              if (this.$$p_d[key2].reflect) {
-                const attribute_value = get_custom_element_value3(
-                  key2,
-                  this.$$d[key2],
-                  this.$$p_d,
-                  "toAttribute"
-                );
-                if (attribute_value == null) {
-                  this.removeAttribute(this.$$p_d[key2].attribute || key2);
-                } else {
-                  this.setAttribute(this.$$p_d[key2].attribute || key2, attribute_value);
-                }
-              }
-            }
-            this.$$r = false;
-          };
-          this.$$c.$$.after_update.push(reflect_attributes);
-          reflect_attributes();
-          for (const type in this.$$l) {
-            for (const listener of this.$$l[type]) {
-              const unsub = this.$$c.$on(type, listener);
-              this.$$l_u.set(listener, unsub);
-            }
-          }
-          this.$$l = {};
-        }
-      });
-    }
-    // We don't need this when working within Svelte code, but for compatibility of people using this outside of Svelte
-    // and setting attributes through setAttribute etc, this is helpful
-    attributeChangedCallback(attr5, _oldValue, newValue) {
-      var _a3;
-      if (this.$$r) return;
-      attr5 = this.$$g_p(attr5);
-      this.$$d[attr5] = get_custom_element_value3(attr5, newValue, this.$$p_d, "toProp");
-      (_a3 = this.$$c) == null ? void 0 : _a3.$set({ [attr5]: this.$$d[attr5] });
-    }
-    disconnectedCallback() {
-      this.$$cn = false;
-      Promise.resolve().then(() => {
-        if (!this.$$cn && this.$$c) {
-          this.$$c.$destroy();
-          this.$$c = void 0;
-        }
-      });
-    }
-    $$g_p(attribute_name) {
-      return Object.keys(this.$$p_d).find(
-        (key2) => this.$$p_d[key2].attribute === attribute_name || !this.$$p_d[key2].attribute && key2.toLowerCase() === attribute_name
-      ) || attribute_name;
-    }
-  };
-}
-function get_custom_element_value3(prop2, value, props_definition, transform) {
-  var _a3;
-  const type = (_a3 = props_definition[prop2]) == null ? void 0 : _a3.type;
-  value = type === "Boolean" && typeof value !== "boolean" ? value != null : value;
-  if (!transform || !props_definition[prop2]) {
-    return value;
-  } else if (transform === "toAttribute") {
-    switch (type) {
-      case "Object":
-      case "Array":
-        return value == null ? null : JSON.stringify(value);
-      case "Boolean":
-        return value ? "" : null;
-      case "Number":
-        return value == null ? null : value;
-      default:
-        return value;
-    }
-  } else {
-    switch (type) {
-      case "Object":
-      case "Array":
-        return value && JSON.parse(value);
-      case "Boolean":
-        return value;
-      // conversion already handled above
-      case "Number":
-        return value != null ? +value : value;
-      default:
-        return value;
-    }
-  }
-}
-var SvelteComponent2 = class {
-  constructor() {
-    /**
-     * ### PRIVATE API
-     *
-     * Do not use, may change at any time
-     *
-     * @type {any}
-     */
-    __publicField(this, "$$");
-    /**
-     * ### PRIVATE API
-     *
-     * Do not use, may change at any time
-     *
-     * @type {any}
-     */
-    __publicField(this, "$$set");
-  }
-  /** @returns {void} */
-  $destroy() {
-    destroy_component2(this, 1);
-    this.$destroy = noop4;
-  }
-  /**
-   * @template {Extract<keyof Events, string>} K
-   * @param {K} type
-   * @param {((e: Events[K]) => void) | null | undefined} callback
-   * @returns {() => void}
-   */
-  $on(type, callback) {
-    if (!is_function3(callback)) {
-      return noop4;
-    }
-    const callbacks = this.$$.callbacks[type] || (this.$$.callbacks[type] = []);
-    callbacks.push(callback);
-    return () => {
-      const index5 = callbacks.indexOf(callback);
-      if (index5 !== -1) callbacks.splice(index5, 1);
-    };
-  }
-  /**
-   * @param {Partial<Props>} props
-   * @returns {void}
-   */
-  $set(props) {
-    if (this.$$set && !is_empty2(props)) {
-      this.$$.skip_bound = true;
-      this.$$set(props);
-      this.$$.skip_bound = false;
-    }
-  }
-};
-
-// node_modules/@event-calendar/time-grid/node_modules/svelte/src/runtime/store/index.js
-var subscriber_queue3 = [];
-function readable3(value, start) {
-  return {
-    subscribe: writable3(value, start).subscribe
-  };
-}
-function writable3(value, start = noop4) {
-  let stop;
-  const subscribers = /* @__PURE__ */ new Set();
-  function set2(new_value) {
-    if (safe_not_equal3(value, new_value)) {
-      value = new_value;
-      if (stop) {
-        const run_queue = !subscriber_queue3.length;
-        for (const subscriber of subscribers) {
-          subscriber[1]();
-          subscriber_queue3.push(subscriber, value);
-        }
-        if (run_queue) {
-          for (let i = 0; i < subscriber_queue3.length; i += 2) {
-            subscriber_queue3[i][0](subscriber_queue3[i + 1]);
-          }
-          subscriber_queue3.length = 0;
-        }
-      }
-    }
-  }
-  function update5(fn) {
-    set2(fn(value));
-  }
-  function subscribe4(run6, invalidate = noop4) {
-    const subscriber = [run6, invalidate];
-    subscribers.add(subscriber);
-    if (subscribers.size === 1) {
-      stop = start(set2, update5) || noop4;
-    }
-    run6(value);
-    return () => {
-      subscribers.delete(subscriber);
-      if (subscribers.size === 0 && stop) {
-        stop();
-        stop = null;
-      }
-    };
-  }
-  return { set: set2, update: update5, subscribe: subscribe4 };
-}
-function derived4(stores, fn, initial_value) {
-  const single = !Array.isArray(stores);
-  const stores_array = single ? [stores] : stores;
-  if (!stores_array.every(Boolean)) {
-    throw new Error("derived() expects stores as input, got a falsy value");
-  }
-  const auto = fn.length < 2;
-  return readable3(initial_value, (set2, update5) => {
-    let started = false;
-    const values = [];
-    let pending2 = 0;
-    let cleanup = noop4;
-    const sync = () => {
-      if (pending2) {
-        return;
-      }
-      cleanup();
-      const result = fn(single ? values[0] : values, set2, update5);
-      if (auto) {
-        set2(result);
-      } else {
-        cleanup = is_function3(result) ? result : noop4;
-      }
-    };
-    const unsubscribers = stores_array.map(
-      (store, i) => subscribe2(
-        store,
-        (value) => {
-          values[i] = value;
-          pending2 &= ~(1 << i);
-          if (started) {
-            sync();
-          }
-        },
-        () => {
-          pending2 |= 1 << i;
-        }
-      )
-    );
-    started = true;
-    sync();
-    return function stop() {
-      run_all3(unsubscribers);
-      cleanup();
-      started = false;
-    };
-  });
-}
-
-// node_modules/@event-calendar/time-grid/node_modules/@event-calendar/core/index.js
-function keyEnter2(fn) {
-  return function(e) {
-    return e.key === "Enter" || e.key === " " && !e.preventDefault() ? fn.call(this, e) : void 0;
-  };
-}
-function setContent3(node, content) {
-  let actions = {
-    update(content2) {
-      if (typeof content2 == "string") {
-        node.innerText = content2;
-      } else if (content2 == null ? void 0 : content2.domNodes) {
-        node.replaceChildren(...content2.domNodes);
-      } else if (content2 == null ? void 0 : content2.html) {
-        node.innerHTML = content2.html;
-      }
-    }
-  };
-  actions.update(content);
-  return actions;
-}
-var DAY_IN_SECONDS2 = 86400;
-function createDate2(input = void 0) {
-  if (input !== void 0) {
-    return input instanceof Date ? _fromLocalDate2(input) : _fromISOString2(input);
-  }
-  return _fromLocalDate2(/* @__PURE__ */ new Date());
-}
-function createDuration2(input) {
-  if (typeof input === "number") {
-    input = { seconds: input };
-  } else if (typeof input === "string") {
-    let seconds = 0, exp = 2;
-    for (let part of input.split(":", 3)) {
-      seconds += parseInt(part, 10) * Math.pow(60, exp--);
-    }
-    input = { seconds };
-  } else if (input instanceof Date) {
-    input = { hours: input.getUTCHours(), minutes: input.getUTCMinutes(), seconds: input.getUTCSeconds() };
-  }
-  let weeks = input.weeks || input.week || 0;
-  return {
-    years: input.years || input.year || 0,
-    months: input.months || input.month || 0,
-    days: weeks * 7 + (input.days || input.day || 0),
-    seconds: (input.hours || input.hour || 0) * 60 * 60 + (input.minutes || input.minute || 0) * 60 + (input.seconds || input.second || 0),
-    inWeeks: !!weeks
-  };
-}
-function cloneDate2(date) {
-  return new Date(date.getTime());
-}
-function addDuration2(date, duration, x = 1) {
-  date.setUTCFullYear(date.getUTCFullYear() + x * duration.years);
-  let month = date.getUTCMonth() + x * duration.months;
-  date.setUTCMonth(month);
-  month %= 12;
-  if (month < 0) {
-    month += 12;
-  }
-  while (date.getUTCMonth() !== month) {
-    subtractDay2(date);
-  }
-  date.setUTCDate(date.getUTCDate() + x * duration.days);
-  date.setUTCSeconds(date.getUTCSeconds() + x * duration.seconds);
-  return date;
-}
-function addDay2(date, x = 1) {
-  date.setUTCDate(date.getUTCDate() + x);
-  return date;
-}
-function subtractDay2(date, x = 1) {
-  return addDay2(date, -x);
-}
-function setMidnight2(date) {
-  date.setUTCHours(0, 0, 0, 0);
-  return date;
-}
-function toLocalDate3(date) {
-  return new Date(
-    date.getUTCFullYear(),
-    date.getUTCMonth(),
-    date.getUTCDate(),
-    date.getUTCHours(),
-    date.getUTCMinutes(),
-    date.getUTCSeconds()
-  );
-}
-function toISOString3(date, len = 19) {
-  return date.toISOString().substring(0, len);
-}
-function datesEqual2(date1, ...dates2) {
-  return dates2.every((date2) => date1.getTime() === date2.getTime());
-}
-function copyTime2(toDate, fromDate) {
-  toDate.setUTCHours(fromDate.getUTCHours(), fromDate.getUTCMinutes(), fromDate.getUTCSeconds(), 0);
-  return toDate;
-}
-function toSeconds2(duration) {
-  return duration.seconds;
-}
-function _fromLocalDate2(date) {
-  return new Date(Date.UTC(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-    date.getHours(),
-    date.getMinutes(),
-    date.getSeconds()
-  ));
-}
-function _fromISOString2(str) {
-  const parts = str.match(/\d+/g);
-  return new Date(Date.UTC(
-    Number(parts[0]),
-    Number(parts[1]) - 1,
-    Number(parts[2]),
-    Number(parts[3] || 0),
-    Number(parts[4] || 0),
-    Number(parts[5] || 0)
-  ));
-}
-function assign4(...args) {
-  return Object.assign(...args);
-}
-function floor2(value) {
-  return Math.floor(value);
-}
-function min2(...args) {
-  return Math.min(...args);
-}
-function max2(...args) {
-  return Math.max(...args);
-}
-function symbol3() {
-  return Symbol("ec");
-}
-function isArray2(value) {
-  return Array.isArray(value);
-}
-function isFunction3(value) {
-  return typeof value === "function";
-}
-function debounce2(fn, handle, queueStore) {
-  queueStore.update((queue) => queue.set(handle, fn));
-}
-function task2(fn, handle, tasks2) {
-  handle != null ? handle : handle = fn;
-  if (!tasks2.has(handle)) {
-    tasks2.set(handle, setTimeout(() => {
-      tasks2.delete(handle);
-      fn();
-    }));
-  }
-}
-var payloadProp3 = symbol3();
-function setPayload3(obj, payload) {
-  obj[payloadProp3] = payload;
-}
-function createElement2(tag2, className, content, attrs = []) {
-  let el = document.createElement(tag2);
-  el.className = className;
-  if (typeof content == "string") {
-    el.innerText = content;
-  } else if (content.domNodes) {
-    el.replaceChildren(...content.domNodes);
-  } else if (content.html) {
-    el.innerHTML = content.html;
-  }
-  for (let attr5 of attrs) {
-    el.setAttribute(...attr5);
-  }
-  return el;
-}
-function rect2(el) {
-  return el.getBoundingClientRect();
-}
-function ancestor2(el, up) {
-  while (up--) {
-    el = el.parentElement;
-  }
-  return el;
-}
-function height2(el) {
-  return rect2(el).height;
-}
-function toViewWithLocalDates2(view2) {
-  view2 = assign4({}, view2);
-  view2.currentStart = toLocalDate3(view2.currentStart);
-  view2.currentEnd = toLocalDate3(view2.currentEnd);
-  view2.activeStart = toLocalDate3(view2.activeStart);
-  view2.activeEnd = toLocalDate3(view2.activeEnd);
-  return view2;
-}
-function createEventChunk2(event2, start, end) {
-  let chunk = {
-    start: event2.start > start ? event2.start : start,
-    end: event2.end < end ? event2.end : end,
-    event: event2
-  };
-  chunk.zeroDuration = datesEqual2(chunk.start, chunk.end);
-  return chunk;
-}
-function sortEventChunks2(chunks) {
-  chunks.sort((a, b) => a.start - b.start || b.event.allDay - a.event.allDay);
-}
-function createEventContent2(chunk, displayEventEnd, eventContent, theme, _intlEventTime, _view) {
-  let timeText = _intlEventTime.formatRange(
-    chunk.start,
-    displayEventEnd && chunk.event.display !== "pointer" && !chunk.zeroDuration ? copyTime2(cloneDate2(chunk.start), chunk.end) : chunk.start
-  );
-  let content;
-  if (eventContent) {
-    content = isFunction3(eventContent) ? eventContent({
-      event: toEventWithLocalDates2(chunk.event),
-      timeText,
-      view: toViewWithLocalDates2(_view)
-    }) : eventContent;
-  }
-  if (content === void 0) {
-    let domNodes;
-    switch (chunk.event.display) {
-      case "background":
-        domNodes = [];
-        break;
-      case "pointer":
-        domNodes = [createTimeElement2(timeText, chunk, theme)];
-        break;
-      default:
-        domNodes = [
-          ...chunk.event.allDay ? [] : [createTimeElement2(timeText, chunk, theme)],
-          createElement2("h4", theme.eventTitle, chunk.event.title)
-        ];
-    }
-    content = { domNodes };
-  }
-  return [timeText, content];
-}
-function createTimeElement2(timeText, chunk, theme) {
-  return createElement2(
-    "time",
-    theme.eventTime,
-    timeText,
-    [["datetime", toISOString3(chunk.start)]]
-  );
-}
-function createEventClasses2(eventClassNames, event2, _view) {
-  let result = event2.classNames;
-  if (eventClassNames) {
-    if (isFunction3(eventClassNames)) {
-      eventClassNames = eventClassNames({
-        event: toEventWithLocalDates2(event2),
-        view: toViewWithLocalDates2(_view)
-      });
-    }
-    result = [
-      ...isArray2(eventClassNames) ? eventClassNames : [eventClassNames],
-      ...result
-    ];
-  }
-  return result;
-}
-function toEventWithLocalDates2(event2) {
-  return _cloneEvent2(event2, toLocalDate3);
-}
-function _cloneEvent2(event2, dateFn) {
-  event2 = assign4({}, event2);
-  event2.start = dateFn(event2.start);
-  event2.end = dateFn(event2.end);
-  return event2;
-}
-function prepareEventChunks(chunks, hiddenDays) {
-  let longChunks = {};
-  if (chunks.length) {
-    sortEventChunks2(chunks);
-    let prevChunk;
-    for (let chunk of chunks) {
-      let dates = [];
-      let date = setMidnight2(cloneDate2(chunk.start));
-      while (chunk.end > date) {
-        if (!hiddenDays.includes(date.getUTCDay())) {
-          dates.push(cloneDate2(date));
-          if (dates.length > 1) {
-            let key2 = date.getTime();
-            if (longChunks[key2]) {
-              longChunks[key2].chunks.push(chunk);
-            } else {
-              longChunks[key2] = {
-                sorted: false,
-                chunks: [chunk]
-              };
-            }
-          }
-        }
-        addDay2(date);
-      }
-      if (dates.length) {
-        chunk.date = dates[0];
-        chunk.days = dates.length;
-        chunk.dates = dates;
-        if (chunk.start < dates[0]) {
-          chunk.start = dates[0];
-        }
-        let maxEnd = addDay2(cloneDate2(dates.at(-1)));
-        if (chunk.end > maxEnd) {
-          chunk.end = maxEnd;
-        }
-      } else {
-        chunk.date = setMidnight2(cloneDate2(chunk.start));
-        chunk.days = 1;
-        chunk.dates = [chunk.date];
-      }
-      if (prevChunk && datesEqual2(prevChunk.date, chunk.date)) {
-        chunk.prev = prevChunk;
-      }
-      prevChunk = chunk;
-    }
-  }
-  return longChunks;
-}
-function repositionEvent(chunk, longChunks, height4) {
-  chunk.top = 0;
-  if (chunk.prev) {
-    chunk.top = chunk.prev.bottom + 1;
-  }
-  chunk.bottom = chunk.top + height4;
-  let margin = 1;
-  let key2 = chunk.date.getTime();
-  if (longChunks[key2]) {
-    if (!longChunks[key2].sorted) {
-      longChunks[key2].chunks.sort((a, b) => a.top - b.top);
-      longChunks[key2].sorted = true;
-    }
-    for (let longChunk of longChunks[key2].chunks) {
-      if (chunk.top < longChunk.bottom && chunk.bottom > longChunk.top) {
-        let offset = longChunk.bottom - chunk.top + 1;
-        margin += offset;
-        chunk.top += offset;
-        chunk.bottom += offset;
-      }
-    }
-  }
-  return margin;
-}
-function runReposition2(refs, data) {
-  var _a3;
-  refs.length = data.length;
-  let result = [];
-  for (let ref of refs) {
-    result.push((_a3 = ref == null ? void 0 : ref.reposition) == null ? void 0 : _a3.call(ref));
-  }
-  return result;
-}
-function eventIntersects2(event2, start, end, resources) {
-  if (event2.start < end && event2.end > start) {
-    if (resources) {
-      if (!isArray2(resources)) {
-        resources = [resources];
-      }
-      return resources.some((resource) => event2.resourceIds.includes(resource.id));
-    }
-    return true;
-  }
-  return false;
-}
-function helperEvent2(display) {
-  return previewEvent2(display) || ghostEvent2(display) || pointerEvent2(display);
-}
-function bgEvent2(display) {
-  return display === "background";
-}
-function previewEvent2(display) {
-  return display === "preview";
-}
-function ghostEvent2(display) {
-  return display === "ghost";
-}
-function pointerEvent2(display) {
-  return display === "pointer";
-}
-function btnTextDay3(text5) {
-  return btnText3(text5, "day");
-}
-function btnTextWeek3(text5) {
-  return btnText3(text5, "week");
-}
-function btnText3(text5, period) {
-  return __spreadProps(__spreadValues({}, text5), {
-    next: "Next " + period,
-    prev: "Previous " + period
-  });
-}
-function themeView3(view2) {
-  return (theme) => __spreadProps(__spreadValues({}, theme), { view: view2 });
-}
-function outsideRange2(date, range) {
-  return range.start && date < range.start || range.end && date > range.end;
-}
-function limitToRange2(date, range) {
-  if (range.start && date < range.start) {
-    date = range.start;
-  }
-  if (range.end && date > range.end) {
-    date = range.end;
-  }
-  return date;
-}
-function resourceBackgroundColor2(event2, resources) {
-  var _a3;
-  return (_a3 = findResource2(event2, resources)) == null ? void 0 : _a3.eventBackgroundColor;
-}
-function resourceTextColor2(event2, resources) {
-  var _a3;
-  return (_a3 = findResource2(event2, resources)) == null ? void 0 : _a3.eventTextColor;
-}
-function findResource2(event2, resources) {
-  return resources.find((resource) => event2.resourceIds.includes(resource.id));
-}
-function createTimes2(date, $slotDuration, $slotLabelInterval, $_slotTimeLimits, $_intlSlotLabel) {
-  date = cloneDate2(date);
-  let times3 = [];
-  let end = cloneDate2(date);
-  addDuration2(date, $_slotTimeLimits.min);
-  addDuration2(end, $_slotTimeLimits.max);
-  if ($slotLabelInterval === void 0) {
-    $slotLabelInterval = $slotDuration.seconds < 3600 ? createDuration2($slotDuration.seconds * 2) : $slotDuration;
-  }
-  let showAll = $slotLabelInterval.seconds <= 0;
-  let label2;
-  if (!showAll) {
-    label2 = cloneDate2(date);
-  }
-  while (date < end) {
-    times3.push([
-      toISOString3(date),
-      $_intlSlotLabel.format(date),
-      showAll || times3.length && date >= label2
-    ]);
-    while (!showAll && date >= label2) {
-      addDuration2(label2, $slotLabelInterval);
-    }
-    addDuration2(date, $slotDuration);
-  }
-  return times3;
-}
-function createSlotTimeLimits2($slotMinTime, $slotMaxTime, $flexibleSlotTimeLimits, $_viewDates, $_events) {
-  let min$1 = createDuration2($slotMinTime);
-  let max$1 = createDuration2($slotMaxTime);
-  if ($flexibleSlotTimeLimits) {
-    let minMin = createDuration2(min2(toSeconds2(min$1), max2(0, toSeconds2(max$1) - DAY_IN_SECONDS2)));
-    let maxMax = createDuration2(max2(toSeconds2(max$1), toSeconds2(minMin) + DAY_IN_SECONDS2));
-    let filter = isFunction3($flexibleSlotTimeLimits == null ? void 0 : $flexibleSlotTimeLimits.eventFilter) ? $flexibleSlotTimeLimits.eventFilter : (event2) => !bgEvent2(event2.display);
-    loop: for (let date of $_viewDates) {
-      let start = addDuration2(cloneDate2(date), min$1);
-      let end = addDuration2(cloneDate2(date), max$1);
-      let minStart = addDuration2(cloneDate2(date), minMin);
-      let maxEnd = addDuration2(cloneDate2(date), maxMax);
-      for (let event2 of $_events) {
-        if (!event2.allDay && filter(event2) && event2.start < maxEnd && event2.end > minStart) {
-          if (event2.start < start) {
-            let seconds = max2((event2.start - date) / 1e3, toSeconds2(minMin));
-            if (seconds < toSeconds2(min$1)) {
-              min$1.seconds = seconds;
-            }
-          }
-          if (event2.end > end) {
-            let seconds = min2((event2.end - date) / 1e3, toSeconds2(maxMax));
-            if (seconds > toSeconds2(max$1)) {
-              max$1.seconds = seconds;
-            }
-          }
-          if (toSeconds2(min$1) === toSeconds2(minMin) && toSeconds2(max$1) === toSeconds2(maxMax)) {
-            break loop;
-          }
-        }
-      }
-    }
-  }
-  return { min: min$1, max: max$1 };
-}
-
-// node_modules/@event-calendar/time-grid/index.js
-function times2(state2) {
-  return derived4(
-    [state2.slotDuration, state2.slotLabelInterval, state2._slotTimeLimits, state2._intlSlotLabel],
-    (args) => createTimes2(setMidnight2(createDate2()), ...args)
-  );
-}
-function slotTimeLimits2(state2) {
-  return derived4(
-    [state2.slotMinTime, state2.slotMaxTime, state2.flexibleSlotTimeLimits, state2._viewDates, state2._events],
-    (args) => createSlotTimeLimits2(...args)
-  );
-}
-function groupEventChunks2(chunks) {
-  if (!chunks.length) {
-    return;
-  }
-  sortEventChunks2(chunks);
-  let group = {
-    columns: [],
-    end: chunks[0].end
-  };
-  for (let chunk of chunks) {
-    let c = 0;
-    if (chunk.start < group.end) {
-      for (; c < group.columns.length; ++c) {
-        if (group.columns[c].at(-1).end <= chunk.start) {
-          break;
-        }
-      }
-      if (chunk.end > group.end) {
-        group.end = chunk.end;
-      }
-    } else {
-      group = {
-        columns: [],
-        end: chunk.end
-      };
-    }
-    if (group.columns.length < c + 1) {
-      group.columns.push([]);
-    }
-    group.columns[c].push(chunk);
-    chunk.group = group;
-    chunk.column = c;
-  }
-}
-function createAllDayContent2(allDayContent) {
-  let text5 = "all-day";
-  let content;
-  if (allDayContent) {
-    content = isFunction3(allDayContent) ? allDayContent({ text: text5 }) : allDayContent;
-    if (typeof content === "string") {
-      content = { html: content };
-    }
-  } else {
-    content = {
-      html: text5
-    };
-  }
-  return content;
-}
-var get_lines_slot_changes = (dirty) => ({});
-var get_lines_slot_context = (ctx) => ({});
-function get_each_context$5(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[9] = list[i];
-  return child_ctx;
-}
-function create_each_block$5(ctx) {
-  let time_1;
-  let time_1_class_value;
-  let time_1_datetime_value;
-  let setContent_action;
-  let mounted;
-  let dispose;
-  return {
-    c() {
-      time_1 = element3("time");
-      attr3(time_1, "class", time_1_class_value = /*$theme*/
-      ctx[1].time);
-      attr3(time_1, "datetime", time_1_datetime_value = /*time*/
-      ctx[9][0]);
-    },
-    m(target, anchor) {
-      insert2(target, time_1, anchor);
-      if (!mounted) {
-        dispose = action_destroyer2(setContent_action = setContent3.call(
-          null,
-          time_1,
-          /*time*/
-          ctx[9][2] ? (
-            /*time*/
-            ctx[9][1]
-          ) : ""
-        ));
-        mounted = true;
-      }
-    },
-    p(new_ctx, dirty) {
-      ctx = new_ctx;
-      if (dirty & /*$theme*/
-      2 && time_1_class_value !== (time_1_class_value = /*$theme*/
-      ctx[1].time)) {
-        attr3(time_1, "class", time_1_class_value);
-      }
-      if (dirty & /*$_times*/
-      4 && time_1_datetime_value !== (time_1_datetime_value = /*time*/
-      ctx[9][0])) {
-        attr3(time_1, "datetime", time_1_datetime_value);
-      }
-      if (setContent_action && is_function3(setContent_action.update) && dirty & /*$_times*/
-      4) setContent_action.update.call(
-        null,
-        /*time*/
-        ctx[9][2] ? (
-          /*time*/
-          ctx[9][1]
-        ) : ""
-      );
-    },
-    d(detaching) {
-      if (detaching) {
-        detach2(time_1);
-      }
-      mounted = false;
-      dispose();
-    }
-  };
-}
-function create_fragment$8(ctx) {
-  let div1;
-  let div0;
-  let div0_class_value;
-  let setContent_action;
-  let t0;
-  let div1_class_value;
-  let t1;
-  let div3;
-  let div2;
-  let div2_class_value;
-  let t2;
-  let div3_class_value;
-  let current;
-  let mounted;
-  let dispose;
-  let each_value = ensure_array_like2(
-    /*$_times*/
-    ctx[2]
-  );
-  let each_blocks = [];
-  for (let i = 0; i < each_value.length; i += 1) {
-    each_blocks[i] = create_each_block$5(get_each_context$5(ctx, each_value, i));
-  }
-  const lines_slot_template = (
-    /*#slots*/
-    ctx[8].lines
-  );
-  const lines_slot = create_slot(
-    lines_slot_template,
-    ctx,
-    /*$$scope*/
-    ctx[7],
-    get_lines_slot_context
-  );
-  const default_slot_template = (
-    /*#slots*/
-    ctx[8].default
-  );
-  const default_slot = create_slot(
-    default_slot_template,
-    ctx,
-    /*$$scope*/
-    ctx[7],
-    null
-  );
-  return {
-    c() {
-      div1 = element3("div");
-      div0 = element3("div");
-      t0 = space2();
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].c();
-      }
-      t1 = space2();
-      div3 = element3("div");
-      div2 = element3("div");
-      if (lines_slot) lines_slot.c();
-      t2 = space2();
-      if (default_slot) default_slot.c();
-      attr3(div0, "class", div0_class_value = /*$theme*/
-      ctx[1].sidebarTitle);
-      attr3(div1, "class", div1_class_value = /*$theme*/
-      ctx[1].sidebar);
-      attr3(div2, "class", div2_class_value = /*$theme*/
-      ctx[1].lines);
-      attr3(div3, "class", div3_class_value = /*$theme*/
-      ctx[1].days);
-      attr3(div3, "role", "row");
-    },
-    m(target, anchor) {
-      insert2(target, div1, anchor);
-      append3(div1, div0);
-      append3(div1, t0);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        if (each_blocks[i]) {
-          each_blocks[i].m(div1, null);
-        }
-      }
-      insert2(target, t1, anchor);
-      insert2(target, div3, anchor);
-      append3(div3, div2);
-      if (lines_slot) {
-        lines_slot.m(div2, null);
-      }
-      append3(div3, t2);
-      if (default_slot) {
-        default_slot.m(div3, null);
-      }
-      current = true;
-      if (!mounted) {
-        dispose = action_destroyer2(setContent_action = setContent3.call(
-          null,
-          div0,
-          /*allDayText*/
-          ctx[0]
-        ));
-        mounted = true;
-      }
-    },
-    p(ctx2, [dirty]) {
-      if (!current || dirty & /*$theme*/
-      2 && div0_class_value !== (div0_class_value = /*$theme*/
-      ctx2[1].sidebarTitle)) {
-        attr3(div0, "class", div0_class_value);
-      }
-      if (setContent_action && is_function3(setContent_action.update) && dirty & /*allDayText*/
-      1) setContent_action.update.call(
-        null,
-        /*allDayText*/
-        ctx2[0]
-      );
-      if (dirty & /*$theme, $_times*/
-      6) {
-        each_value = ensure_array_like2(
-          /*$_times*/
-          ctx2[2]
-        );
-        let i;
-        for (i = 0; i < each_value.length; i += 1) {
-          const child_ctx = get_each_context$5(ctx2, each_value, i);
-          if (each_blocks[i]) {
-            each_blocks[i].p(child_ctx, dirty);
-          } else {
-            each_blocks[i] = create_each_block$5(child_ctx);
-            each_blocks[i].c();
-            each_blocks[i].m(div1, null);
-          }
-        }
-        for (; i < each_blocks.length; i += 1) {
-          each_blocks[i].d(1);
-        }
-        each_blocks.length = each_value.length;
-      }
-      if (!current || dirty & /*$theme*/
-      2 && div1_class_value !== (div1_class_value = /*$theme*/
-      ctx2[1].sidebar)) {
-        attr3(div1, "class", div1_class_value);
-      }
-      if (lines_slot) {
-        if (lines_slot.p && (!current || dirty & /*$$scope*/
-        128)) {
-          update_slot_base(
-            lines_slot,
-            lines_slot_template,
-            ctx2,
-            /*$$scope*/
-            ctx2[7],
-            !current ? get_all_dirty_from_scope(
-              /*$$scope*/
-              ctx2[7]
-            ) : get_slot_changes(
-              lines_slot_template,
-              /*$$scope*/
-              ctx2[7],
-              dirty,
-              get_lines_slot_changes
-            ),
-            get_lines_slot_context
-          );
-        }
-      }
-      if (!current || dirty & /*$theme*/
-      2 && div2_class_value !== (div2_class_value = /*$theme*/
-      ctx2[1].lines)) {
-        attr3(div2, "class", div2_class_value);
-      }
-      if (default_slot) {
-        if (default_slot.p && (!current || dirty & /*$$scope*/
-        128)) {
-          update_slot_base(
-            default_slot,
-            default_slot_template,
-            ctx2,
-            /*$$scope*/
-            ctx2[7],
-            !current ? get_all_dirty_from_scope(
-              /*$$scope*/
-              ctx2[7]
-            ) : get_slot_changes(
-              default_slot_template,
-              /*$$scope*/
-              ctx2[7],
-              dirty,
-              null
-            ),
-            null
-          );
-        }
-      }
-      if (!current || dirty & /*$theme*/
-      2 && div3_class_value !== (div3_class_value = /*$theme*/
-      ctx2[1].days)) {
-        attr3(div3, "class", div3_class_value);
-      }
-    },
-    i(local) {
-      if (current) return;
-      transition_in2(lines_slot, local);
-      transition_in2(default_slot, local);
-      current = true;
-    },
-    o(local) {
-      transition_out2(lines_slot, local);
-      transition_out2(default_slot, local);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach2(div1);
-        detach2(t1);
-        detach2(div3);
-      }
-      destroy_each2(each_blocks, detaching);
-      if (lines_slot) lines_slot.d(detaching);
-      if (default_slot) default_slot.d(detaching);
-      mounted = false;
-      dispose();
-    }
-  };
-}
-function instance$8($$self, $$props, $$invalidate) {
-  let $allDayContent;
-  let $theme;
-  let $_times;
-  let { $$slots: slots = {}, $$scope } = $$props;
-  let { allDayContent, theme, _times } = getContext3("state");
-  component_subscribe2($$self, allDayContent, (value) => $$invalidate(6, $allDayContent = value));
-  component_subscribe2($$self, theme, (value) => $$invalidate(1, $theme = value));
-  component_subscribe2($$self, _times, (value) => $$invalidate(2, $_times = value));
-  let allDayText;
-  $$self.$$set = ($$props2) => {
-    if ("$$scope" in $$props2) $$invalidate(7, $$scope = $$props2.$$scope);
-  };
-  $$self.$$.update = () => {
-    if ($$self.$$.dirty & /*$allDayContent*/
-    64) {
-      $$invalidate(0, allDayText = createAllDayContent2($allDayContent));
-    }
-  };
-  return [
-    allDayText,
-    $theme,
-    $_times,
-    allDayContent,
-    theme,
-    _times,
-    $allDayContent,
-    $$scope,
-    slots
-  ];
-}
-var Section2 = class extends SvelteComponent2 {
-  constructor(options) {
-    super();
-    init3(this, options, instance$8, create_fragment$8, safe_not_equal3, {});
-  }
-};
-function get_each_context$4(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[23] = list[i];
-  return child_ctx;
-}
-function create_default_slot$1(ctx) {
-  let current;
-  const default_slot_template = (
-    /*#slots*/
-    ctx[16].default
-  );
-  const default_slot = create_slot(
-    default_slot_template,
-    ctx,
-    /*$$scope*/
-    ctx[18],
-    null
-  );
-  return {
-    c() {
-      if (default_slot) default_slot.c();
-    },
-    m(target, anchor) {
-      if (default_slot) {
-        default_slot.m(target, anchor);
-      }
-      current = true;
-    },
-    p(ctx2, dirty) {
-      if (default_slot) {
-        if (default_slot.p && (!current || dirty & /*$$scope*/
-        262144)) {
-          update_slot_base(
-            default_slot,
-            default_slot_template,
-            ctx2,
-            /*$$scope*/
-            ctx2[18],
-            !current ? get_all_dirty_from_scope(
-              /*$$scope*/
-              ctx2[18]
-            ) : get_slot_changes(
-              default_slot_template,
-              /*$$scope*/
-              ctx2[18],
-              dirty,
-              null
-            ),
-            null
-          );
-        }
-      }
-    },
-    i(local) {
-      if (current) return;
-      transition_in2(default_slot, local);
-      current = true;
-    },
-    o(local) {
-      transition_out2(default_slot, local);
-      current = false;
-    },
-    d(detaching) {
-      if (default_slot) default_slot.d(detaching);
-    }
-  };
-}
-function create_each_block$4(ctx) {
-  let div;
-  let div_class_value;
-  return {
-    c() {
-      div = element3("div");
-      attr3(div, "class", div_class_value = /*$theme*/
-      ctx[3].line);
-    },
-    m(target, anchor) {
-      insert2(target, div, anchor);
-    },
-    p(ctx2, dirty) {
-      if (dirty & /*$theme*/
-      8 && div_class_value !== (div_class_value = /*$theme*/
-      ctx2[3].line)) {
-        attr3(div, "class", div_class_value);
-      }
-    },
-    d(detaching) {
-      if (detaching) {
-        detach2(div);
-      }
-    }
-  };
-}
-function create_lines_slot(ctx) {
-  let each_1_anchor;
-  let each_value = ensure_array_like2(
-    /*lines*/
-    ctx[2]
-  );
-  let each_blocks = [];
-  for (let i = 0; i < each_value.length; i += 1) {
-    each_blocks[i] = create_each_block$4(get_each_context$4(ctx, each_value, i));
-  }
-  return {
-    c() {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].c();
-      }
-      each_1_anchor = empty2();
-    },
-    m(target, anchor) {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        if (each_blocks[i]) {
-          each_blocks[i].m(target, anchor);
-        }
-      }
-      insert2(target, each_1_anchor, anchor);
-    },
-    p(ctx2, dirty) {
-      if (dirty & /*$theme, lines*/
-      12) {
-        each_value = ensure_array_like2(
-          /*lines*/
-          ctx2[2]
-        );
-        let i;
-        for (i = 0; i < each_value.length; i += 1) {
-          const child_ctx = get_each_context$4(ctx2, each_value, i);
-          if (each_blocks[i]) {
-            each_blocks[i].p(child_ctx, dirty);
-          } else {
-            each_blocks[i] = create_each_block$4(child_ctx);
-            each_blocks[i].c();
-            each_blocks[i].m(each_1_anchor.parentNode, each_1_anchor);
-          }
-        }
-        for (; i < each_blocks.length; i += 1) {
-          each_blocks[i].d(1);
-        }
-        each_blocks.length = each_value.length;
-      }
-    },
-    d(detaching) {
-      if (detaching) {
-        detach2(each_1_anchor);
-      }
-      destroy_each2(each_blocks, detaching);
-    }
-  };
-}
-function create_fragment$7(ctx) {
-  let div1;
-  let div0;
-  let section;
-  let div0_class_value;
-  let div1_class_value;
-  let current;
-  section = new Section2({
-    props: {
-      $$slots: {
-        lines: [create_lines_slot],
-        default: [create_default_slot$1]
-      },
-      $$scope: { ctx }
-    }
-  });
-  return {
-    c() {
-      div1 = element3("div");
-      div0 = element3("div");
-      create_component2(section.$$.fragment);
-      attr3(div0, "class", div0_class_value = /*$theme*/
-      ctx[3].content);
-      attr3(div1, "class", div1_class_value = /*$theme*/
-      ctx[3].body + /*compact*/
-      (ctx[1] ? " " + /*$theme*/
-      ctx[3].compact : ""));
-    },
-    m(target, anchor) {
-      insert2(target, div1, anchor);
-      append3(div1, div0);
-      mount_component2(section, div0, null);
-      ctx[17](div1);
-      current = true;
-    },
-    p(ctx2, [dirty]) {
-      const section_changes = {};
-      if (dirty & /*$$scope, lines, $theme*/
-      262156) {
-        section_changes.$$scope = { dirty, ctx: ctx2 };
-      }
-      section.$set(section_changes);
-      if (!current || dirty & /*$theme*/
-      8 && div0_class_value !== (div0_class_value = /*$theme*/
-      ctx2[3].content)) {
-        attr3(div0, "class", div0_class_value);
-      }
-      if (!current || dirty & /*$theme, compact*/
-      10 && div1_class_value !== (div1_class_value = /*$theme*/
-      ctx2[3].body + /*compact*/
-      (ctx2[1] ? " " + /*$theme*/
-      ctx2[3].compact : ""))) {
-        attr3(div1, "class", div1_class_value);
-      }
-    },
-    i(local) {
-      if (current) return;
-      transition_in2(section.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out2(section.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach2(div1);
-      }
-      destroy_component2(section);
-      ctx[17](null);
-    }
-  };
-}
-function instance$7($$self, $$props, $$invalidate) {
-  let $slotHeight;
-  let $slotDuration;
-  let $_slotTimeLimits;
-  let $scrollTime;
-  let $_viewDates;
-  let $_times;
-  let $_bodyEl;
-  let $theme;
-  let { $$slots: slots = {}, $$scope } = $$props;
-  let { _bodyEl, _viewDates, _slotTimeLimits, _times, scrollTime, slotDuration, slotHeight, theme } = getContext3("state");
-  component_subscribe2($$self, _bodyEl, (value) => $$invalidate(21, $_bodyEl = value));
-  component_subscribe2($$self, _viewDates, (value) => $$invalidate(14, $_viewDates = value));
-  component_subscribe2($$self, _slotTimeLimits, (value) => $$invalidate(20, $_slotTimeLimits = value));
-  component_subscribe2($$self, _times, (value) => $$invalidate(15, $_times = value));
-  component_subscribe2($$self, scrollTime, (value) => $$invalidate(13, $scrollTime = value));
-  component_subscribe2($$self, slotDuration, (value) => $$invalidate(12, $slotDuration = value));
-  component_subscribe2($$self, slotHeight, (value) => $$invalidate(19, $slotHeight = value));
-  component_subscribe2($$self, theme, (value) => $$invalidate(3, $theme = value));
-  let el;
-  let compact;
-  let lines = [];
-  function scrollToTime() {
-    $$invalidate(0, el.scrollTop = (($scrollTime.seconds - $_slotTimeLimits.min.seconds) / $slotDuration.seconds - 0.5) * $slotHeight, el);
-  }
-  function div1_binding($$value) {
-    binding_callbacks2[$$value ? "unshift" : "push"](() => {
-      el = $$value;
-      $$invalidate(0, el);
-    });
-  }
-  $$self.$$set = ($$props2) => {
-    if ("$$scope" in $$props2) $$invalidate(18, $$scope = $$props2.$$scope);
-  };
-  $$self.$$.update = () => {
-    if ($$self.$$.dirty & /*el*/
-    1) {
-      set_store_value2(_bodyEl, $_bodyEl = el, $_bodyEl);
-    }
-    if ($$self.$$.dirty & /*$slotDuration, $_times*/
-    36864) {
-      {
-        $$invalidate(1, compact = $slotDuration.seconds >= 3600);
-        $$invalidate(2, lines.length = $_times.length, lines);
-      }
-    }
-    if ($$self.$$.dirty & /*el, $_viewDates, $scrollTime*/
-    24577) {
-      if (el) {
-        scrollToTime();
-      }
-    }
-  };
-  return [
-    el,
-    compact,
-    lines,
-    $theme,
-    _bodyEl,
-    _viewDates,
-    _slotTimeLimits,
-    _times,
-    scrollTime,
-    slotDuration,
-    slotHeight,
-    theme,
-    $slotDuration,
-    $scrollTime,
-    $_viewDates,
-    $_times,
-    slots,
-    div1_binding,
-    $$scope
-  ];
-}
-var Body = class extends SvelteComponent2 {
-  constructor(options) {
-    super();
-    init3(this, options, instance$7, create_fragment$7, safe_not_equal3, {});
-  }
-};
-function create_fragment$6(ctx) {
-  let article;
-  let switch_instance0;
-  let t0;
-  let div;
-  let div_class_value;
-  let setContent_action;
-  let t1;
-  let switch_instance1;
-  let article_role_value;
-  let article_tabindex_value;
-  let current;
-  let mounted;
-  let dispose;
-  var switch_value = (
-    /*$_interaction*/
-    ctx[10].resizer
-  );
-  function switch_props(ctx2, dirty) {
-    return {
-      props: { start: true, event: (
-        /*event*/
-        ctx2[0]
-      ) }
-    };
-  }
-  if (switch_value) {
-    switch_instance0 = construct_svelte_component2(switch_value, switch_props(ctx));
-    switch_instance0.$on("pointerdown", function() {
-      if (is_function3(
-        /*createDragHandler*/
-        ctx[33](
-          /*$_interaction*/
-          ctx[10],
-          ["y", "start"]
-        )
-      )) ctx[33](
-        /*$_interaction*/
-        ctx[10],
-        ["y", "start"]
-      ).apply(this, arguments);
-    });
-  }
-  var switch_value_1 = (
-    /*$_interaction*/
-    ctx[10].resizer
-  );
-  function switch_props_1(ctx2, dirty) {
-    return { props: { event: (
-      /*event*/
-      ctx2[0]
-    ) } };
-  }
-  if (switch_value_1) {
-    switch_instance1 = construct_svelte_component2(switch_value_1, switch_props_1(ctx));
-    switch_instance1.$on("pointerdown", function() {
-      if (is_function3(
-        /*createDragHandler*/
-        ctx[33](
-          /*$_interaction*/
-          ctx[10],
-          ["y", "end"]
-        )
-      )) ctx[33](
-        /*$_interaction*/
-        ctx[10],
-        ["y", "end"]
-      ).apply(this, arguments);
-    });
-  }
-  return {
-    c() {
-      article = element3("article");
-      if (switch_instance0) create_component2(switch_instance0.$$.fragment);
-      t0 = space2();
-      div = element3("div");
-      t1 = space2();
-      if (switch_instance1) create_component2(switch_instance1.$$.fragment);
-      attr3(div, "class", div_class_value = /*$theme*/
-      ctx[2].eventBody);
-      attr3(
-        article,
-        "class",
-        /*classes*/
-        ctx[4]
-      );
-      attr3(
-        article,
-        "style",
-        /*style*/
-        ctx[5]
-      );
-      attr3(article, "role", article_role_value = /*onclick*/
-      ctx[7] ? "button" : void 0);
-      attr3(article, "tabindex", article_tabindex_value = /*onclick*/
-      ctx[7] ? 0 : void 0);
-    },
-    m(target, anchor) {
-      insert2(target, article, anchor);
-      if (switch_instance0) mount_component2(switch_instance0, article, null);
-      append3(article, t0);
-      append3(article, div);
-      append3(article, t1);
-      if (switch_instance1) mount_component2(switch_instance1, article, null);
-      ctx[51](article);
-      current = true;
-      if (!mounted) {
-        dispose = [
-          action_destroyer2(setContent_action = setContent3.call(
-            null,
-            div,
-            /*content*/
-            ctx[6]
-          )),
-          listen4(article, "click", function() {
-            if (is_function3(
-              /*onclick*/
-              ctx[7]
-            )) ctx[7].apply(this, arguments);
-          }),
-          listen4(article, "keydown", function() {
-            if (is_function3(
-              /*onclick*/
-              ctx[7] && keyEnter2(
-                /*onclick*/
-                ctx[7]
-              )
-            )) /*onclick*/
-            (ctx[7] && keyEnter2(
-              /*onclick*/
-              ctx[7]
-            )).apply(this, arguments);
-          }),
-          listen4(article, "mouseenter", function() {
-            if (is_function3(
-              /*createHandler*/
-              ctx[32](
-                /*$eventMouseEnter*/
-                ctx[8],
-                /*display*/
-                ctx[1]
-              )
-            )) ctx[32](
-              /*$eventMouseEnter*/
-              ctx[8],
-              /*display*/
-              ctx[1]
-            ).apply(this, arguments);
-          }),
-          listen4(article, "mouseleave", function() {
-            if (is_function3(
-              /*createHandler*/
-              ctx[32](
-                /*$eventMouseLeave*/
-                ctx[9],
-                /*display*/
-                ctx[1]
-              )
-            )) ctx[32](
-              /*$eventMouseLeave*/
-              ctx[9],
-              /*display*/
-              ctx[1]
-            ).apply(this, arguments);
-          }),
-          listen4(article, "pointerdown", function() {
-            if (is_function3(!bgEvent2(
-              /*display*/
-              ctx[1]
-            ) && !helperEvent2(
-              /*display*/
-              ctx[1]
-            ) && /*createDragHandler*/
-            ctx[33](
-              /*$_interaction*/
-              ctx[10]
-            ))) (!bgEvent2(
-              /*display*/
-              ctx[1]
-            ) && !helperEvent2(
-              /*display*/
-              ctx[1]
-            ) && /*createDragHandler*/
-            ctx[33](
-              /*$_interaction*/
-              ctx[10]
-            )).apply(this, arguments);
-          })
-        ];
-        mounted = true;
-      }
-    },
-    p(new_ctx, dirty) {
-      ctx = new_ctx;
-      if (dirty[0] & /*$_interaction*/
-      1024 && switch_value !== (switch_value = /*$_interaction*/
-      ctx[10].resizer)) {
-        if (switch_instance0) {
-          group_outros2();
-          const old_component = switch_instance0;
-          transition_out2(old_component.$$.fragment, 1, 0, () => {
-            destroy_component2(old_component, 1);
-          });
-          check_outros2();
-        }
-        if (switch_value) {
-          switch_instance0 = construct_svelte_component2(switch_value, switch_props(ctx));
-          switch_instance0.$on("pointerdown", function() {
-            if (is_function3(
-              /*createDragHandler*/
-              ctx[33](
-                /*$_interaction*/
-                ctx[10],
-                ["y", "start"]
-              )
-            )) ctx[33](
-              /*$_interaction*/
-              ctx[10],
-              ["y", "start"]
-            ).apply(this, arguments);
-          });
-          create_component2(switch_instance0.$$.fragment);
-          transition_in2(switch_instance0.$$.fragment, 1);
-          mount_component2(switch_instance0, article, t0);
-        } else {
-          switch_instance0 = null;
-        }
-      } else if (switch_value) {
-        const switch_instance0_changes = {};
-        if (dirty[0] & /*event*/
-        1) switch_instance0_changes.event = /*event*/
-        ctx[0];
-        switch_instance0.$set(switch_instance0_changes);
-      }
-      if (!current || dirty[0] & /*$theme*/
-      4 && div_class_value !== (div_class_value = /*$theme*/
-      ctx[2].eventBody)) {
-        attr3(div, "class", div_class_value);
-      }
-      if (setContent_action && is_function3(setContent_action.update) && dirty[0] & /*content*/
-      64) setContent_action.update.call(
-        null,
-        /*content*/
-        ctx[6]
-      );
-      if (dirty[0] & /*$_interaction*/
-      1024 && switch_value_1 !== (switch_value_1 = /*$_interaction*/
-      ctx[10].resizer)) {
-        if (switch_instance1) {
-          group_outros2();
-          const old_component = switch_instance1;
-          transition_out2(old_component.$$.fragment, 1, 0, () => {
-            destroy_component2(old_component, 1);
-          });
-          check_outros2();
-        }
-        if (switch_value_1) {
-          switch_instance1 = construct_svelte_component2(switch_value_1, switch_props_1(ctx));
-          switch_instance1.$on("pointerdown", function() {
-            if (is_function3(
-              /*createDragHandler*/
-              ctx[33](
-                /*$_interaction*/
-                ctx[10],
-                ["y", "end"]
-              )
-            )) ctx[33](
-              /*$_interaction*/
-              ctx[10],
-              ["y", "end"]
-            ).apply(this, arguments);
-          });
-          create_component2(switch_instance1.$$.fragment);
-          transition_in2(switch_instance1.$$.fragment, 1);
-          mount_component2(switch_instance1, article, null);
-        } else {
-          switch_instance1 = null;
-        }
-      } else if (switch_value_1) {
-        const switch_instance1_changes = {};
-        if (dirty[0] & /*event*/
-        1) switch_instance1_changes.event = /*event*/
-        ctx[0];
-        switch_instance1.$set(switch_instance1_changes);
-      }
-      if (!current || dirty[0] & /*classes*/
-      16) {
-        attr3(
-          article,
-          "class",
-          /*classes*/
-          ctx[4]
-        );
-      }
-      if (!current || dirty[0] & /*style*/
-      32) {
-        attr3(
-          article,
-          "style",
-          /*style*/
-          ctx[5]
-        );
-      }
-      if (!current || dirty[0] & /*onclick*/
-      128 && article_role_value !== (article_role_value = /*onclick*/
-      ctx[7] ? "button" : void 0)) {
-        attr3(article, "role", article_role_value);
-      }
-      if (!current || dirty[0] & /*onclick*/
-      128 && article_tabindex_value !== (article_tabindex_value = /*onclick*/
-      ctx[7] ? 0 : void 0)) {
-        attr3(article, "tabindex", article_tabindex_value);
-      }
-    },
-    i(local) {
-      if (current) return;
-      if (switch_instance0) transition_in2(switch_instance0.$$.fragment, local);
-      if (switch_instance1) transition_in2(switch_instance1.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      if (switch_instance0) transition_out2(switch_instance0.$$.fragment, local);
-      if (switch_instance1) transition_out2(switch_instance1.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach2(article);
-      }
-      if (switch_instance0) destroy_component2(switch_instance0);
-      if (switch_instance1) destroy_component2(switch_instance1);
-      ctx[51](null);
-      mounted = false;
-      run_all3(dispose);
-    }
-  };
-}
-function instance$6($$self, $$props, $$invalidate) {
-  let $eventClick;
-  let $_view;
-  let $eventAllUpdated;
-  let $eventDidMount;
-  let $_intlEventTime;
-  let $theme;
-  let $eventContent;
-  let $displayEventEnd;
-  let $eventClassNames;
-  let $_iClasses;
-  let $slotEventOverlap;
-  let $eventTextColor;
-  let $resources;
-  let $eventColor;
-  let $eventBackgroundColor;
-  let $slotHeight;
-  let $_slotTimeLimits;
-  let $slotDuration;
-  let $eventMouseEnter;
-  let $eventMouseLeave;
-  let $_interaction;
-  let { date } = $$props;
-  let { chunk } = $$props;
-  let { displayEventEnd, eventAllUpdated, eventBackgroundColor, eventTextColor, eventColor, eventContent, eventClick, eventDidMount, eventClassNames, eventMouseEnter, eventMouseLeave, slotEventOverlap, slotDuration, slotHeight, resources, theme, _view, _intlEventTime, _interaction, _iClasses, _slotTimeLimits, _tasks } = getContext3("state");
-  component_subscribe2($$self, displayEventEnd, (value) => $$invalidate(40, $displayEventEnd = value));
-  component_subscribe2($$self, eventAllUpdated, (value) => $$invalidate(53, $eventAllUpdated = value));
-  component_subscribe2($$self, eventBackgroundColor, (value) => $$invalidate(47, $eventBackgroundColor = value));
-  component_subscribe2($$self, eventTextColor, (value) => $$invalidate(44, $eventTextColor = value));
-  component_subscribe2($$self, eventColor, (value) => $$invalidate(46, $eventColor = value));
-  component_subscribe2($$self, eventContent, (value) => $$invalidate(39, $eventContent = value));
-  component_subscribe2($$self, eventClick, (value) => $$invalidate(36, $eventClick = value));
-  component_subscribe2($$self, eventDidMount, (value) => $$invalidate(54, $eventDidMount = value));
-  component_subscribe2($$self, eventClassNames, (value) => $$invalidate(41, $eventClassNames = value));
-  component_subscribe2($$self, eventMouseEnter, (value) => $$invalidate(8, $eventMouseEnter = value));
-  component_subscribe2($$self, eventMouseLeave, (value) => $$invalidate(9, $eventMouseLeave = value));
-  component_subscribe2($$self, slotEventOverlap, (value) => $$invalidate(43, $slotEventOverlap = value));
-  component_subscribe2($$self, slotDuration, (value) => $$invalidate(50, $slotDuration = value));
-  component_subscribe2($$self, slotHeight, (value) => $$invalidate(48, $slotHeight = value));
-  component_subscribe2($$self, resources, (value) => $$invalidate(45, $resources = value));
-  component_subscribe2($$self, theme, (value) => $$invalidate(2, $theme = value));
-  component_subscribe2($$self, _view, (value) => $$invalidate(37, $_view = value));
-  component_subscribe2($$self, _intlEventTime, (value) => $$invalidate(38, $_intlEventTime = value));
-  component_subscribe2($$self, _interaction, (value) => $$invalidate(10, $_interaction = value));
-  component_subscribe2($$self, _iClasses, (value) => $$invalidate(42, $_iClasses = value));
-  component_subscribe2($$self, _slotTimeLimits, (value) => $$invalidate(49, $_slotTimeLimits = value));
-  let el;
-  let event2;
-  let display;
-  let classes;
-  let style;
-  let content;
-  let timeText;
-  let onclick;
-  onMount3(() => {
-    if (isFunction3($eventDidMount)) {
-      $eventDidMount({
-        event: toEventWithLocalDates2(event2),
-        timeText,
-        el,
-        view: toViewWithLocalDates2($_view)
-      });
-    }
-  });
-  afterUpdate2(() => {
-    if (isFunction3($eventAllUpdated) && !helperEvent2(display)) {
-      task2(() => $eventAllUpdated({ view: toViewWithLocalDates2($_view) }), "eau", _tasks);
-    }
-  });
-  function createHandler(fn, display2) {
-    return !helperEvent2(display2) && isFunction3(fn) ? (jsEvent) => fn({
-      event: toEventWithLocalDates2(event2),
-      el,
-      jsEvent,
-      view: toViewWithLocalDates2($_view)
-    }) : void 0;
-  }
-  function createDragHandler(interaction, resize) {
-    return interaction.action ? (jsEvent) => interaction.action.drag(event2, jsEvent, resize, void 0, void 0, chunk.zeroDuration) : void 0;
-  }
-  function article_binding($$value) {
-    binding_callbacks2[$$value ? "unshift" : "push"](() => {
-      el = $$value;
-      $$invalidate(3, el);
-    });
-  }
-  $$self.$$set = ($$props2) => {
-    if ("date" in $$props2) $$invalidate(34, date = $$props2.date);
-    if ("chunk" in $$props2) $$invalidate(35, chunk = $$props2.chunk);
-  };
-  $$self.$$.update = () => {
-    if ($$self.$$.dirty[1] & /*chunk*/
-    16) {
-      $$invalidate(0, event2 = chunk.event);
-    }
-    if ($$self.$$.dirty[0] & /*event, style, display, $theme*/
-    39 | $$self.$$.dirty[1] & /*$slotDuration, $_slotTimeLimits, chunk, date, $slotHeight, $resources, $eventBackgroundColor, $eventColor, $eventTextColor, $slotEventOverlap, $_iClasses, $eventClassNames, $_view*/
-    1047640) {
-      {
-        $$invalidate(1, display = event2.display);
-        let step = $slotDuration.seconds;
-        let offset = $_slotTimeLimits.min.seconds;
-        let start = (chunk.start - date) / 1e3;
-        let end = (chunk.end - date) / 1e3;
-        let top = (start - offset) / step * $slotHeight;
-        let height4 = (end - start) / step * $slotHeight || $slotHeight;
-        let maxHeight = ($_slotTimeLimits.max.seconds - start) / step * $slotHeight;
-        let bgColor = event2.backgroundColor || resourceBackgroundColor2(event2, $resources) || $eventBackgroundColor || $eventColor;
-        let txtColor = event2.textColor || resourceTextColor2(event2, $resources) || $eventTextColor;
-        $$invalidate(5, style = `top:${top}px;min-height:${height4}px;height:${height4}px;max-height:${maxHeight}px;`);
-        if (bgColor) {
-          $$invalidate(5, style += `background-color:${bgColor};`);
-        }
-        if (txtColor) {
-          $$invalidate(5, style += `color:${txtColor};`);
-        }
-        if (!bgEvent2(display) && !helperEvent2(display) || ghostEvent2(display)) {
-          $$invalidate(5, style += `z-index:${chunk.column + 1};left:${100 / chunk.group.columns.length * chunk.column}%;width:${100 / chunk.group.columns.length * ($slotEventOverlap ? 0.5 * (1 + chunk.group.columns.length - chunk.column) : 1)}%;`);
-        }
-        $$invalidate(5, style += event2.styles.join(";"));
-        $$invalidate(4, classes = [
-          bgEvent2(display) ? $theme.bgEvent : $theme.event,
-          ...$_iClasses([], event2),
-          ...createEventClasses2($eventClassNames, event2, $_view)
-        ].join(" "));
-      }
-    }
-    if ($$self.$$.dirty[0] & /*$theme*/
-    4 | $$self.$$.dirty[1] & /*chunk, $displayEventEnd, $eventContent, $_intlEventTime, $_view*/
-    976) {
-      $$invalidate(6, [timeText, content] = createEventContent2(chunk, $displayEventEnd, $eventContent, $theme, $_intlEventTime, $_view), content);
-    }
-    if ($$self.$$.dirty[0] & /*display*/
-    2 | $$self.$$.dirty[1] & /*$eventClick*/
-    32) {
-      $$invalidate(7, onclick = !bgEvent2(display) && createHandler($eventClick, display));
-    }
-  };
-  return [
-    event2,
-    display,
-    $theme,
-    el,
-    classes,
-    style,
-    content,
-    onclick,
-    $eventMouseEnter,
-    $eventMouseLeave,
-    $_interaction,
-    displayEventEnd,
-    eventAllUpdated,
-    eventBackgroundColor,
-    eventTextColor,
-    eventColor,
-    eventContent,
-    eventClick,
-    eventDidMount,
-    eventClassNames,
-    eventMouseEnter,
-    eventMouseLeave,
-    slotEventOverlap,
-    slotDuration,
-    slotHeight,
-    resources,
-    theme,
-    _view,
-    _intlEventTime,
-    _interaction,
-    _iClasses,
-    _slotTimeLimits,
-    createHandler,
-    createDragHandler,
-    date,
-    chunk,
-    $eventClick,
-    $_view,
-    $_intlEventTime,
-    $eventContent,
-    $displayEventEnd,
-    $eventClassNames,
-    $_iClasses,
-    $slotEventOverlap,
-    $eventTextColor,
-    $resources,
-    $eventColor,
-    $eventBackgroundColor,
-    $slotHeight,
-    $_slotTimeLimits,
-    $slotDuration,
-    article_binding
-  ];
-}
-var Event$12 = class Event2 extends SvelteComponent2 {
-  constructor(options) {
-    super();
-    init3(this, options, instance$6, create_fragment$6, safe_not_equal3, { date: 34, chunk: 35 }, null, [-1, -1]);
-  }
-};
-function create_fragment$5(ctx) {
-  let div;
-  let div_class_value;
-  return {
-    c() {
-      div = element3("div");
-      attr3(div, "class", div_class_value = /*$theme*/
-      ctx[1].nowIndicator);
-      set_style3(
-        div,
-        "top",
-        /*top*/
-        ctx[0] + "px"
-      );
-    },
-    m(target, anchor) {
-      insert2(target, div, anchor);
-    },
-    p(ctx2, [dirty]) {
-      if (dirty & /*$theme*/
-      2 && div_class_value !== (div_class_value = /*$theme*/
-      ctx2[1].nowIndicator)) {
-        attr3(div, "class", div_class_value);
-      }
-      if (dirty & /*top*/
-      1) {
-        set_style3(
-          div,
-          "top",
-          /*top*/
-          ctx2[0] + "px"
-        );
-      }
-    },
-    i: noop4,
-    o: noop4,
-    d(detaching) {
-      if (detaching) {
-        detach2(div);
-      }
-    }
-  };
-}
-function instance$5($$self, $$props, $$invalidate) {
-  let $slotHeight;
-  let $_slotTimeLimits;
-  let $slotDuration;
-  let $_today;
-  let $_now;
-  let $theme;
-  let { slotDuration, slotHeight, theme, _now, _today, _slotTimeLimits } = getContext3("state");
-  component_subscribe2($$self, slotDuration, (value) => $$invalidate(11, $slotDuration = value));
-  component_subscribe2($$self, slotHeight, (value) => $$invalidate(9, $slotHeight = value));
-  component_subscribe2($$self, theme, (value) => $$invalidate(1, $theme = value));
-  component_subscribe2($$self, _now, (value) => $$invalidate(13, $_now = value));
-  component_subscribe2($$self, _today, (value) => $$invalidate(12, $_today = value));
-  component_subscribe2($$self, _slotTimeLimits, (value) => $$invalidate(10, $_slotTimeLimits = value));
-  let start;
-  let top = 0;
-  $$self.$$.update = () => {
-    if ($$self.$$.dirty & /*$_now, $_today*/
-    12288) {
-      $$invalidate(8, start = ($_now - $_today) / 1e3 / 60);
-    }
-    if ($$self.$$.dirty & /*$slotDuration, $_slotTimeLimits, start, $slotHeight*/
-    3840) {
-      {
-        let step = $slotDuration.seconds / 60;
-        let offset = $_slotTimeLimits.min.seconds / 60;
-        $$invalidate(0, top = (start - offset) / step * $slotHeight);
-      }
-    }
-  };
-  return [
-    top,
-    $theme,
-    slotDuration,
-    slotHeight,
-    theme,
-    _now,
-    _today,
-    _slotTimeLimits,
-    start,
-    $slotHeight,
-    $_slotTimeLimits,
-    $slotDuration,
-    $_today,
-    $_now
-  ];
-}
-var NowIndicator = class extends SvelteComponent2 {
-  constructor(options) {
-    super();
-    init3(this, options, instance$5, create_fragment$5, safe_not_equal3, {});
-  }
-};
-function get_each_context$3(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[40] = list[i];
-  return child_ctx;
-}
-function get_each_context_1$2(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[40] = list[i];
-  return child_ctx;
-}
-function create_if_block_4(ctx) {
-  let each_blocks = [];
-  let each_1_lookup = /* @__PURE__ */ new Map();
-  let each_1_anchor;
-  let current;
-  let each_value_1 = ensure_array_like2(
-    /*bgChunks*/
-    ctx[3]
-  );
-  const get_key = (ctx2) => (
-    /*chunk*/
-    ctx2[40].event
-  );
-  for (let i = 0; i < each_value_1.length; i += 1) {
-    let child_ctx = get_each_context_1$2(ctx, each_value_1, i);
-    let key2 = get_key(child_ctx);
-    each_1_lookup.set(key2, each_blocks[i] = create_each_block_1$2(key2, child_ctx));
-  }
-  return {
-    c() {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].c();
-      }
-      each_1_anchor = empty2();
-    },
-    m(target, anchor) {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        if (each_blocks[i]) {
-          each_blocks[i].m(target, anchor);
-        }
-      }
-      insert2(target, each_1_anchor, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      if (dirty[0] & /*date, bgChunks*/
-      9) {
-        each_value_1 = ensure_array_like2(
-          /*bgChunks*/
-          ctx2[3]
-        );
-        group_outros2();
-        each_blocks = update_keyed_each(each_blocks, dirty, get_key, 1, ctx2, each_value_1, each_1_lookup, each_1_anchor.parentNode, outro_and_destroy_block, create_each_block_1$2, each_1_anchor, get_each_context_1$2);
-        check_outros2();
-      }
-    },
-    i(local) {
-      if (current) return;
-      for (let i = 0; i < each_value_1.length; i += 1) {
-        transition_in2(each_blocks[i]);
-      }
-      current = true;
-    },
-    o(local) {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        transition_out2(each_blocks[i]);
-      }
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach2(each_1_anchor);
-      }
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].d(detaching);
-      }
-    }
-  };
-}
-function create_each_block_1$2(key_1, ctx) {
-  let first;
-  let event2;
-  let current;
-  event2 = new Event$12({
-    props: {
-      date: (
-        /*date*/
-        ctx[0]
-      ),
-      chunk: (
-        /*chunk*/
-        ctx[40]
-      )
-    }
-  });
-  return {
-    key: key_1,
-    first: null,
-    c() {
-      first = empty2();
-      create_component2(event2.$$.fragment);
-      this.first = first;
-    },
-    m(target, anchor) {
-      insert2(target, first, anchor);
-      mount_component2(event2, target, anchor);
-      current = true;
-    },
-    p(new_ctx, dirty) {
-      ctx = new_ctx;
-      const event_changes = {};
-      if (dirty[0] & /*date*/
-      1) event_changes.date = /*date*/
-      ctx[0];
-      if (dirty[0] & /*bgChunks*/
-      8) event_changes.chunk = /*chunk*/
-      ctx[40];
-      event2.$set(event_changes);
-    },
-    i(local) {
-      if (current) return;
-      transition_in2(event2.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out2(event2.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach2(first);
-      }
-      destroy_component2(event2, detaching);
-    }
-  };
-}
-function create_if_block_1$1(ctx) {
-  let t0;
-  let each_blocks = [];
-  let each_1_lookup = /* @__PURE__ */ new Map();
-  let t1;
-  let if_block1_anchor;
-  let current;
-  let if_block0 = (
-    /*iChunks*/
-    ctx[5][1] && create_if_block_3(ctx)
-  );
-  let each_value = ensure_array_like2(
-    /*chunks*/
-    ctx[2]
-  );
-  const get_key = (ctx2) => (
-    /*chunk*/
-    ctx2[40].event
-  );
-  for (let i = 0; i < each_value.length; i += 1) {
-    let child_ctx = get_each_context$3(ctx, each_value, i);
-    let key2 = get_key(child_ctx);
-    each_1_lookup.set(key2, each_blocks[i] = create_each_block$3(key2, child_ctx));
-  }
-  let if_block1 = (
-    /*iChunks*/
-    ctx[5][0] && !/*iChunks*/
-    ctx[5][0].event.allDay && create_if_block_2$1(ctx)
-  );
-  return {
-    c() {
-      if (if_block0) if_block0.c();
-      t0 = space2();
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].c();
-      }
-      t1 = space2();
-      if (if_block1) if_block1.c();
-      if_block1_anchor = empty2();
-    },
-    m(target, anchor) {
-      if (if_block0) if_block0.m(target, anchor);
-      insert2(target, t0, anchor);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        if (each_blocks[i]) {
-          each_blocks[i].m(target, anchor);
-        }
-      }
-      insert2(target, t1, anchor);
-      if (if_block1) if_block1.m(target, anchor);
-      insert2(target, if_block1_anchor, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      if (
-        /*iChunks*/
-        ctx2[5][1]
-      ) {
-        if (if_block0) {
-          if_block0.p(ctx2, dirty);
-          if (dirty[0] & /*iChunks*/
-          32) {
-            transition_in2(if_block0, 1);
-          }
-        } else {
-          if_block0 = create_if_block_3(ctx2);
-          if_block0.c();
-          transition_in2(if_block0, 1);
-          if_block0.m(t0.parentNode, t0);
-        }
-      } else if (if_block0) {
-        group_outros2();
-        transition_out2(if_block0, 1, 1, () => {
-          if_block0 = null;
-        });
-        check_outros2();
-      }
-      if (dirty[0] & /*date, chunks*/
-      5) {
-        each_value = ensure_array_like2(
-          /*chunks*/
-          ctx2[2]
-        );
-        group_outros2();
-        each_blocks = update_keyed_each(each_blocks, dirty, get_key, 1, ctx2, each_value, each_1_lookup, t1.parentNode, outro_and_destroy_block, create_each_block$3, t1, get_each_context$3);
-        check_outros2();
-      }
-      if (
-        /*iChunks*/
-        ctx2[5][0] && !/*iChunks*/
-        ctx2[5][0].event.allDay
-      ) {
-        if (if_block1) {
-          if_block1.p(ctx2, dirty);
-          if (dirty[0] & /*iChunks*/
-          32) {
-            transition_in2(if_block1, 1);
-          }
-        } else {
-          if_block1 = create_if_block_2$1(ctx2);
-          if_block1.c();
-          transition_in2(if_block1, 1);
-          if_block1.m(if_block1_anchor.parentNode, if_block1_anchor);
-        }
-      } else if (if_block1) {
-        group_outros2();
-        transition_out2(if_block1, 1, 1, () => {
-          if_block1 = null;
-        });
-        check_outros2();
-      }
-    },
-    i(local) {
-      if (current) return;
-      transition_in2(if_block0);
-      for (let i = 0; i < each_value.length; i += 1) {
-        transition_in2(each_blocks[i]);
-      }
-      transition_in2(if_block1);
-      current = true;
-    },
-    o(local) {
-      transition_out2(if_block0);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        transition_out2(each_blocks[i]);
-      }
-      transition_out2(if_block1);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach2(t0);
-        detach2(t1);
-        detach2(if_block1_anchor);
-      }
-      if (if_block0) if_block0.d(detaching);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].d(detaching);
-      }
-      if (if_block1) if_block1.d(detaching);
-    }
-  };
-}
-function create_if_block_3(ctx) {
-  let event2;
-  let current;
-  event2 = new Event$12({
-    props: {
-      date: (
-        /*date*/
-        ctx[0]
-      ),
-      chunk: (
-        /*iChunks*/
-        ctx[5][1]
-      )
-    }
-  });
-  return {
-    c() {
-      create_component2(event2.$$.fragment);
-    },
-    m(target, anchor) {
-      mount_component2(event2, target, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      const event_changes = {};
-      if (dirty[0] & /*date*/
-      1) event_changes.date = /*date*/
-      ctx2[0];
-      if (dirty[0] & /*iChunks*/
-      32) event_changes.chunk = /*iChunks*/
-      ctx2[5][1];
-      event2.$set(event_changes);
-    },
-    i(local) {
-      if (current) return;
-      transition_in2(event2.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out2(event2.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      destroy_component2(event2, detaching);
-    }
-  };
-}
-function create_each_block$3(key_1, ctx) {
-  let first;
-  let event2;
-  let current;
-  event2 = new Event$12({
-    props: {
-      date: (
-        /*date*/
-        ctx[0]
-      ),
-      chunk: (
-        /*chunk*/
-        ctx[40]
-      )
-    }
-  });
-  return {
-    key: key_1,
-    first: null,
-    c() {
-      first = empty2();
-      create_component2(event2.$$.fragment);
-      this.first = first;
-    },
-    m(target, anchor) {
-      insert2(target, first, anchor);
-      mount_component2(event2, target, anchor);
-      current = true;
-    },
-    p(new_ctx, dirty) {
-      ctx = new_ctx;
-      const event_changes = {};
-      if (dirty[0] & /*date*/
-      1) event_changes.date = /*date*/
-      ctx[0];
-      if (dirty[0] & /*chunks*/
-      4) event_changes.chunk = /*chunk*/
-      ctx[40];
-      event2.$set(event_changes);
-    },
-    i(local) {
-      if (current) return;
-      transition_in2(event2.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out2(event2.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach2(first);
-      }
-      destroy_component2(event2, detaching);
-    }
-  };
-}
-function create_if_block_2$1(ctx) {
-  let event2;
-  let current;
-  event2 = new Event$12({
-    props: {
-      date: (
-        /*date*/
-        ctx[0]
-      ),
-      chunk: (
-        /*iChunks*/
-        ctx[5][0]
-      )
-    }
-  });
-  return {
-    c() {
-      create_component2(event2.$$.fragment);
-    },
-    m(target, anchor) {
-      mount_component2(event2, target, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      const event_changes = {};
-      if (dirty[0] & /*date*/
-      1) event_changes.date = /*date*/
-      ctx2[0];
-      if (dirty[0] & /*iChunks*/
-      32) event_changes.chunk = /*iChunks*/
-      ctx2[5][0];
-      event2.$set(event_changes);
-    },
-    i(local) {
-      if (current) return;
-      transition_in2(event2.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out2(event2.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      destroy_component2(event2, detaching);
-    }
-  };
-}
-function create_if_block$2(ctx) {
-  let nowindicator;
-  let current;
-  nowindicator = new NowIndicator({});
-  return {
-    c() {
-      create_component2(nowindicator.$$.fragment);
-    },
-    m(target, anchor) {
-      mount_component2(nowindicator, target, anchor);
-      current = true;
-    },
-    i(local) {
-      if (current) return;
-      transition_in2(nowindicator.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out2(nowindicator.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      destroy_component2(nowindicator, detaching);
-    }
-  };
-}
-function create_fragment$4(ctx) {
-  let div3;
-  let div0;
-  let div0_class_value;
-  let t0;
-  let div1;
-  let div1_class_value;
-  let t1;
-  let div2;
-  let div2_class_value;
-  let div3_class_value;
-  let current;
-  let mounted;
-  let dispose;
-  let if_block0 = !/*disabled*/
-  ctx[4] && create_if_block_4(ctx);
-  let if_block1 = !/*disabled*/
-  ctx[4] && create_if_block_1$1(ctx);
-  let if_block2 = (
-    /*$nowIndicator*/
-    ctx[10] && /*isToday*/
-    ctx[6] && !/*disabled*/
-    ctx[4] && create_if_block$2()
-  );
-  return {
-    c() {
-      var _a3;
-      div3 = element3("div");
-      div0 = element3("div");
-      if (if_block0) if_block0.c();
-      t0 = space2();
-      div1 = element3("div");
-      if (if_block1) if_block1.c();
-      t1 = space2();
-      div2 = element3("div");
-      if (if_block2) if_block2.c();
-      attr3(div0, "class", div0_class_value = /*$theme*/
-      ctx[8].bgEvents);
-      attr3(div1, "class", div1_class_value = /*$theme*/
-      ctx[8].events);
-      attr3(div2, "class", div2_class_value = /*$theme*/
-      ctx[8].extra);
-      attr3(div3, "class", div3_class_value = /*$theme*/
-      ctx[8].day + " " + /*$theme*/
-      ((_a3 = ctx[8].weekdays) == null ? void 0 : _a3[
-        /*date*/
-        ctx[0].getUTCDay()
-      ]) + /*isToday*/
-      (ctx[6] ? " " + /*$theme*/
-      ctx[8].today : "") + /*highlight*/
-      (ctx[7] ? " " + /*$theme*/
-      ctx[8].highlight : "") + /*disabled*/
-      (ctx[4] ? " " + /*$theme*/
-      ctx[8].disabled : ""));
-      attr3(div3, "role", "cell");
-    },
-    m(target, anchor) {
-      insert2(target, div3, anchor);
-      append3(div3, div0);
-      if (if_block0) if_block0.m(div0, null);
-      append3(div3, t0);
-      append3(div3, div1);
-      if (if_block1) if_block1.m(div1, null);
-      append3(div3, t1);
-      append3(div3, div2);
-      if (if_block2) if_block2.m(div2, null);
-      ctx[36](div3);
-      current = true;
-      if (!mounted) {
-        dispose = listen4(div3, "pointerdown", function() {
-          var _a3, _b3;
-          if (is_function3(!/*disabled*/
-          ctx[4] ? (
-            /*$_interaction*/
-            (_a3 = ctx[9].action) == null ? void 0 : _a3.select
-          ) : void 0)) (!/*disabled*/
-          ctx[4] ? (
-            /*$_interaction*/
-            (_b3 = ctx[9].action) == null ? void 0 : _b3.select
-          ) : void 0).apply(this, arguments);
-        });
-        mounted = true;
-      }
-    },
-    p(new_ctx, dirty) {
-      var _a3;
-      ctx = new_ctx;
-      if (!/*disabled*/
-      ctx[4]) {
-        if (if_block0) {
-          if_block0.p(ctx, dirty);
-          if (dirty[0] & /*disabled*/
-          16) {
-            transition_in2(if_block0, 1);
-          }
-        } else {
-          if_block0 = create_if_block_4(ctx);
-          if_block0.c();
-          transition_in2(if_block0, 1);
-          if_block0.m(div0, null);
-        }
-      } else if (if_block0) {
-        group_outros2();
-        transition_out2(if_block0, 1, 1, () => {
-          if_block0 = null;
-        });
-        check_outros2();
-      }
-      if (!current || dirty[0] & /*$theme*/
-      256 && div0_class_value !== (div0_class_value = /*$theme*/
-      ctx[8].bgEvents)) {
-        attr3(div0, "class", div0_class_value);
-      }
-      if (!/*disabled*/
-      ctx[4]) {
-        if (if_block1) {
-          if_block1.p(ctx, dirty);
-          if (dirty[0] & /*disabled*/
-          16) {
-            transition_in2(if_block1, 1);
-          }
-        } else {
-          if_block1 = create_if_block_1$1(ctx);
-          if_block1.c();
-          transition_in2(if_block1, 1);
-          if_block1.m(div1, null);
-        }
-      } else if (if_block1) {
-        group_outros2();
-        transition_out2(if_block1, 1, 1, () => {
-          if_block1 = null;
-        });
-        check_outros2();
-      }
-      if (!current || dirty[0] & /*$theme*/
-      256 && div1_class_value !== (div1_class_value = /*$theme*/
-      ctx[8].events)) {
-        attr3(div1, "class", div1_class_value);
-      }
-      if (
-        /*$nowIndicator*/
-        ctx[10] && /*isToday*/
-        ctx[6] && !/*disabled*/
-        ctx[4]
-      ) {
-        if (if_block2) {
-          if (dirty[0] & /*$nowIndicator, isToday, disabled*/
-          1104) {
-            transition_in2(if_block2, 1);
-          }
-        } else {
-          if_block2 = create_if_block$2();
-          if_block2.c();
-          transition_in2(if_block2, 1);
-          if_block2.m(div2, null);
-        }
-      } else if (if_block2) {
-        group_outros2();
-        transition_out2(if_block2, 1, 1, () => {
-          if_block2 = null;
-        });
-        check_outros2();
-      }
-      if (!current || dirty[0] & /*$theme*/
-      256 && div2_class_value !== (div2_class_value = /*$theme*/
-      ctx[8].extra)) {
-        attr3(div2, "class", div2_class_value);
-      }
-      if (!current || dirty[0] & /*$theme, date, isToday, highlight, disabled*/
-      465 && div3_class_value !== (div3_class_value = /*$theme*/
-      ctx[8].day + " " + /*$theme*/
-      ((_a3 = ctx[8].weekdays) == null ? void 0 : _a3[
-        /*date*/
-        ctx[0].getUTCDay()
-      ]) + /*isToday*/
-      (ctx[6] ? " " + /*$theme*/
-      ctx[8].today : "") + /*highlight*/
-      (ctx[7] ? " " + /*$theme*/
-      ctx[8].highlight : "") + /*disabled*/
-      (ctx[4] ? " " + /*$theme*/
-      ctx[8].disabled : ""))) {
-        attr3(div3, "class", div3_class_value);
-      }
-    },
-    i(local) {
-      if (current) return;
-      transition_in2(if_block0);
-      transition_in2(if_block1);
-      transition_in2(if_block2);
-      current = true;
-    },
-    o(local) {
-      transition_out2(if_block0);
-      transition_out2(if_block1);
-      transition_out2(if_block2);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach2(div3);
-      }
-      if (if_block0) if_block0.d();
-      if (if_block1) if_block1.d();
-      if (if_block2) if_block2.d();
-      ctx[36](null);
-      mounted = false;
-      dispose();
-    }
-  };
-}
-function instance$4($$self, $$props, $$invalidate) {
-  let $slotHeight;
-  let $slotDuration;
-  let $_slotTimeLimits;
-  let $_iEvents;
-  let $_events;
-  let $resources;
-  let $filterEventsWithResources;
-  let $validRange;
-  let $highlightedDates;
-  let $_today;
-  let $theme;
-  let $_interaction;
-  let $nowIndicator;
-  let { date } = $$props;
-  let { resource = void 0 } = $$props;
-  let { _events: _events2, _iEvents, highlightedDates, nowIndicator, slotDuration, slotHeight, filterEventsWithResources, theme, resources, validRange, _interaction, _today, _slotTimeLimits } = getContext3("state");
-  component_subscribe2($$self, _events2, (value) => $$invalidate(30, $_events = value));
-  component_subscribe2($$self, _iEvents, (value) => $$invalidate(29, $_iEvents = value));
-  component_subscribe2($$self, highlightedDates, (value) => $$invalidate(34, $highlightedDates = value));
-  component_subscribe2($$self, nowIndicator, (value) => $$invalidate(10, $nowIndicator = value));
-  component_subscribe2($$self, slotDuration, (value) => $$invalidate(38, $slotDuration = value));
-  component_subscribe2($$self, slotHeight, (value) => $$invalidate(37, $slotHeight = value));
-  component_subscribe2($$self, filterEventsWithResources, (value) => $$invalidate(32, $filterEventsWithResources = value));
-  component_subscribe2($$self, theme, (value) => $$invalidate(8, $theme = value));
-  component_subscribe2($$self, resources, (value) => $$invalidate(31, $resources = value));
-  component_subscribe2($$self, validRange, (value) => $$invalidate(33, $validRange = value));
-  component_subscribe2($$self, _interaction, (value) => $$invalidate(9, $_interaction = value));
-  component_subscribe2($$self, _today, (value) => $$invalidate(35, $_today = value));
-  component_subscribe2($$self, _slotTimeLimits, (value) => $$invalidate(28, $_slotTimeLimits = value));
-  let el;
-  let chunks, bgChunks, iChunks = [];
-  let isToday, highlight, disabled;
-  let resourceFilter;
-  let start, end;
-  function dateFromPoint(x, y) {
-    y -= rect2(el).top;
-    return {
-      allDay: false,
-      date: addDuration2(addDuration2(cloneDate2(date), $_slotTimeLimits.min), $slotDuration, floor2(y / $slotHeight)),
-      resource,
-      dayEl: el,
-      disabled
-    };
-  }
-  function div3_binding($$value) {
-    binding_callbacks2[$$value ? "unshift" : "push"](() => {
-      el = $$value;
-      $$invalidate(1, el);
-    });
-  }
-  $$self.$$set = ($$props2) => {
-    if ("date" in $$props2) $$invalidate(0, date = $$props2.date);
-    if ("resource" in $$props2) $$invalidate(24, resource = $$props2.resource);
-  };
-  $$self.$$.update = () => {
-    if ($$self.$$.dirty[0] & /*date*/
-    1 | $$self.$$.dirty[1] & /*$_today*/
-    16) {
-      $$invalidate(6, isToday = datesEqual2(date, $_today));
-    }
-    if ($$self.$$.dirty[0] & /*date*/
-    1 | $$self.$$.dirty[1] & /*$highlightedDates*/
-    8) {
-      $$invalidate(7, highlight = $highlightedDates.some((d) => datesEqual2(d, date)));
-    }
-    if ($$self.$$.dirty[0] & /*date*/
-    1 | $$self.$$.dirty[1] & /*$validRange*/
-    4) {
-      $$invalidate(4, disabled = outsideRange2(date, $validRange));
-    }
-    if ($$self.$$.dirty[0] & /*disabled, date, $_slotTimeLimits*/
-    268435473) {
-      if (!disabled) {
-        $$invalidate(26, start = addDuration2(cloneDate2(date), $_slotTimeLimits.min));
-        $$invalidate(27, end = addDuration2(cloneDate2(date), $_slotTimeLimits.max));
-      }
-    }
-    if ($$self.$$.dirty[0] & /*resource*/
-    16777216 | $$self.$$.dirty[1] & /*$filterEventsWithResources, $resources*/
-    3) {
-      $$invalidate(25, resourceFilter = resource != null ? resource : $filterEventsWithResources ? $resources : void 0);
-    }
-    if ($$self.$$.dirty[0] & /*disabled, $_events, start, end, resourceFilter, bgChunks, chunks*/
-    1308622876) {
-      if (!disabled) {
-        $$invalidate(2, chunks = []);
-        $$invalidate(3, bgChunks = []);
-        for (let event2 of $_events) {
-          if ((!event2.allDay || bgEvent2(event2.display)) && eventIntersects2(event2, start, end, resourceFilter)) {
-            let chunk = createEventChunk2(event2, start, end);
-            switch (event2.display) {
-              case "background":
-                bgChunks.push(chunk);
-                break;
-              default:
-                chunks.push(chunk);
-            }
-          }
-        }
-        groupEventChunks2(chunks);
-      }
-    }
-    if ($$self.$$.dirty[0] & /*disabled, $_iEvents, start, end, resource*/
-    754974736) {
-      if (!disabled) {
-        $$invalidate(5, iChunks = $_iEvents.map((event2) => event2 && eventIntersects2(event2, start, end, resource) ? createEventChunk2(event2, start, end) : null));
-      }
-    }
-    if ($$self.$$.dirty[0] & /*el*/
-    2) {
-      if (el) {
-        setPayload3(el, dateFromPoint);
-      }
-    }
-  };
-  return [
-    date,
-    el,
-    chunks,
-    bgChunks,
-    disabled,
-    iChunks,
-    isToday,
-    highlight,
-    $theme,
-    $_interaction,
-    $nowIndicator,
-    _events2,
-    _iEvents,
-    highlightedDates,
-    nowIndicator,
-    slotDuration,
-    slotHeight,
-    filterEventsWithResources,
-    theme,
-    resources,
-    validRange,
-    _interaction,
-    _today,
-    _slotTimeLimits,
-    resource,
-    resourceFilter,
-    start,
-    end,
-    $_slotTimeLimits,
-    $_iEvents,
-    $_events,
-    $resources,
-    $filterEventsWithResources,
-    $validRange,
-    $highlightedDates,
-    $_today,
-    div3_binding
-  ];
-}
-var Day$12 = class Day extends SvelteComponent2 {
-  constructor(options) {
-    super();
-    init3(this, options, instance$4, create_fragment$4, safe_not_equal3, { date: 0, resource: 24 }, null, [-1, -1]);
-  }
-};
-function create_fragment$3(ctx) {
-  let article;
-  let switch_instance0;
-  let t0;
-  let div;
-  let div_class_value;
-  let setContent_action;
-  let t1;
-  let switch_instance1;
-  let article_role_value;
-  let article_tabindex_value;
-  let current;
-  let mounted;
-  let dispose;
-  var switch_value = (
-    /*$_interaction*/
-    ctx[10].resizer
-  );
-  function switch_props(ctx2, dirty) {
-    return {
-      props: { start: true, event: (
-        /*event*/
-        ctx2[0]
-      ) }
-    };
-  }
-  if (switch_value) {
-    switch_instance0 = construct_svelte_component2(switch_value, switch_props(ctx));
-    switch_instance0.$on("pointerdown", function() {
-      if (is_function3(
-        /*createDragHandler*/
-        ctx[29](
-          /*$_interaction*/
-          ctx[10],
-          ["x", "start"]
-        )
-      )) ctx[29](
-        /*$_interaction*/
-        ctx[10],
-        ["x", "start"]
-      ).apply(this, arguments);
-    });
-  }
-  var switch_value_1 = (
-    /*$_interaction*/
-    ctx[10].resizer
-  );
-  function switch_props_1(ctx2, dirty) {
-    return { props: { event: (
-      /*event*/
-      ctx2[0]
-    ) } };
-  }
-  if (switch_value_1) {
-    switch_instance1 = construct_svelte_component2(switch_value_1, switch_props_1(ctx));
-    switch_instance1.$on("pointerdown", function() {
-      if (is_function3(
-        /*createDragHandler*/
-        ctx[29](
-          /*$_interaction*/
-          ctx[10],
-          ["x", "end"]
-        )
-      )) ctx[29](
-        /*$_interaction*/
-        ctx[10],
-        ["x", "end"]
-      ).apply(this, arguments);
-    });
-  }
-  return {
-    c() {
-      article = element3("article");
-      if (switch_instance0) create_component2(switch_instance0.$$.fragment);
-      t0 = space2();
-      div = element3("div");
-      t1 = space2();
-      if (switch_instance1) create_component2(switch_instance1.$$.fragment);
-      attr3(div, "class", div_class_value = /*$theme*/
-      ctx[2].eventBody);
-      attr3(
-        article,
-        "class",
-        /*classes*/
-        ctx[4]
-      );
-      attr3(
-        article,
-        "style",
-        /*style*/
-        ctx[5]
-      );
-      attr3(article, "role", article_role_value = /*onclick*/
-      ctx[7] ? "button" : void 0);
-      attr3(article, "tabindex", article_tabindex_value = /*onclick*/
-      ctx[7] ? 0 : void 0);
-    },
-    m(target, anchor) {
-      insert2(target, article, anchor);
-      if (switch_instance0) mount_component2(switch_instance0, article, null);
-      append3(article, t0);
-      append3(article, div);
-      append3(article, t1);
-      if (switch_instance1) mount_component2(switch_instance1, article, null);
-      ctx[45](article);
-      current = true;
-      if (!mounted) {
-        dispose = [
-          action_destroyer2(setContent_action = setContent3.call(
-            null,
-            div,
-            /*content*/
-            ctx[6]
-          )),
-          listen4(article, "click", function() {
-            if (is_function3(
-              /*onclick*/
-              ctx[7]
-            )) ctx[7].apply(this, arguments);
-          }),
-          listen4(article, "keydown", function() {
-            if (is_function3(
-              /*onclick*/
-              ctx[7] && keyEnter2(
-                /*onclick*/
-                ctx[7]
-              )
-            )) /*onclick*/
-            (ctx[7] && keyEnter2(
-              /*onclick*/
-              ctx[7]
-            )).apply(this, arguments);
-          }),
-          listen4(article, "mouseenter", function() {
-            if (is_function3(
-              /*createHandler*/
-              ctx[28](
-                /*$eventMouseEnter*/
-                ctx[8],
-                /*display*/
-                ctx[1]
-              )
-            )) ctx[28](
-              /*$eventMouseEnter*/
-              ctx[8],
-              /*display*/
-              ctx[1]
-            ).apply(this, arguments);
-          }),
-          listen4(article, "mouseleave", function() {
-            if (is_function3(
-              /*createHandler*/
-              ctx[28](
-                /*$eventMouseLeave*/
-                ctx[9],
-                /*display*/
-                ctx[1]
-              )
-            )) ctx[28](
-              /*$eventMouseLeave*/
-              ctx[9],
-              /*display*/
-              ctx[1]
-            ).apply(this, arguments);
-          }),
-          listen4(article, "pointerdown", function() {
-            if (is_function3(!helperEvent2(
-              /*display*/
-              ctx[1]
-            ) && /*createDragHandler*/
-            ctx[29](
-              /*$_interaction*/
-              ctx[10]
-            ))) (!helperEvent2(
-              /*display*/
-              ctx[1]
-            ) && /*createDragHandler*/
-            ctx[29](
-              /*$_interaction*/
-              ctx[10]
-            )).apply(this, arguments);
-          })
-        ];
-        mounted = true;
-      }
-    },
-    p(new_ctx, dirty) {
-      ctx = new_ctx;
-      if (dirty[0] & /*$_interaction*/
-      1024 && switch_value !== (switch_value = /*$_interaction*/
-      ctx[10].resizer)) {
-        if (switch_instance0) {
-          group_outros2();
-          const old_component = switch_instance0;
-          transition_out2(old_component.$$.fragment, 1, 0, () => {
-            destroy_component2(old_component, 1);
-          });
-          check_outros2();
-        }
-        if (switch_value) {
-          switch_instance0 = construct_svelte_component2(switch_value, switch_props(ctx));
-          switch_instance0.$on("pointerdown", function() {
-            if (is_function3(
-              /*createDragHandler*/
-              ctx[29](
-                /*$_interaction*/
-                ctx[10],
-                ["x", "start"]
-              )
-            )) ctx[29](
-              /*$_interaction*/
-              ctx[10],
-              ["x", "start"]
-            ).apply(this, arguments);
-          });
-          create_component2(switch_instance0.$$.fragment);
-          transition_in2(switch_instance0.$$.fragment, 1);
-          mount_component2(switch_instance0, article, t0);
-        } else {
-          switch_instance0 = null;
-        }
-      } else if (switch_value) {
-        const switch_instance0_changes = {};
-        if (dirty[0] & /*event*/
-        1) switch_instance0_changes.event = /*event*/
-        ctx[0];
-        switch_instance0.$set(switch_instance0_changes);
-      }
-      if (!current || dirty[0] & /*$theme*/
-      4 && div_class_value !== (div_class_value = /*$theme*/
-      ctx[2].eventBody)) {
-        attr3(div, "class", div_class_value);
-      }
-      if (setContent_action && is_function3(setContent_action.update) && dirty[0] & /*content*/
-      64) setContent_action.update.call(
-        null,
-        /*content*/
-        ctx[6]
-      );
-      if (dirty[0] & /*$_interaction*/
-      1024 && switch_value_1 !== (switch_value_1 = /*$_interaction*/
-      ctx[10].resizer)) {
-        if (switch_instance1) {
-          group_outros2();
-          const old_component = switch_instance1;
-          transition_out2(old_component.$$.fragment, 1, 0, () => {
-            destroy_component2(old_component, 1);
-          });
-          check_outros2();
-        }
-        if (switch_value_1) {
-          switch_instance1 = construct_svelte_component2(switch_value_1, switch_props_1(ctx));
-          switch_instance1.$on("pointerdown", function() {
-            if (is_function3(
-              /*createDragHandler*/
-              ctx[29](
-                /*$_interaction*/
-                ctx[10],
-                ["x", "end"]
-              )
-            )) ctx[29](
-              /*$_interaction*/
-              ctx[10],
-              ["x", "end"]
-            ).apply(this, arguments);
-          });
-          create_component2(switch_instance1.$$.fragment);
-          transition_in2(switch_instance1.$$.fragment, 1);
-          mount_component2(switch_instance1, article, null);
-        } else {
-          switch_instance1 = null;
-        }
-      } else if (switch_value_1) {
-        const switch_instance1_changes = {};
-        if (dirty[0] & /*event*/
-        1) switch_instance1_changes.event = /*event*/
-        ctx[0];
-        switch_instance1.$set(switch_instance1_changes);
-      }
-      if (!current || dirty[0] & /*classes*/
-      16) {
-        attr3(
-          article,
-          "class",
-          /*classes*/
-          ctx[4]
-        );
-      }
-      if (!current || dirty[0] & /*style*/
-      32) {
-        attr3(
-          article,
-          "style",
-          /*style*/
-          ctx[5]
-        );
-      }
-      if (!current || dirty[0] & /*onclick*/
-      128 && article_role_value !== (article_role_value = /*onclick*/
-      ctx[7] ? "button" : void 0)) {
-        attr3(article, "role", article_role_value);
-      }
-      if (!current || dirty[0] & /*onclick*/
-      128 && article_tabindex_value !== (article_tabindex_value = /*onclick*/
-      ctx[7] ? 0 : void 0)) {
-        attr3(article, "tabindex", article_tabindex_value);
-      }
-    },
-    i(local) {
-      if (current) return;
-      if (switch_instance0) transition_in2(switch_instance0.$$.fragment, local);
-      if (switch_instance1) transition_in2(switch_instance1.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      if (switch_instance0) transition_out2(switch_instance0.$$.fragment, local);
-      if (switch_instance1) transition_out2(switch_instance1.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach2(article);
-      }
-      if (switch_instance0) destroy_component2(switch_instance0);
-      if (switch_instance1) destroy_component2(switch_instance1);
-      ctx[45](null);
-      mounted = false;
-      run_all3(dispose);
-    }
-  };
-}
-function instance$3($$self, $$props, $$invalidate) {
-  let $eventClick;
-  let $_view;
-  let $eventAllUpdated;
-  let $eventDidMount;
-  let $_intlEventTime;
-  let $theme;
-  let $eventContent;
-  let $displayEventEnd;
-  let $eventClassNames;
-  let $_iClasses;
-  let $eventTextColor;
-  let $resources;
-  let $eventColor;
-  let $eventBackgroundColor;
-  let $eventMouseEnter;
-  let $eventMouseLeave;
-  let $_interaction;
-  let { chunk } = $$props;
-  let { longChunks = {} } = $$props;
-  let { displayEventEnd, eventAllUpdated, eventBackgroundColor, eventTextColor, eventClick, eventColor, eventContent, eventClassNames, eventDidMount, eventMouseEnter, eventMouseLeave, resources, theme, _view, _intlEventTime, _interaction, _iClasses, _tasks } = getContext3("state");
-  component_subscribe2($$self, displayEventEnd, (value) => $$invalidate(38, $displayEventEnd = value));
-  component_subscribe2($$self, eventAllUpdated, (value) => $$invalidate(47, $eventAllUpdated = value));
-  component_subscribe2($$self, eventBackgroundColor, (value) => $$invalidate(44, $eventBackgroundColor = value));
-  component_subscribe2($$self, eventTextColor, (value) => $$invalidate(41, $eventTextColor = value));
-  component_subscribe2($$self, eventClick, (value) => $$invalidate(34, $eventClick = value));
-  component_subscribe2($$self, eventColor, (value) => $$invalidate(43, $eventColor = value));
-  component_subscribe2($$self, eventContent, (value) => $$invalidate(37, $eventContent = value));
-  component_subscribe2($$self, eventClassNames, (value) => $$invalidate(39, $eventClassNames = value));
-  component_subscribe2($$self, eventDidMount, (value) => $$invalidate(48, $eventDidMount = value));
-  component_subscribe2($$self, eventMouseEnter, (value) => $$invalidate(8, $eventMouseEnter = value));
-  component_subscribe2($$self, eventMouseLeave, (value) => $$invalidate(9, $eventMouseLeave = value));
-  component_subscribe2($$self, resources, (value) => $$invalidate(42, $resources = value));
-  component_subscribe2($$self, theme, (value) => $$invalidate(2, $theme = value));
-  component_subscribe2($$self, _view, (value) => $$invalidate(35, $_view = value));
-  component_subscribe2($$self, _intlEventTime, (value) => $$invalidate(36, $_intlEventTime = value));
-  component_subscribe2($$self, _interaction, (value) => $$invalidate(10, $_interaction = value));
-  component_subscribe2($$self, _iClasses, (value) => $$invalidate(40, $_iClasses = value));
-  let el;
-  let event2;
-  let classes;
-  let style;
-  let content;
-  let timeText;
-  let margin = 1;
-  let display;
-  let onclick;
-  onMount3(() => {
-    if (isFunction3($eventDidMount)) {
-      $eventDidMount({
-        event: toEventWithLocalDates2(event2),
-        timeText,
-        el,
-        view: toViewWithLocalDates2($_view)
-      });
-    }
-  });
-  afterUpdate2(() => {
-    if (isFunction3($eventAllUpdated) && !helperEvent2(display)) {
-      task2(() => $eventAllUpdated({ view: toViewWithLocalDates2($_view) }), "eau", _tasks);
-    }
-  });
-  function createHandler(fn, display2) {
-    return !helperEvent2(display2) && isFunction3(fn) ? (jsEvent) => fn({
-      event: toEventWithLocalDates2(event2),
-      el,
-      jsEvent,
-      view: toViewWithLocalDates2($_view)
-    }) : void 0;
-  }
-  function createDragHandler(interaction, resize) {
-    return interaction.action ? (jsEvent) => interaction.action.drag(event2, jsEvent, resize, null, rect2(el).top - rect2(ancestor2(el, 1)).top, chunk.zeroDuration) : void 0;
-  }
-  function reposition() {
-    if (!el) {
-      return;
-    }
-    $$invalidate(33, margin = repositionEvent(chunk, longChunks, height2(el)));
-  }
-  function article_binding($$value) {
-    binding_callbacks2[$$value ? "unshift" : "push"](() => {
-      el = $$value;
-      $$invalidate(3, el);
-    });
-  }
-  $$self.$$set = ($$props2) => {
-    if ("chunk" in $$props2) $$invalidate(30, chunk = $$props2.chunk);
-    if ("longChunks" in $$props2) $$invalidate(31, longChunks = $$props2.longChunks);
-  };
-  $$self.$$.update = () => {
-    var _a3;
-    if ($$self.$$.dirty[0] & /*chunk*/
-    1073741824) {
-      $$invalidate(0, event2 = chunk.event);
-    }
-    if ($$self.$$.dirty[0] & /*event, display, chunk, style, $theme*/
-    1073741863 | $$self.$$.dirty[1] & /*$resources, $eventBackgroundColor, $eventColor, $eventTextColor, margin, $_iClasses, $eventClassNames, $_view*/
-    16148) {
-      {
-        $$invalidate(1, display = event2.display);
-        let bgColor = event2.backgroundColor || resourceBackgroundColor2(event2, $resources) || $eventBackgroundColor || $eventColor;
-        let txtColor = event2.textColor || resourceTextColor2(event2, $resources) || $eventTextColor;
-        if (bgEvent2(display)) {
-          $$invalidate(5, style = `width:calc(${chunk.days * 100}% + ${chunk.days - 1}px);`);
-        } else {
-          $$invalidate(5, style = `width:calc(${chunk.days * 100}% + ${(chunk.days - 1) * 7}px);margin-top:${(_a3 = event2._margin) != null ? _a3 : margin}px;`);
-        }
-        if (bgColor) {
-          $$invalidate(5, style += `background-color:${bgColor};`);
-        }
-        if (txtColor) {
-          $$invalidate(5, style += `color:${txtColor};`);
-        }
-        $$invalidate(5, style += event2.styles.join(";"));
-        $$invalidate(4, classes = [
-          bgEvent2(display) ? $theme.bgEvent : $theme.event,
-          ...$_iClasses([], event2),
-          ...createEventClasses2($eventClassNames, event2, $_view)
-        ].join(" "));
-      }
-    }
-    if ($$self.$$.dirty[0] & /*chunk, $theme*/
-    1073741828 | $$self.$$.dirty[1] & /*$displayEventEnd, $eventContent, $_intlEventTime, $_view*/
-    240) {
-      $$invalidate(6, [timeText, content] = createEventContent2(chunk, $displayEventEnd, $eventContent, $theme, $_intlEventTime, $_view), content);
-    }
-    if ($$self.$$.dirty[0] & /*display*/
-    2 | $$self.$$.dirty[1] & /*$eventClick*/
-    8) {
-      $$invalidate(7, onclick = createHandler($eventClick, display));
-    }
-  };
-  return [
-    event2,
-    display,
-    $theme,
-    el,
-    classes,
-    style,
-    content,
-    onclick,
-    $eventMouseEnter,
-    $eventMouseLeave,
-    $_interaction,
-    displayEventEnd,
-    eventAllUpdated,
-    eventBackgroundColor,
-    eventTextColor,
-    eventClick,
-    eventColor,
-    eventContent,
-    eventClassNames,
-    eventDidMount,
-    eventMouseEnter,
-    eventMouseLeave,
-    resources,
-    theme,
-    _view,
-    _intlEventTime,
-    _interaction,
-    _iClasses,
-    createHandler,
-    createDragHandler,
-    chunk,
-    longChunks,
-    reposition,
-    margin,
-    $eventClick,
-    $_view,
-    $_intlEventTime,
-    $eventContent,
-    $displayEventEnd,
-    $eventClassNames,
-    $_iClasses,
-    $eventTextColor,
-    $resources,
-    $eventColor,
-    $eventBackgroundColor,
-    article_binding
-  ];
-}
-var Event3 = class extends SvelteComponent2 {
-  constructor(options) {
-    super();
-    init3(
-      this,
-      options,
-      instance$3,
-      create_fragment$3,
-      safe_not_equal3,
-      {
-        chunk: 30,
-        longChunks: 31,
-        reposition: 32
-      },
-      null,
-      [-1, -1]
-    );
-  }
-  get reposition() {
-    return this.$$.ctx[32];
-  }
-};
-function get_each_context$2(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[26] = list[i];
-  child_ctx[27] = list;
-  child_ctx[28] = i;
-  return child_ctx;
-}
-function get_each_context_1$1(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[26] = list[i];
-  return child_ctx;
-}
-function create_if_block_2(ctx) {
-  let each_blocks = [];
-  let each_1_lookup = /* @__PURE__ */ new Map();
-  let each_1_anchor;
-  let current;
-  let each_value_1 = ensure_array_like2(
-    /*dayBgChunks*/
-    ctx[6]
-  );
-  const get_key = (ctx2) => (
-    /*chunk*/
-    ctx2[26].event
-  );
-  for (let i = 0; i < each_value_1.length; i += 1) {
-    let child_ctx = get_each_context_1$1(ctx, each_value_1, i);
-    let key2 = get_key(child_ctx);
-    each_1_lookup.set(key2, each_blocks[i] = create_each_block_1$1(key2, child_ctx));
-  }
-  return {
-    c() {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].c();
-      }
-      each_1_anchor = empty2();
-    },
-    m(target, anchor) {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        if (each_blocks[i]) {
-          each_blocks[i].m(target, anchor);
-        }
-      }
-      insert2(target, each_1_anchor, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      if (dirty & /*dayBgChunks*/
-      64) {
-        each_value_1 = ensure_array_like2(
-          /*dayBgChunks*/
-          ctx2[6]
-        );
-        group_outros2();
-        each_blocks = update_keyed_each(each_blocks, dirty, get_key, 1, ctx2, each_value_1, each_1_lookup, each_1_anchor.parentNode, outro_and_destroy_block, create_each_block_1$1, each_1_anchor, get_each_context_1$1);
-        check_outros2();
-      }
-    },
-    i(local) {
-      if (current) return;
-      for (let i = 0; i < each_value_1.length; i += 1) {
-        transition_in2(each_blocks[i]);
-      }
-      current = true;
-    },
-    o(local) {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        transition_out2(each_blocks[i]);
-      }
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach2(each_1_anchor);
-      }
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].d(detaching);
-      }
-    }
-  };
-}
-function create_each_block_1$1(key_1, ctx) {
-  let first;
-  let event2;
-  let current;
-  event2 = new Event3({ props: { chunk: (
-    /*chunk*/
-    ctx[26]
-  ) } });
-  return {
-    key: key_1,
-    first: null,
-    c() {
-      first = empty2();
-      create_component2(event2.$$.fragment);
-      this.first = first;
-    },
-    m(target, anchor) {
-      insert2(target, first, anchor);
-      mount_component2(event2, target, anchor);
-      current = true;
-    },
-    p(new_ctx, dirty) {
-      ctx = new_ctx;
-      const event_changes = {};
-      if (dirty & /*dayBgChunks*/
-      64) event_changes.chunk = /*chunk*/
-      ctx[26];
-      event2.$set(event_changes);
-    },
-    i(local) {
-      if (current) return;
-      transition_in2(event2.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out2(event2.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach2(first);
-      }
-      destroy_component2(event2, detaching);
-    }
-  };
-}
-function create_if_block_1(ctx) {
-  let div;
-  let event2;
-  let div_class_value;
-  let current;
-  event2 = new Event3({ props: { chunk: (
-    /*iChunks*/
-    ctx[2][0]
-  ) } });
-  return {
-    c() {
-      div = element3("div");
-      create_component2(event2.$$.fragment);
-      attr3(div, "class", div_class_value = /*$theme*/
-      ctx[10].events + " " + /*$theme*/
-      ctx[10].preview);
-    },
-    m(target, anchor) {
-      insert2(target, div, anchor);
-      mount_component2(event2, div, null);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      const event_changes = {};
-      if (dirty & /*iChunks*/
-      4) event_changes.chunk = /*iChunks*/
-      ctx2[2][0];
-      event2.$set(event_changes);
-      if (!current || dirty & /*$theme*/
-      1024 && div_class_value !== (div_class_value = /*$theme*/
-      ctx2[10].events + " " + /*$theme*/
-      ctx2[10].preview)) {
-        attr3(div, "class", div_class_value);
-      }
-    },
-    i(local) {
-      if (current) return;
-      transition_in2(event2.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out2(event2.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach2(div);
-      }
-      destroy_component2(event2);
-    }
-  };
-}
-function create_if_block$1(ctx) {
-  let each_blocks = [];
-  let each_1_lookup = /* @__PURE__ */ new Map();
-  let each_1_anchor;
-  let current;
-  let each_value = ensure_array_like2(
-    /*dayChunks*/
-    ctx[5]
-  );
-  const get_key = (ctx2) => (
-    /*chunk*/
-    ctx2[26].event
-  );
-  for (let i = 0; i < each_value.length; i += 1) {
-    let child_ctx = get_each_context$2(ctx, each_value, i);
-    let key2 = get_key(child_ctx);
-    each_1_lookup.set(key2, each_blocks[i] = create_each_block$2(key2, child_ctx));
-  }
-  return {
-    c() {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].c();
-      }
-      each_1_anchor = empty2();
-    },
-    m(target, anchor) {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        if (each_blocks[i]) {
-          each_blocks[i].m(target, anchor);
-        }
-      }
-      insert2(target, each_1_anchor, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      if (dirty & /*dayChunks, longChunks, refs*/
-      546) {
-        each_value = ensure_array_like2(
-          /*dayChunks*/
-          ctx2[5]
-        );
-        group_outros2();
-        each_blocks = update_keyed_each(each_blocks, dirty, get_key, 1, ctx2, each_value, each_1_lookup, each_1_anchor.parentNode, outro_and_destroy_block, create_each_block$2, each_1_anchor, get_each_context$2);
-        check_outros2();
-      }
-    },
-    i(local) {
-      if (current) return;
-      for (let i = 0; i < each_value.length; i += 1) {
-        transition_in2(each_blocks[i]);
-      }
-      current = true;
-    },
-    o(local) {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        transition_out2(each_blocks[i]);
-      }
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach2(each_1_anchor);
-      }
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].d(detaching);
-      }
-    }
-  };
-}
-function create_each_block$2(key_1, ctx) {
-  let first;
-  let event2;
-  let i = (
-    /*i*/
-    ctx[28]
-  );
-  let current;
-  const assign_event = () => (
-    /*event_binding*/
-    ctx[24](event2, i)
-  );
-  const unassign_event = () => (
-    /*event_binding*/
-    ctx[24](null, i)
-  );
-  let event_props = {
-    chunk: (
-      /*chunk*/
-      ctx[26]
-    ),
-    longChunks: (
-      /*longChunks*/
-      ctx[1]
-    )
-  };
-  event2 = new Event3({ props: event_props });
-  assign_event();
-  return {
-    key: key_1,
-    first: null,
-    c() {
-      first = empty2();
-      create_component2(event2.$$.fragment);
-      this.first = first;
-    },
-    m(target, anchor) {
-      insert2(target, first, anchor);
-      mount_component2(event2, target, anchor);
-      current = true;
-    },
-    p(new_ctx, dirty) {
-      ctx = new_ctx;
-      if (i !== /*i*/
-      ctx[28]) {
-        unassign_event();
-        i = /*i*/
-        ctx[28];
-        assign_event();
-      }
-      const event_changes = {};
-      if (dirty & /*dayChunks*/
-      32) event_changes.chunk = /*chunk*/
-      ctx[26];
-      if (dirty & /*longChunks*/
-      2) event_changes.longChunks = /*longChunks*/
-      ctx[1];
-      event2.$set(event_changes);
-    },
-    i(local) {
-      if (current) return;
-      transition_in2(event2.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out2(event2.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach2(first);
-      }
-      unassign_event();
-      destroy_component2(event2, detaching);
-    }
-  };
-}
-function create_fragment$2(ctx) {
-  let div2;
-  let div0;
-  let div0_class_value;
-  let t0;
-  let show_if = (
-    /*iChunks*/
-    ctx[2][0] && datesEqual2(
-      /*iChunks*/
-      ctx[2][0].date,
-      /*date*/
-      ctx[0]
-    ) && !/*disabled*/
-    ctx[4]
-  );
-  let t1;
-  let div1;
-  let div1_class_value;
-  let div2_class_value;
-  let current;
-  let mounted;
-  let dispose;
-  let if_block0 = !/*disabled*/
-  ctx[4] && create_if_block_2(ctx);
-  let if_block1 = show_if && create_if_block_1(ctx);
-  let if_block2 = !/*disabled*/
-  ctx[4] && create_if_block$1(ctx);
-  return {
-    c() {
-      var _a3;
-      div2 = element3("div");
-      div0 = element3("div");
-      if (if_block0) if_block0.c();
-      t0 = space2();
-      if (if_block1) if_block1.c();
-      t1 = space2();
-      div1 = element3("div");
-      if (if_block2) if_block2.c();
-      attr3(div0, "class", div0_class_value = /*$theme*/
-      ctx[10].bgEvents);
-      attr3(div1, "class", div1_class_value = /*$theme*/
-      ctx[10].events);
-      attr3(div2, "class", div2_class_value = /*$theme*/
-      ctx[10].day + " " + /*$theme*/
-      ((_a3 = ctx[10].weekdays) == null ? void 0 : _a3[
-        /*date*/
-        ctx[0].getUTCDay()
-      ]) + /*isToday*/
-      (ctx[7] ? " " + /*$theme*/
-      ctx[10].today : "") + /*highlight*/
-      (ctx[8] ? " " + /*$theme*/
-      ctx[10].highlight : "") + /*disabled*/
-      (ctx[4] ? " " + /*$theme*/
-      ctx[10].disabled : ""));
-      attr3(div2, "role", "cell");
-    },
-    m(target, anchor) {
-      insert2(target, div2, anchor);
-      append3(div2, div0);
-      if (if_block0) if_block0.m(div0, null);
-      append3(div2, t0);
-      if (if_block1) if_block1.m(div2, null);
-      append3(div2, t1);
-      append3(div2, div1);
-      if (if_block2) if_block2.m(div1, null);
-      ctx[25](div2);
-      current = true;
-      if (!mounted) {
-        dispose = listen4(div2, "pointerdown", function() {
-          var _a3, _b3;
-          if (is_function3(!/*disabled*/
-          ctx[4] ? (
-            /*$_interaction*/
-            (_a3 = ctx[11].action) == null ? void 0 : _a3.select
-          ) : void 0)) (!/*disabled*/
-          ctx[4] ? (
-            /*$_interaction*/
-            (_b3 = ctx[11].action) == null ? void 0 : _b3.select
-          ) : void 0).apply(this, arguments);
-        });
-        mounted = true;
-      }
-    },
-    p(new_ctx, [dirty]) {
-      var _a3;
-      ctx = new_ctx;
-      if (!/*disabled*/
-      ctx[4]) {
-        if (if_block0) {
-          if_block0.p(ctx, dirty);
-          if (dirty & /*disabled*/
-          16) {
-            transition_in2(if_block0, 1);
-          }
-        } else {
-          if_block0 = create_if_block_2(ctx);
-          if_block0.c();
-          transition_in2(if_block0, 1);
-          if_block0.m(div0, null);
-        }
-      } else if (if_block0) {
-        group_outros2();
-        transition_out2(if_block0, 1, 1, () => {
-          if_block0 = null;
-        });
-        check_outros2();
-      }
-      if (!current || dirty & /*$theme*/
-      1024 && div0_class_value !== (div0_class_value = /*$theme*/
-      ctx[10].bgEvents)) {
-        attr3(div0, "class", div0_class_value);
-      }
-      if (dirty & /*iChunks, date, disabled*/
-      21) show_if = /*iChunks*/
-      ctx[2][0] && datesEqual2(
-        /*iChunks*/
-        ctx[2][0].date,
-        /*date*/
-        ctx[0]
-      ) && !/*disabled*/
-      ctx[4];
-      if (show_if) {
-        if (if_block1) {
-          if_block1.p(ctx, dirty);
-          if (dirty & /*iChunks, date, disabled*/
-          21) {
-            transition_in2(if_block1, 1);
-          }
-        } else {
-          if_block1 = create_if_block_1(ctx);
-          if_block1.c();
-          transition_in2(if_block1, 1);
-          if_block1.m(div2, t1);
-        }
-      } else if (if_block1) {
-        group_outros2();
-        transition_out2(if_block1, 1, 1, () => {
-          if_block1 = null;
-        });
-        check_outros2();
-      }
-      if (!/*disabled*/
-      ctx[4]) {
-        if (if_block2) {
-          if_block2.p(ctx, dirty);
-          if (dirty & /*disabled*/
-          16) {
-            transition_in2(if_block2, 1);
-          }
-        } else {
-          if_block2 = create_if_block$1(ctx);
-          if_block2.c();
-          transition_in2(if_block2, 1);
-          if_block2.m(div1, null);
-        }
-      } else if (if_block2) {
-        group_outros2();
-        transition_out2(if_block2, 1, 1, () => {
-          if_block2 = null;
-        });
-        check_outros2();
-      }
-      if (!current || dirty & /*$theme*/
-      1024 && div1_class_value !== (div1_class_value = /*$theme*/
-      ctx[10].events)) {
-        attr3(div1, "class", div1_class_value);
-      }
-      if (!current || dirty & /*$theme, date, isToday, highlight, disabled*/
-      1425 && div2_class_value !== (div2_class_value = /*$theme*/
-      ctx[10].day + " " + /*$theme*/
-      ((_a3 = ctx[10].weekdays) == null ? void 0 : _a3[
-        /*date*/
-        ctx[0].getUTCDay()
-      ]) + /*isToday*/
-      (ctx[7] ? " " + /*$theme*/
-      ctx[10].today : "") + /*highlight*/
-      (ctx[8] ? " " + /*$theme*/
-      ctx[10].highlight : "") + /*disabled*/
-      (ctx[4] ? " " + /*$theme*/
-      ctx[10].disabled : ""))) {
-        attr3(div2, "class", div2_class_value);
-      }
-    },
-    i(local) {
-      if (current) return;
-      transition_in2(if_block0);
-      transition_in2(if_block1);
-      transition_in2(if_block2);
-      current = true;
-    },
-    o(local) {
-      transition_out2(if_block0);
-      transition_out2(if_block1);
-      transition_out2(if_block2);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach2(div2);
-      }
-      if (if_block0) if_block0.d();
-      if (if_block1) if_block1.d();
-      if (if_block2) if_block2.d();
-      ctx[25](null);
-      mounted = false;
-      dispose();
-    }
-  };
-}
-function instance$2($$self, $$props, $$invalidate) {
-  let $validRange;
-  let $highlightedDates;
-  let $_today;
-  let $theme;
-  let $_interaction;
-  let { date } = $$props;
-  let { chunks } = $$props;
-  let { bgChunks } = $$props;
-  let { longChunks } = $$props;
-  let { iChunks = [] } = $$props;
-  let { resource = void 0 } = $$props;
-  let { highlightedDates, theme, validRange, _interaction, _today } = getContext3("state");
-  component_subscribe2($$self, highlightedDates, (value) => $$invalidate(22, $highlightedDates = value));
-  component_subscribe2($$self, theme, (value) => $$invalidate(10, $theme = value));
-  component_subscribe2($$self, validRange, (value) => $$invalidate(21, $validRange = value));
-  component_subscribe2($$self, _interaction, (value) => $$invalidate(11, $_interaction = value));
-  component_subscribe2($$self, _today, (value) => $$invalidate(23, $_today = value));
-  let el;
-  let dayChunks, dayBgChunks;
-  let isToday, highlight, disabled;
-  let refs = [];
-  function reposition() {
-    if (!disabled) {
-      runReposition2(refs, dayChunks);
-    }
-  }
-  function event_binding($$value, i) {
-    binding_callbacks2[$$value ? "unshift" : "push"](() => {
-      refs[i] = $$value;
-      $$invalidate(9, refs);
-    });
-  }
-  function div2_binding($$value) {
-    binding_callbacks2[$$value ? "unshift" : "push"](() => {
-      el = $$value;
-      $$invalidate(3, el);
-    });
-  }
-  $$self.$$set = ($$props2) => {
-    if ("date" in $$props2) $$invalidate(0, date = $$props2.date);
-    if ("chunks" in $$props2) $$invalidate(17, chunks = $$props2.chunks);
-    if ("bgChunks" in $$props2) $$invalidate(18, bgChunks = $$props2.bgChunks);
-    if ("longChunks" in $$props2) $$invalidate(1, longChunks = $$props2.longChunks);
-    if ("iChunks" in $$props2) $$invalidate(2, iChunks = $$props2.iChunks);
-    if ("resource" in $$props2) $$invalidate(19, resource = $$props2.resource);
-  };
-  $$self.$$.update = () => {
-    if ($$self.$$.dirty & /*chunks, date*/
-    131073) {
-      $$invalidate(5, dayChunks = chunks.filter((chunk) => datesEqual2(chunk.date, date)));
-    }
-    if ($$self.$$.dirty & /*bgChunks, date*/
-    262145) {
-      $$invalidate(6, dayBgChunks = bgChunks.filter((bgChunk) => datesEqual2(bgChunk.date, date)));
-    }
-    if ($$self.$$.dirty & /*date, $_today*/
-    8388609) {
-      $$invalidate(7, isToday = datesEqual2(date, $_today));
-    }
-    if ($$self.$$.dirty & /*$highlightedDates, date*/
-    4194305) {
-      $$invalidate(8, highlight = $highlightedDates.some((d) => datesEqual2(d, date)));
-    }
-    if ($$self.$$.dirty & /*date, $validRange*/
-    2097153) {
-      $$invalidate(4, disabled = outsideRange2(date, $validRange));
-    }
-    if ($$self.$$.dirty & /*el, date, resource, disabled*/
-    524313) {
-      if (el) {
-        setPayload3(el, () => ({
-          allDay: true,
-          date,
-          resource,
-          dayEl: el,
-          disabled
-        }));
-      }
-    }
-  };
-  return [
-    date,
-    longChunks,
-    iChunks,
-    el,
-    disabled,
-    dayChunks,
-    dayBgChunks,
-    isToday,
-    highlight,
-    refs,
-    $theme,
-    $_interaction,
-    highlightedDates,
-    theme,
-    validRange,
-    _interaction,
-    _today,
-    chunks,
-    bgChunks,
-    resource,
-    reposition,
-    $validRange,
-    $highlightedDates,
-    $_today,
-    event_binding,
-    div2_binding
-  ];
-}
-var Day2 = class extends SvelteComponent2 {
-  constructor(options) {
-    super();
-    init3(this, options, instance$2, create_fragment$2, safe_not_equal3, {
-      date: 0,
-      chunks: 17,
-      bgChunks: 18,
-      longChunks: 1,
-      iChunks: 2,
-      resource: 19,
-      reposition: 20
-    });
-  }
-  get reposition() {
-    return this.$$.ctx[20];
-  }
-};
-function get_each_context$1(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[26] = list[i];
-  child_ctx[27] = list;
-  child_ctx[28] = i;
-  return child_ctx;
-}
-function create_each_block$1(ctx) {
-  let day;
-  let i = (
-    /*i*/
-    ctx[28]
-  );
-  let current;
-  const assign_day = () => (
-    /*day_binding*/
-    ctx[23](day, i)
-  );
-  const unassign_day = () => (
-    /*day_binding*/
-    ctx[23](null, i)
-  );
-  let day_props = {
-    date: (
-      /*date*/
-      ctx[26]
-    ),
-    chunks: (
-      /*chunks*/
-      ctx[2]
-    ),
-    bgChunks: (
-      /*bgChunks*/
-      ctx[3]
-    ),
-    longChunks: (
-      /*longChunks*/
-      ctx[4]
-    ),
-    iChunks: (
-      /*iChunks*/
-      ctx[5]
-    ),
-    resource: (
-      /*resource*/
-      ctx[1]
-    )
-  };
-  day = new Day2({ props: day_props });
-  assign_day();
-  return {
-    c() {
-      create_component2(day.$$.fragment);
-    },
-    m(target, anchor) {
-      mount_component2(day, target, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      if (i !== /*i*/
-      ctx2[28]) {
-        unassign_day();
-        i = /*i*/
-        ctx2[28];
-        assign_day();
-      }
-      const day_changes = {};
-      if (dirty & /*dates*/
-      1) day_changes.date = /*date*/
-      ctx2[26];
-      if (dirty & /*chunks*/
-      4) day_changes.chunks = /*chunks*/
-      ctx2[2];
-      if (dirty & /*bgChunks*/
-      8) day_changes.bgChunks = /*bgChunks*/
-      ctx2[3];
-      if (dirty & /*longChunks*/
-      16) day_changes.longChunks = /*longChunks*/
-      ctx2[4];
-      if (dirty & /*iChunks*/
-      32) day_changes.iChunks = /*iChunks*/
-      ctx2[5];
-      if (dirty & /*resource*/
-      2) day_changes.resource = /*resource*/
-      ctx2[1];
-      day.$set(day_changes);
-    },
-    i(local) {
-      if (current) return;
-      transition_in2(day.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out2(day.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      unassign_day();
-      destroy_component2(day, detaching);
-    }
-  };
-}
-function create_fragment$1(ctx) {
-  let each_1_anchor;
-  let current;
-  let mounted;
-  let dispose;
-  let each_value = ensure_array_like2(
-    /*dates*/
-    ctx[0]
-  );
-  let each_blocks = [];
-  for (let i = 0; i < each_value.length; i += 1) {
-    each_blocks[i] = create_each_block$1(get_each_context$1(ctx, each_value, i));
-  }
-  const out = (i) => transition_out2(each_blocks[i], 1, 1, () => {
-    each_blocks[i] = null;
-  });
-  return {
-    c() {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].c();
-      }
-      each_1_anchor = empty2();
-    },
-    m(target, anchor) {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        if (each_blocks[i]) {
-          each_blocks[i].m(target, anchor);
-        }
-      }
-      insert2(target, each_1_anchor, anchor);
-      current = true;
-      if (!mounted) {
-        dispose = listen4(
-          window,
-          "resize",
-          /*reposition*/
-          ctx[13]
-        );
-        mounted = true;
-      }
-    },
-    p(ctx2, [dirty]) {
-      if (dirty & /*dates, chunks, bgChunks, longChunks, iChunks, resource, refs*/
-      127) {
-        each_value = ensure_array_like2(
-          /*dates*/
-          ctx2[0]
-        );
-        let i;
-        for (i = 0; i < each_value.length; i += 1) {
-          const child_ctx = get_each_context$1(ctx2, each_value, i);
-          if (each_blocks[i]) {
-            each_blocks[i].p(child_ctx, dirty);
-            transition_in2(each_blocks[i], 1);
-          } else {
-            each_blocks[i] = create_each_block$1(child_ctx);
-            each_blocks[i].c();
-            transition_in2(each_blocks[i], 1);
-            each_blocks[i].m(each_1_anchor.parentNode, each_1_anchor);
-          }
-        }
-        group_outros2();
-        for (i = each_value.length; i < each_blocks.length; i += 1) {
-          out(i);
-        }
-        check_outros2();
-      }
-    },
-    i(local) {
-      if (current) return;
-      for (let i = 0; i < each_value.length; i += 1) {
-        transition_in2(each_blocks[i]);
-      }
-      current = true;
-    },
-    o(local) {
-      each_blocks = each_blocks.filter(Boolean);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        transition_out2(each_blocks[i]);
-      }
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach2(each_1_anchor);
-      }
-      destroy_each2(each_blocks, detaching);
-      mounted = false;
-      dispose();
-    }
-  };
-}
-function instance$1($$self, $$props, $$invalidate) {
-  let $hiddenDays;
-  let $_iEvents;
-  let $_events;
-  let $resources;
-  let $filterEventsWithResources;
-  let $validRange;
-  let { dates } = $$props;
-  let { resource = void 0 } = $$props;
-  let { _events: _events2, _iEvents, _queue2, hiddenDays, resources, filterEventsWithResources, validRange } = getContext3("state");
-  component_subscribe2($$self, _events2, (value) => $$invalidate(19, $_events = value));
-  component_subscribe2($$self, _iEvents, (value) => $$invalidate(18, $_iEvents = value));
-  component_subscribe2($$self, hiddenDays, (value) => $$invalidate(17, $hiddenDays = value));
-  component_subscribe2($$self, resources, (value) => $$invalidate(20, $resources = value));
-  component_subscribe2($$self, filterEventsWithResources, (value) => $$invalidate(21, $filterEventsWithResources = value));
-  component_subscribe2($$self, validRange, (value) => $$invalidate(22, $validRange = value));
-  let chunks, bgChunks, longChunks, iChunks = [];
-  let start;
-  let end;
-  let refs = [];
-  let resourceFilter;
-  let debounceHandle = {};
-  function reposition() {
-    debounce2(() => runReposition2(refs, dates), debounceHandle, _queue2);
-  }
-  function day_binding($$value, i) {
-    binding_callbacks2[$$value ? "unshift" : "push"](() => {
-      refs[i] = $$value;
-      $$invalidate(6, refs);
-    });
-  }
-  $$self.$$set = ($$props2) => {
-    if ("dates" in $$props2) $$invalidate(0, dates = $$props2.dates);
-    if ("resource" in $$props2) $$invalidate(1, resource = $$props2.resource);
-  };
-  $$self.$$.update = () => {
-    if ($$self.$$.dirty & /*dates, $validRange*/
-    4194305) {
-      {
-        $$invalidate(14, start = limitToRange2(dates[0], $validRange));
-        $$invalidate(15, end = addDay2(cloneDate2(limitToRange2(dates.at(-1), $validRange))));
-      }
-    }
-    if ($$self.$$.dirty & /*resource, $filterEventsWithResources, $resources*/
-    3145730) {
-      $$invalidate(16, resourceFilter = resource != null ? resource : $filterEventsWithResources ? $resources : void 0);
-    }
-    if ($$self.$$.dirty & /*$_events, start, end, resourceFilter, bgChunks, chunks, $hiddenDays*/
-    770060) {
-      {
-        $$invalidate(2, chunks = []);
-        $$invalidate(3, bgChunks = []);
-        for (let event2 of $_events) {
-          if (event2.allDay && eventIntersects2(event2, start, end, resourceFilter)) {
-            let chunk = createEventChunk2(event2, start, end);
-            if (bgEvent2(event2.display)) {
-              bgChunks.push(chunk);
-            } else {
-              chunks.push(chunk);
-            }
-          }
-        }
-        prepareEventChunks(bgChunks, $hiddenDays);
-        $$invalidate(4, longChunks = prepareEventChunks(chunks, $hiddenDays));
-        reposition();
-      }
-    }
-    if ($$self.$$.dirty & /*$_iEvents, start, end, resource, $hiddenDays*/
-    442370) {
-      $$invalidate(5, iChunks = $_iEvents.map((event2) => {
-        let chunk;
-        if (event2 && event2.allDay && eventIntersects2(event2, start, end, resource)) {
-          chunk = createEventChunk2(event2, start, end);
-          prepareEventChunks([chunk], $hiddenDays);
-        } else {
-          chunk = null;
-        }
-        return chunk;
-      }));
-    }
-  };
-  return [
-    dates,
-    resource,
-    chunks,
-    bgChunks,
-    longChunks,
-    iChunks,
-    refs,
-    _events2,
-    _iEvents,
-    hiddenDays,
-    resources,
-    filterEventsWithResources,
-    validRange,
-    reposition,
-    start,
-    end,
-    resourceFilter,
-    $hiddenDays,
-    $_iEvents,
-    $_events,
-    $resources,
-    $filterEventsWithResources,
-    $validRange,
-    day_binding
-  ];
-}
-var Week2 = class extends SvelteComponent2 {
-  constructor(options) {
-    super();
-    init3(this, options, instance$1, create_fragment$1, safe_not_equal3, { dates: 0, resource: 1 });
-  }
-};
-function get_each_context(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[10] = list[i];
-  return child_ctx;
-}
-function get_each_context_1(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[10] = list[i];
-  return child_ctx;
-}
-function create_each_block_1(ctx) {
-  let div;
-  let time;
-  let time_datetime_value;
-  let time_aria_label_value;
-  let setContent_action;
-  let t;
-  let div_class_value;
-  let mounted;
-  let dispose;
-  return {
-    c() {
-      var _a3;
-      div = element3("div");
-      time = element3("time");
-      t = space2();
-      attr3(time, "datetime", time_datetime_value = toISOString3(
-        /*date*/
-        ctx[10],
-        10
-      ));
-      attr3(time, "aria-label", time_aria_label_value = /*$_intlDayHeaderAL*/
-      ctx[2].format(
-        /*date*/
-        ctx[10]
-      ));
-      attr3(div, "class", div_class_value = /*$theme*/
-      ctx[0].day + " " + /*$theme*/
-      ((_a3 = ctx[0].weekdays) == null ? void 0 : _a3[
-        /*date*/
-        ctx[10].getUTCDay()
-      ]));
-      attr3(div, "role", "columnheader");
-    },
-    m(target, anchor) {
-      insert2(target, div, anchor);
-      append3(div, time);
-      append3(div, t);
-      if (!mounted) {
-        dispose = action_destroyer2(setContent_action = setContent3.call(
-          null,
-          time,
-          /*$_intlDayHeader*/
-          ctx[3].format(
-            /*date*/
-            ctx[10]
-          )
-        ));
-        mounted = true;
-      }
-    },
-    p(new_ctx, dirty) {
-      var _a3;
-      ctx = new_ctx;
-      if (dirty & /*$_viewDates*/
-      2 && time_datetime_value !== (time_datetime_value = toISOString3(
-        /*date*/
-        ctx[10],
-        10
-      ))) {
-        attr3(time, "datetime", time_datetime_value);
-      }
-      if (dirty & /*$_intlDayHeaderAL, $_viewDates*/
-      6 && time_aria_label_value !== (time_aria_label_value = /*$_intlDayHeaderAL*/
-      ctx[2].format(
-        /*date*/
-        ctx[10]
-      ))) {
-        attr3(time, "aria-label", time_aria_label_value);
-      }
-      if (setContent_action && is_function3(setContent_action.update) && dirty & /*$_intlDayHeader, $_viewDates*/
-      10) setContent_action.update.call(
-        null,
-        /*$_intlDayHeader*/
-        ctx[3].format(
-          /*date*/
-          ctx[10]
-        )
-      );
-      if (dirty & /*$theme, $_viewDates*/
-      3 && div_class_value !== (div_class_value = /*$theme*/
-      ctx[0].day + " " + /*$theme*/
-      ((_a3 = ctx[0].weekdays) == null ? void 0 : _a3[
-        /*date*/
-        ctx[10].getUTCDay()
-      ]))) {
-        attr3(div, "class", div_class_value);
-      }
-    },
-    d(detaching) {
-      if (detaching) {
-        detach2(div);
-      }
-      mounted = false;
-      dispose();
-    }
-  };
-}
-function create_default_slot_2(ctx) {
-  let each_1_anchor;
-  let each_value_1 = ensure_array_like2(
-    /*$_viewDates*/
-    ctx[1]
-  );
-  let each_blocks = [];
-  for (let i = 0; i < each_value_1.length; i += 1) {
-    each_blocks[i] = create_each_block_1(get_each_context_1(ctx, each_value_1, i));
-  }
-  return {
-    c() {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].c();
-      }
-      each_1_anchor = empty2();
-    },
-    m(target, anchor) {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        if (each_blocks[i]) {
-          each_blocks[i].m(target, anchor);
-        }
-      }
-      insert2(target, each_1_anchor, anchor);
-    },
-    p(ctx2, dirty) {
-      if (dirty & /*$theme, $_viewDates, $_intlDayHeaderAL, $_intlDayHeader*/
-      15) {
-        each_value_1 = ensure_array_like2(
-          /*$_viewDates*/
-          ctx2[1]
-        );
-        let i;
-        for (i = 0; i < each_value_1.length; i += 1) {
-          const child_ctx = get_each_context_1(ctx2, each_value_1, i);
-          if (each_blocks[i]) {
-            each_blocks[i].p(child_ctx, dirty);
-          } else {
-            each_blocks[i] = create_each_block_1(child_ctx);
-            each_blocks[i].c();
-            each_blocks[i].m(each_1_anchor.parentNode, each_1_anchor);
-          }
-        }
-        for (; i < each_blocks.length; i += 1) {
-          each_blocks[i].d(1);
-        }
-        each_blocks.length = each_value_1.length;
-      }
-    },
-    d(detaching) {
-      if (detaching) {
-        detach2(each_1_anchor);
-      }
-      destroy_each2(each_blocks, detaching);
-    }
-  };
-}
-function create_if_block(ctx) {
-  let div2;
-  let div1;
-  let section;
-  let t;
-  let div0;
-  let div0_class_value;
-  let div1_class_value;
-  let div2_class_value;
-  let current;
-  section = new Section2({
-    props: {
-      $$slots: { default: [create_default_slot_1] },
-      $$scope: { ctx }
-    }
-  });
-  return {
-    c() {
-      div2 = element3("div");
-      div1 = element3("div");
-      create_component2(section.$$.fragment);
-      t = space2();
-      div0 = element3("div");
-      attr3(div0, "class", div0_class_value = /*$theme*/
-      ctx[0].hiddenScroll);
-      attr3(div1, "class", div1_class_value = /*$theme*/
-      ctx[0].content);
-      attr3(div2, "class", div2_class_value = /*$theme*/
-      ctx[0].allDay);
-    },
-    m(target, anchor) {
-      insert2(target, div2, anchor);
-      append3(div2, div1);
-      mount_component2(section, div1, null);
-      append3(div1, t);
-      append3(div1, div0);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      const section_changes = {};
-      if (dirty & /*$$scope, $_viewDates*/
-      32770) {
-        section_changes.$$scope = { dirty, ctx: ctx2 };
-      }
-      section.$set(section_changes);
-      if (!current || dirty & /*$theme*/
-      1 && div0_class_value !== (div0_class_value = /*$theme*/
-      ctx2[0].hiddenScroll)) {
-        attr3(div0, "class", div0_class_value);
-      }
-      if (!current || dirty & /*$theme*/
-      1 && div1_class_value !== (div1_class_value = /*$theme*/
-      ctx2[0].content)) {
-        attr3(div1, "class", div1_class_value);
-      }
-      if (!current || dirty & /*$theme*/
-      1 && div2_class_value !== (div2_class_value = /*$theme*/
-      ctx2[0].allDay)) {
-        attr3(div2, "class", div2_class_value);
-      }
-    },
-    i(local) {
-      if (current) return;
-      transition_in2(section.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out2(section.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach2(div2);
-      }
-      destroy_component2(section);
-    }
-  };
-}
-function create_default_slot_1(ctx) {
-  let week;
-  let current;
-  week = new Week2({ props: { dates: (
-    /*$_viewDates*/
-    ctx[1]
-  ) } });
-  return {
-    c() {
-      create_component2(week.$$.fragment);
-    },
-    m(target, anchor) {
-      mount_component2(week, target, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      const week_changes = {};
-      if (dirty & /*$_viewDates*/
-      2) week_changes.dates = /*$_viewDates*/
-      ctx2[1];
-      week.$set(week_changes);
-    },
-    i(local) {
-      if (current) return;
-      transition_in2(week.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out2(week.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      destroy_component2(week, detaching);
-    }
-  };
-}
-function create_each_block(ctx) {
-  let day;
-  let current;
-  day = new Day$12({ props: { date: (
-    /*date*/
-    ctx[10]
-  ) } });
-  return {
-    c() {
-      create_component2(day.$$.fragment);
-    },
-    m(target, anchor) {
-      mount_component2(day, target, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      const day_changes = {};
-      if (dirty & /*$_viewDates*/
-      2) day_changes.date = /*date*/
-      ctx2[10];
-      day.$set(day_changes);
-    },
-    i(local) {
-      if (current) return;
-      transition_in2(day.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out2(day.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      destroy_component2(day, detaching);
-    }
-  };
-}
-function create_default_slot(ctx) {
-  let each_1_anchor;
-  let current;
-  let each_value = ensure_array_like2(
-    /*$_viewDates*/
-    ctx[1]
-  );
-  let each_blocks = [];
-  for (let i = 0; i < each_value.length; i += 1) {
-    each_blocks[i] = create_each_block(get_each_context(ctx, each_value, i));
-  }
-  const out = (i) => transition_out2(each_blocks[i], 1, 1, () => {
-    each_blocks[i] = null;
-  });
-  return {
-    c() {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].c();
-      }
-      each_1_anchor = empty2();
-    },
-    m(target, anchor) {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        if (each_blocks[i]) {
-          each_blocks[i].m(target, anchor);
-        }
-      }
-      insert2(target, each_1_anchor, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      if (dirty & /*$_viewDates*/
-      2) {
-        each_value = ensure_array_like2(
-          /*$_viewDates*/
-          ctx2[1]
-        );
-        let i;
-        for (i = 0; i < each_value.length; i += 1) {
-          const child_ctx = get_each_context(ctx2, each_value, i);
-          if (each_blocks[i]) {
-            each_blocks[i].p(child_ctx, dirty);
-            transition_in2(each_blocks[i], 1);
-          } else {
-            each_blocks[i] = create_each_block(child_ctx);
-            each_blocks[i].c();
-            transition_in2(each_blocks[i], 1);
-            each_blocks[i].m(each_1_anchor.parentNode, each_1_anchor);
-          }
-        }
-        group_outros2();
-        for (i = each_value.length; i < each_blocks.length; i += 1) {
-          out(i);
-        }
-        check_outros2();
-      }
-    },
-    i(local) {
-      if (current) return;
-      for (let i = 0; i < each_value.length; i += 1) {
-        transition_in2(each_blocks[i]);
-      }
-      current = true;
-    },
-    o(local) {
-      each_blocks = each_blocks.filter(Boolean);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        transition_out2(each_blocks[i]);
-      }
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach2(each_1_anchor);
-      }
-      destroy_each2(each_blocks, detaching);
-    }
-  };
-}
-function create_fragment2(ctx) {
-  let div1;
-  let section;
-  let t0;
-  let div0;
-  let div0_class_value;
-  let div1_class_value;
-  let t1;
-  let t2;
-  let body;
-  let current;
-  section = new Section2({
-    props: {
-      $$slots: { default: [create_default_slot_2] },
-      $$scope: { ctx }
-    }
-  });
-  let if_block2 = (
-    /*$allDaySlot*/
-    ctx[4] && create_if_block(ctx)
-  );
-  body = new Body({
-    props: {
-      $$slots: { default: [create_default_slot] },
-      $$scope: { ctx }
-    }
-  });
-  return {
-    c() {
-      div1 = element3("div");
-      create_component2(section.$$.fragment);
-      t0 = space2();
-      div0 = element3("div");
-      t1 = space2();
-      if (if_block2) if_block2.c();
-      t2 = space2();
-      create_component2(body.$$.fragment);
-      attr3(div0, "class", div0_class_value = /*$theme*/
-      ctx[0].hiddenScroll);
-      attr3(div1, "class", div1_class_value = /*$theme*/
-      ctx[0].header);
-    },
-    m(target, anchor) {
-      insert2(target, div1, anchor);
-      mount_component2(section, div1, null);
-      append3(div1, t0);
-      append3(div1, div0);
-      insert2(target, t1, anchor);
-      if (if_block2) if_block2.m(target, anchor);
-      insert2(target, t2, anchor);
-      mount_component2(body, target, anchor);
-      current = true;
-    },
-    p(ctx2, [dirty]) {
-      const section_changes = {};
-      if (dirty & /*$$scope, $_viewDates, $theme, $_intlDayHeaderAL, $_intlDayHeader*/
-      32783) {
-        section_changes.$$scope = { dirty, ctx: ctx2 };
-      }
-      section.$set(section_changes);
-      if (!current || dirty & /*$theme*/
-      1 && div0_class_value !== (div0_class_value = /*$theme*/
-      ctx2[0].hiddenScroll)) {
-        attr3(div0, "class", div0_class_value);
-      }
-      if (!current || dirty & /*$theme*/
-      1 && div1_class_value !== (div1_class_value = /*$theme*/
-      ctx2[0].header)) {
-        attr3(div1, "class", div1_class_value);
-      }
-      if (
-        /*$allDaySlot*/
-        ctx2[4]
-      ) {
-        if (if_block2) {
-          if_block2.p(ctx2, dirty);
-          if (dirty & /*$allDaySlot*/
-          16) {
-            transition_in2(if_block2, 1);
-          }
-        } else {
-          if_block2 = create_if_block(ctx2);
-          if_block2.c();
-          transition_in2(if_block2, 1);
-          if_block2.m(t2.parentNode, t2);
-        }
-      } else if (if_block2) {
-        group_outros2();
-        transition_out2(if_block2, 1, 1, () => {
-          if_block2 = null;
-        });
-        check_outros2();
-      }
-      const body_changes = {};
-      if (dirty & /*$$scope, $_viewDates*/
-      32770) {
-        body_changes.$$scope = { dirty, ctx: ctx2 };
-      }
-      body.$set(body_changes);
-    },
-    i(local) {
-      if (current) return;
-      transition_in2(section.$$.fragment, local);
-      transition_in2(if_block2);
-      transition_in2(body.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out2(section.$$.fragment, local);
-      transition_out2(if_block2);
-      transition_out2(body.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach2(div1);
-        detach2(t1);
-        detach2(t2);
-      }
-      destroy_component2(section);
-      if (if_block2) if_block2.d(detaching);
-      destroy_component2(body, detaching);
-    }
-  };
-}
-function instance($$self, $$props, $$invalidate) {
-  let $theme;
-  let $_viewDates;
-  let $_intlDayHeaderAL;
-  let $_intlDayHeader;
-  let $allDaySlot;
-  let { _viewDates, _intlDayHeader, _intlDayHeaderAL, allDaySlot, theme } = getContext3("state");
-  component_subscribe2($$self, _viewDates, (value) => $$invalidate(1, $_viewDates = value));
-  component_subscribe2($$self, _intlDayHeader, (value) => $$invalidate(3, $_intlDayHeader = value));
-  component_subscribe2($$self, _intlDayHeaderAL, (value) => $$invalidate(2, $_intlDayHeaderAL = value));
-  component_subscribe2($$self, allDaySlot, (value) => $$invalidate(4, $allDaySlot = value));
-  component_subscribe2($$self, theme, (value) => $$invalidate(0, $theme = value));
-  return [
-    $theme,
-    $_viewDates,
-    $_intlDayHeaderAL,
-    $_intlDayHeader,
-    $allDaySlot,
-    _viewDates,
-    _intlDayHeader,
-    _intlDayHeaderAL,
-    allDaySlot,
-    theme
-  ];
-}
-var View = class extends SvelteComponent2 {
-  constructor(options) {
-    super();
-    init3(this, options, instance, create_fragment2, safe_not_equal3, {});
-  }
-};
-var index2 = {
-  createOptions(options) {
-    options.buttonText.timeGridDay = "day";
-    options.buttonText.timeGridWeek = "week";
-    options.view = "timeGridWeek";
-    options.views.timeGridDay = {
-      buttonText: btnTextDay3,
-      component: View,
-      dayHeaderFormat: { weekday: "long" },
-      duration: { days: 1 },
-      theme: themeView3("ec-time-grid ec-day-view"),
-      titleFormat: { year: "numeric", month: "long", day: "numeric" }
-    };
-    options.views.timeGridWeek = {
-      buttonText: btnTextWeek3,
-      component: View,
-      duration: { weeks: 1 },
-      theme: themeView3("ec-time-grid ec-week-view")
-    };
-  },
-  createStores(state2) {
-    state2._slotTimeLimits = slotTimeLimits2(state2);
-    state2._times = times2(state2);
-  }
-};
-
-// node_modules/@event-calendar/resource-time-grid/index.js
-function create_fragment$12(ctx) {
-  let span;
-  let setContent_action;
-  let mounted;
-  let dispose;
-  return {
-    c() {
-      span = element2("span");
-      attr2(
-        span,
-        "aria-label",
-        /*ariaLabel*/
-        ctx[2]
-      );
-    },
-    m(target, anchor) {
-      insert(target, span, anchor);
-      ctx[9](span);
-      if (!mounted) {
-        dispose = action_destroyer(setContent_action = setContent2.call(
-          null,
-          span,
-          /*content*/
-          ctx[1]
-        ));
-        mounted = true;
-      }
-    },
-    p(ctx2, [dirty]) {
-      if (dirty & /*ariaLabel*/
-      4) {
-        attr2(
-          span,
-          "aria-label",
-          /*ariaLabel*/
-          ctx2[2]
-        );
-      }
-      if (setContent_action && is_function2(setContent_action.update) && dirty & /*content*/
-      2) setContent_action.update.call(
-        null,
-        /*content*/
-        ctx2[1]
-      );
-    },
-    i: noop3,
-    o: noop3,
-    d(detaching) {
-      if (detaching) {
-        detach(span);
-      }
-      ctx[9](null);
-      mounted = false;
-      dispose();
-    }
-  };
-}
-function instance$12($$self, $$props, $$invalidate) {
-  let $_intlDayHeaderAL;
-  let $resourceLabelDidMount;
-  let $resourceLabelContent;
-  let { resource } = $$props;
-  let { date = void 0 } = $$props;
-  let { resourceLabelContent, resourceLabelDidMount, _intlDayHeaderAL } = getContext2("state");
-  component_subscribe($$self, resourceLabelContent, (value) => $$invalidate(8, $resourceLabelContent = value));
-  component_subscribe($$self, resourceLabelDidMount, (value) => $$invalidate(11, $resourceLabelDidMount = value));
-  component_subscribe($$self, _intlDayHeaderAL, (value) => $$invalidate(10, $_intlDayHeaderAL = value));
-  const dispatch = createEventDispatcher();
-  let el;
-  let content;
-  let ariaLabel;
-  onMount2(() => {
-    if (isFunction2($resourceLabelDidMount)) {
-      $resourceLabelDidMount({
-        resource,
-        date: date ? toLocalDate2(date) : void 0,
-        el
-      });
-    }
-  });
-  afterUpdate(() => {
-    if (date) {
-      $$invalidate(2, ariaLabel = $_intlDayHeaderAL.format(date) + ", " + el.innerText);
-    } else {
-      $$invalidate(2, ariaLabel = void 0);
-      dispatch("text", el.innerText);
-    }
-  });
-  function span_binding($$value) {
-    binding_callbacks[$$value ? "unshift" : "push"](() => {
-      el = $$value;
-      $$invalidate(0, el);
-    });
-  }
-  $$self.$$set = ($$props2) => {
-    if ("resource" in $$props2) $$invalidate(6, resource = $$props2.resource);
-    if ("date" in $$props2) $$invalidate(7, date = $$props2.date);
-  };
-  $$self.$$.update = () => {
-    if ($$self.$$.dirty & /*$resourceLabelContent, resource, date*/
-    448) {
-      if ($resourceLabelContent) {
-        $$invalidate(1, content = isFunction2($resourceLabelContent) ? $resourceLabelContent({
-          resource,
-          date: date ? toLocalDate2(date) : void 0
-        }) : $resourceLabelContent);
-      } else {
-        $$invalidate(1, content = resource.title);
-      }
-    }
-  };
-  return [
-    el,
-    content,
-    ariaLabel,
-    resourceLabelContent,
-    resourceLabelDidMount,
-    _intlDayHeaderAL,
-    resource,
-    date,
-    $resourceLabelContent,
-    span_binding
-  ];
-}
-var Label = class extends SvelteComponent {
-  constructor(options) {
-    super();
-    init2(this, options, instance$12, create_fragment$12, safe_not_equal2, { resource: 6, date: 7 });
-  }
-};
-function get_each_context2(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[17] = list[i];
-  return child_ctx;
-}
-function get_each_context_12(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[20] = list[i];
-  return child_ctx;
-}
-function get_each_context_4(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[26] = list[i];
-  return child_ctx;
-}
-function get_each_context_2(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[23] = list[i];
-  return child_ctx;
-}
-function get_each_context_3(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[26] = list[i];
-  return child_ctx;
-}
-function get_each_context_5(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[17] = list[i];
-  child_ctx[32] = i;
-  return child_ctx;
-}
-function get_each_context_6(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[20] = list[i];
-  return child_ctx;
-}
-function create_else_block_2(ctx) {
-  let div;
-  let label2;
-  let div_class_value;
-  let current;
-  function text_handler(...args) {
-    return (
-      /*text_handler*/
-      ctx[16](
-        /*i*/
-        ctx[32],
-        ...args
-      )
-    );
-  }
-  label2 = new Label({ props: { resource: (
-    /*item0*/
-    ctx[17]
-  ) } });
-  label2.$on("text", text_handler);
-  return {
-    c() {
-      div = element2("div");
-      create_component(label2.$$.fragment);
-      attr2(div, "class", div_class_value = /*$theme*/
-      ctx[5].day);
-    },
-    m(target, anchor) {
-      insert(target, div, anchor);
-      mount_component(label2, div, null);
-      current = true;
-    },
-    p(new_ctx, dirty) {
-      ctx = new_ctx;
-      const label_changes = {};
-      if (dirty[0] & /*loops*/
-      8) label_changes.resource = /*item0*/
-      ctx[17];
-      label2.$set(label_changes);
-      if (!current || dirty[0] & /*$theme*/
-      32 && div_class_value !== (div_class_value = /*$theme*/
-      ctx[5].day)) {
-        attr2(div, "class", div_class_value);
-      }
-    },
-    i(local) {
-      if (current) return;
-      transition_in(label2.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out(label2.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach(div);
-      }
-      destroy_component(label2);
-    }
-  };
-}
-function create_if_block_42(ctx) {
-  let div;
-  let time;
-  let time_datetime_value;
-  let time_aria_label_value;
-  let setContent_action;
-  let div_class_value;
-  let mounted;
-  let dispose;
-  return {
-    c() {
-      var _a3;
-      div = element2("div");
-      time = element2("time");
-      attr2(time, "datetime", time_datetime_value = toISOString2(
-        /*item0*/
-        ctx[17],
-        10
-      ));
-      attr2(time, "aria-label", time_aria_label_value = /*$_intlDayHeaderAL*/
-      ctx[6].format(
-        /*item0*/
-        ctx[17]
-      ));
-      attr2(div, "class", div_class_value = /*$theme*/
-      ctx[5].day + " " + /*$theme*/
-      ((_a3 = ctx[5].weekdays) == null ? void 0 : _a3[
-        /*item0*/
-        ctx[17].getUTCDay()
-      ]));
-    },
-    m(target, anchor) {
-      insert(target, div, anchor);
-      append2(div, time);
-      if (!mounted) {
-        dispose = action_destroyer(setContent_action = setContent2.call(
-          null,
-          time,
-          /*$_intlDayHeader*/
-          ctx[7].format(
-            /*item0*/
-            ctx[17]
-          )
-        ));
-        mounted = true;
-      }
-    },
-    p(new_ctx, dirty) {
-      var _a3;
-      ctx = new_ctx;
-      if (dirty[0] & /*loops*/
-      8 && time_datetime_value !== (time_datetime_value = toISOString2(
-        /*item0*/
-        ctx[17],
-        10
-      ))) {
-        attr2(time, "datetime", time_datetime_value);
-      }
-      if (dirty[0] & /*$_intlDayHeaderAL, loops*/
-      72 && time_aria_label_value !== (time_aria_label_value = /*$_intlDayHeaderAL*/
-      ctx[6].format(
-        /*item0*/
-        ctx[17]
-      ))) {
-        attr2(time, "aria-label", time_aria_label_value);
-      }
-      if (setContent_action && is_function2(setContent_action.update) && dirty[0] & /*$_intlDayHeader, loops*/
-      136) setContent_action.update.call(
-        null,
-        /*$_intlDayHeader*/
-        ctx[7].format(
-          /*item0*/
-          ctx[17]
-        )
-      );
-      if (dirty[0] & /*$theme, loops*/
-      40 && div_class_value !== (div_class_value = /*$theme*/
-      ctx[5].day + " " + /*$theme*/
-      ((_a3 = ctx[5].weekdays) == null ? void 0 : _a3[
-        /*item0*/
-        ctx[17].getUTCDay()
-      ]))) {
-        attr2(div, "class", div_class_value);
-      }
-    },
-    i: noop3,
-    o: noop3,
-    d(detaching) {
-      if (detaching) {
-        detach(div);
-      }
-      mounted = false;
-      dispose();
-    }
-  };
-}
-function create_if_block_22(ctx) {
-  let div;
-  let div_class_value;
-  let current;
-  let each_value_6 = ensure_array_like(
-    /*loops*/
-    ctx[3][1]
-  );
-  let each_blocks = [];
-  for (let i = 0; i < each_value_6.length; i += 1) {
-    each_blocks[i] = create_each_block_6(get_each_context_6(ctx, each_value_6, i));
-  }
-  const out = (i) => transition_out(each_blocks[i], 1, 1, () => {
-    each_blocks[i] = null;
-  });
-  return {
-    c() {
-      div = element2("div");
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].c();
-      }
-      attr2(div, "class", div_class_value = /*$theme*/
-      ctx[5].days);
-    },
-    m(target, anchor) {
-      insert(target, div, anchor);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        if (each_blocks[i]) {
-          each_blocks[i].m(div, null);
-        }
-      }
-      current = true;
-    },
-    p(ctx2, dirty) {
-      if (dirty[0] & /*$theme, loops, $datesAboveResources, resourceLabels, $_intlDayHeaderAL, $_intlDayHeader*/
-      252) {
-        each_value_6 = ensure_array_like(
-          /*loops*/
-          ctx2[3][1]
-        );
-        let i;
-        for (i = 0; i < each_value_6.length; i += 1) {
-          const child_ctx = get_each_context_6(ctx2, each_value_6, i);
-          if (each_blocks[i]) {
-            each_blocks[i].p(child_ctx, dirty);
-            transition_in(each_blocks[i], 1);
-          } else {
-            each_blocks[i] = create_each_block_6(child_ctx);
-            each_blocks[i].c();
-            transition_in(each_blocks[i], 1);
-            each_blocks[i].m(div, null);
-          }
-        }
-        group_outros();
-        for (i = each_value_6.length; i < each_blocks.length; i += 1) {
-          out(i);
-        }
-        check_outros();
-      }
-      if (!current || dirty[0] & /*$theme*/
-      32 && div_class_value !== (div_class_value = /*$theme*/
-      ctx2[5].days)) {
-        attr2(div, "class", div_class_value);
-      }
-    },
-    i(local) {
-      if (current) return;
-      for (let i = 0; i < each_value_6.length; i += 1) {
-        transition_in(each_blocks[i]);
-      }
-      current = true;
-    },
-    o(local) {
-      each_blocks = each_blocks.filter(Boolean);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        transition_out(each_blocks[i]);
-      }
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach(div);
-      }
-      destroy_each(each_blocks, detaching);
-    }
-  };
-}
-function create_else_block_1(ctx) {
-  let div;
-  let time;
-  let time_datetime_value;
-  let time_aria_label_value;
-  let setContent_action;
-  let t;
-  let div_class_value;
-  let mounted;
-  let dispose;
-  return {
-    c() {
-      var _a3;
-      div = element2("div");
-      time = element2("time");
-      t = space();
-      attr2(time, "datetime", time_datetime_value = toISOString2(
-        /*item1*/
-        ctx[20],
-        10
-      ));
-      attr2(time, "aria-label", time_aria_label_value = "" + /*resourceLabels*/
-      (ctx[4][
-        /*i*/
-        ctx[32]
-      ] + /*$_intlDayHeaderAL*/
-      ctx[6].format(
-        /*item1*/
-        ctx[20]
-      )));
-      attr2(div, "class", div_class_value = /*$theme*/
-      ctx[5].day + " " + /*$theme*/
-      ((_a3 = ctx[5].weekdays) == null ? void 0 : _a3[
-        /*item1*/
-        ctx[20].getUTCDay()
-      ]));
-      attr2(div, "role", "columnheader");
-    },
-    m(target, anchor) {
-      insert(target, div, anchor);
-      append2(div, time);
-      append2(div, t);
-      if (!mounted) {
-        dispose = action_destroyer(setContent_action = setContent2.call(
-          null,
-          time,
-          /*$_intlDayHeader*/
-          ctx[7].format(
-            /*item1*/
-            ctx[20]
-          )
-        ));
-        mounted = true;
-      }
-    },
-    p(new_ctx, dirty) {
-      var _a3;
-      ctx = new_ctx;
-      if (dirty[0] & /*loops*/
-      8 && time_datetime_value !== (time_datetime_value = toISOString2(
-        /*item1*/
-        ctx[20],
-        10
-      ))) {
-        attr2(time, "datetime", time_datetime_value);
-      }
-      if (dirty[0] & /*resourceLabels, $_intlDayHeaderAL, loops*/
-      88 && time_aria_label_value !== (time_aria_label_value = "" + /*resourceLabels*/
-      (ctx[4][
-        /*i*/
-        ctx[32]
-      ] + /*$_intlDayHeaderAL*/
-      ctx[6].format(
-        /*item1*/
-        ctx[20]
-      )))) {
-        attr2(time, "aria-label", time_aria_label_value);
-      }
-      if (setContent_action && is_function2(setContent_action.update) && dirty[0] & /*$_intlDayHeader, loops*/
-      136) setContent_action.update.call(
-        null,
-        /*$_intlDayHeader*/
-        ctx[7].format(
-          /*item1*/
-          ctx[20]
-        )
-      );
-      if (dirty[0] & /*$theme, loops*/
-      40 && div_class_value !== (div_class_value = /*$theme*/
-      ctx[5].day + " " + /*$theme*/
-      ((_a3 = ctx[5].weekdays) == null ? void 0 : _a3[
-        /*item1*/
-        ctx[20].getUTCDay()
-      ]))) {
-        attr2(div, "class", div_class_value);
-      }
-    },
-    i: noop3,
-    o: noop3,
-    d(detaching) {
-      if (detaching) {
-        detach(div);
-      }
-      mounted = false;
-      dispose();
-    }
-  };
-}
-function create_if_block_32(ctx) {
-  let div;
-  let label2;
-  let t;
-  let div_class_value;
-  let current;
-  label2 = new Label({
-    props: {
-      resource: (
-        /*item1*/
-        ctx[20]
-      ),
-      date: (
-        /*item0*/
-        ctx[17]
-      )
-    }
-  });
-  return {
-    c() {
-      div = element2("div");
-      create_component(label2.$$.fragment);
-      t = space();
-      attr2(div, "class", div_class_value = /*$theme*/
-      ctx[5].day);
-      attr2(div, "role", "columnheader");
-    },
-    m(target, anchor) {
-      insert(target, div, anchor);
-      mount_component(label2, div, null);
-      append2(div, t);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      const label_changes = {};
-      if (dirty[0] & /*loops*/
-      8) label_changes.resource = /*item1*/
-      ctx2[20];
-      if (dirty[0] & /*loops*/
-      8) label_changes.date = /*item0*/
-      ctx2[17];
-      label2.$set(label_changes);
-      if (!current || dirty[0] & /*$theme*/
-      32 && div_class_value !== (div_class_value = /*$theme*/
-      ctx2[5].day)) {
-        attr2(div, "class", div_class_value);
-      }
-    },
-    i(local) {
-      if (current) return;
-      transition_in(label2.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out(label2.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach(div);
-      }
-      destroy_component(label2);
-    }
-  };
-}
-function create_each_block_6(ctx) {
-  let current_block_type_index;
-  let if_block2;
-  let if_block_anchor;
-  let current;
-  const if_block_creators = [create_if_block_32, create_else_block_1];
-  const if_blocks = [];
-  function select_block_type_1(ctx2, dirty) {
-    if (
-      /*$datesAboveResources*/
-      ctx2[2]
-    ) return 0;
-    return 1;
-  }
-  current_block_type_index = select_block_type_1(ctx);
-  if_block2 = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
-  return {
-    c() {
-      if_block2.c();
-      if_block_anchor = empty();
-    },
-    m(target, anchor) {
-      if_blocks[current_block_type_index].m(target, anchor);
-      insert(target, if_block_anchor, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      let previous_block_index = current_block_type_index;
-      current_block_type_index = select_block_type_1(ctx2);
-      if (current_block_type_index === previous_block_index) {
-        if_blocks[current_block_type_index].p(ctx2, dirty);
-      } else {
-        group_outros();
-        transition_out(if_blocks[previous_block_index], 1, 1, () => {
-          if_blocks[previous_block_index] = null;
-        });
-        check_outros();
-        if_block2 = if_blocks[current_block_type_index];
-        if (!if_block2) {
-          if_block2 = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx2);
-          if_block2.c();
-        } else {
-          if_block2.p(ctx2, dirty);
-        }
-        transition_in(if_block2, 1);
-        if_block2.m(if_block_anchor.parentNode, if_block_anchor);
-      }
-    },
-    i(local) {
-      if (current) return;
-      transition_in(if_block2);
-      current = true;
-    },
-    o(local) {
-      transition_out(if_block2);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach(if_block_anchor);
-      }
-      if_blocks[current_block_type_index].d(detaching);
-    }
-  };
-}
-function create_each_block_5(ctx) {
-  let div;
-  let current_block_type_index;
-  let if_block0;
-  let t0;
-  let t1;
-  let div_class_value;
-  let current;
-  const if_block_creators = [create_if_block_42, create_else_block_2];
-  const if_blocks = [];
-  function select_block_type(ctx2, dirty) {
-    if (
-      /*$datesAboveResources*/
-      ctx2[2]
-    ) return 0;
-    return 1;
-  }
-  current_block_type_index = select_block_type(ctx);
-  if_block0 = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
-  let if_block1 = (
-    /*loops*/
-    ctx[3][1].length > 1 && create_if_block_22(ctx)
-  );
-  return {
-    c() {
-      div = element2("div");
-      if_block0.c();
-      t0 = space();
-      if (if_block1) if_block1.c();
-      t1 = space();
-      attr2(div, "class", div_class_value = /*$theme*/
-      ctx[5].resource);
-    },
-    m(target, anchor) {
-      insert(target, div, anchor);
-      if_blocks[current_block_type_index].m(div, null);
-      append2(div, t0);
-      if (if_block1) if_block1.m(div, null);
-      append2(div, t1);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      let previous_block_index = current_block_type_index;
-      current_block_type_index = select_block_type(ctx2);
-      if (current_block_type_index === previous_block_index) {
-        if_blocks[current_block_type_index].p(ctx2, dirty);
-      } else {
-        group_outros();
-        transition_out(if_blocks[previous_block_index], 1, 1, () => {
-          if_blocks[previous_block_index] = null;
-        });
-        check_outros();
-        if_block0 = if_blocks[current_block_type_index];
-        if (!if_block0) {
-          if_block0 = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx2);
-          if_block0.c();
-        } else {
-          if_block0.p(ctx2, dirty);
-        }
-        transition_in(if_block0, 1);
-        if_block0.m(div, t0);
-      }
-      if (
-        /*loops*/
-        ctx2[3][1].length > 1
-      ) {
-        if (if_block1) {
-          if_block1.p(ctx2, dirty);
-          if (dirty[0] & /*loops*/
-          8) {
-            transition_in(if_block1, 1);
-          }
-        } else {
-          if_block1 = create_if_block_22(ctx2);
-          if_block1.c();
-          transition_in(if_block1, 1);
-          if_block1.m(div, t1);
-        }
-      } else if (if_block1) {
-        group_outros();
-        transition_out(if_block1, 1, 1, () => {
-          if_block1 = null;
-        });
-        check_outros();
-      }
-      if (!current || dirty[0] & /*$theme*/
-      32 && div_class_value !== (div_class_value = /*$theme*/
-      ctx2[5].resource)) {
-        attr2(div, "class", div_class_value);
-      }
-    },
-    i(local) {
-      if (current) return;
-      transition_in(if_block0);
-      transition_in(if_block1);
-      current = true;
-    },
-    o(local) {
-      transition_out(if_block0);
-      transition_out(if_block1);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach(div);
-      }
-      if_blocks[current_block_type_index].d();
-      if (if_block1) if_block1.d();
-    }
-  };
-}
-function create_default_slot_22(ctx) {
-  let each_1_anchor;
-  let current;
-  let each_value_5 = ensure_array_like(
-    /*loops*/
-    ctx[3][0]
-  );
-  let each_blocks = [];
-  for (let i = 0; i < each_value_5.length; i += 1) {
-    each_blocks[i] = create_each_block_5(get_each_context_5(ctx, each_value_5, i));
-  }
-  const out = (i) => transition_out(each_blocks[i], 1, 1, () => {
-    each_blocks[i] = null;
-  });
-  return {
-    c() {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].c();
-      }
-      each_1_anchor = empty();
-    },
-    m(target, anchor) {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        if (each_blocks[i]) {
-          each_blocks[i].m(target, anchor);
-        }
-      }
-      insert(target, each_1_anchor, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      if (dirty[0] & /*$theme, loops, $datesAboveResources, resourceLabels, $_intlDayHeaderAL, $_intlDayHeader*/
-      252) {
-        each_value_5 = ensure_array_like(
-          /*loops*/
-          ctx2[3][0]
-        );
-        let i;
-        for (i = 0; i < each_value_5.length; i += 1) {
-          const child_ctx = get_each_context_5(ctx2, each_value_5, i);
-          if (each_blocks[i]) {
-            each_blocks[i].p(child_ctx, dirty);
-            transition_in(each_blocks[i], 1);
-          } else {
-            each_blocks[i] = create_each_block_5(child_ctx);
-            each_blocks[i].c();
-            transition_in(each_blocks[i], 1);
-            each_blocks[i].m(each_1_anchor.parentNode, each_1_anchor);
-          }
-        }
-        group_outros();
-        for (i = each_value_5.length; i < each_blocks.length; i += 1) {
-          out(i);
-        }
-        check_outros();
-      }
-    },
-    i(local) {
-      if (current) return;
-      for (let i = 0; i < each_value_5.length; i += 1) {
-        transition_in(each_blocks[i]);
-      }
-      current = true;
-    },
-    o(local) {
-      each_blocks = each_blocks.filter(Boolean);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        transition_out(each_blocks[i]);
-      }
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach(each_1_anchor);
-      }
-      destroy_each(each_blocks, detaching);
-    }
-  };
-}
-function create_if_block2(ctx) {
-  let div2;
-  let div1;
-  let section;
-  let t;
-  let div0;
-  let div0_class_value;
-  let div1_class_value;
-  let div2_class_value;
-  let current;
-  section = new Section2({
-    props: {
-      $$slots: { default: [create_default_slot_12] },
-      $$scope: { ctx }
-    }
-  });
-  return {
-    c() {
-      div2 = element2("div");
-      div1 = element2("div");
-      create_component(section.$$.fragment);
-      t = space();
-      div0 = element2("div");
-      attr2(div0, "class", div0_class_value = /*$theme*/
-      ctx[5].hiddenScroll);
-      attr2(div1, "class", div1_class_value = /*$theme*/
-      ctx[5].content);
-      attr2(div2, "class", div2_class_value = /*$theme*/
-      ctx[5].allDay);
-    },
-    m(target, anchor) {
-      insert(target, div2, anchor);
-      append2(div2, div1);
-      mount_component(section, div1, null);
-      append2(div1, t);
-      append2(div1, div0);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      const section_changes = {};
-      if (dirty[0] & /*$_viewDates, $theme, $_viewResources, $datesAboveResources*/
-      39 | dirty[1] & /*$$scope*/
-      16) {
-        section_changes.$$scope = { dirty, ctx: ctx2 };
-      }
-      section.$set(section_changes);
-      if (!current || dirty[0] & /*$theme*/
-      32 && div0_class_value !== (div0_class_value = /*$theme*/
-      ctx2[5].hiddenScroll)) {
-        attr2(div0, "class", div0_class_value);
-      }
-      if (!current || dirty[0] & /*$theme*/
-      32 && div1_class_value !== (div1_class_value = /*$theme*/
-      ctx2[5].content)) {
-        attr2(div1, "class", div1_class_value);
-      }
-      if (!current || dirty[0] & /*$theme*/
-      32 && div2_class_value !== (div2_class_value = /*$theme*/
-      ctx2[5].allDay)) {
-        attr2(div2, "class", div2_class_value);
-      }
-    },
-    i(local) {
-      if (current) return;
-      transition_in(section.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out(section.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach(div2);
-      }
-      destroy_component(section);
-    }
-  };
-}
-function create_else_block(ctx) {
-  let each_1_anchor;
-  let current;
-  let each_value_4 = ensure_array_like(
-    /*$_viewResources*/
-    ctx[1]
-  );
-  let each_blocks = [];
-  for (let i = 0; i < each_value_4.length; i += 1) {
-    each_blocks[i] = create_each_block_4(get_each_context_4(ctx, each_value_4, i));
-  }
-  const out = (i) => transition_out(each_blocks[i], 1, 1, () => {
-    each_blocks[i] = null;
-  });
-  return {
-    c() {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].c();
-      }
-      each_1_anchor = empty();
-    },
-    m(target, anchor) {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        if (each_blocks[i]) {
-          each_blocks[i].m(target, anchor);
-        }
-      }
-      insert(target, each_1_anchor, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      if (dirty[0] & /*$theme, $_viewDates, $_viewResources*/
-      35) {
-        each_value_4 = ensure_array_like(
-          /*$_viewResources*/
-          ctx2[1]
-        );
-        let i;
-        for (i = 0; i < each_value_4.length; i += 1) {
-          const child_ctx = get_each_context_4(ctx2, each_value_4, i);
-          if (each_blocks[i]) {
-            each_blocks[i].p(child_ctx, dirty);
-            transition_in(each_blocks[i], 1);
-          } else {
-            each_blocks[i] = create_each_block_4(child_ctx);
-            each_blocks[i].c();
-            transition_in(each_blocks[i], 1);
-            each_blocks[i].m(each_1_anchor.parentNode, each_1_anchor);
-          }
-        }
-        group_outros();
-        for (i = each_value_4.length; i < each_blocks.length; i += 1) {
-          out(i);
-        }
-        check_outros();
-      }
-    },
-    i(local) {
-      if (current) return;
-      for (let i = 0; i < each_value_4.length; i += 1) {
-        transition_in(each_blocks[i]);
-      }
-      current = true;
-    },
-    o(local) {
-      each_blocks = each_blocks.filter(Boolean);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        transition_out(each_blocks[i]);
-      }
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach(each_1_anchor);
-      }
-      destroy_each(each_blocks, detaching);
-    }
-  };
-}
-function create_if_block_12(ctx) {
-  let each_1_anchor;
-  let current;
-  let each_value_2 = ensure_array_like(
-    /*$_viewDates*/
-    ctx[0]
-  );
-  let each_blocks = [];
-  for (let i = 0; i < each_value_2.length; i += 1) {
-    each_blocks[i] = create_each_block_2(get_each_context_2(ctx, each_value_2, i));
-  }
-  const out = (i) => transition_out(each_blocks[i], 1, 1, () => {
-    each_blocks[i] = null;
-  });
-  return {
-    c() {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].c();
-      }
-      each_1_anchor = empty();
-    },
-    m(target, anchor) {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        if (each_blocks[i]) {
-          each_blocks[i].m(target, anchor);
-        }
-      }
-      insert(target, each_1_anchor, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      if (dirty[0] & /*$theme, $_viewResources, $_viewDates*/
-      35) {
-        each_value_2 = ensure_array_like(
-          /*$_viewDates*/
-          ctx2[0]
-        );
-        let i;
-        for (i = 0; i < each_value_2.length; i += 1) {
-          const child_ctx = get_each_context_2(ctx2, each_value_2, i);
-          if (each_blocks[i]) {
-            each_blocks[i].p(child_ctx, dirty);
-            transition_in(each_blocks[i], 1);
-          } else {
-            each_blocks[i] = create_each_block_2(child_ctx);
-            each_blocks[i].c();
-            transition_in(each_blocks[i], 1);
-            each_blocks[i].m(each_1_anchor.parentNode, each_1_anchor);
-          }
-        }
-        group_outros();
-        for (i = each_value_2.length; i < each_blocks.length; i += 1) {
-          out(i);
-        }
-        check_outros();
-      }
-    },
-    i(local) {
-      if (current) return;
-      for (let i = 0; i < each_value_2.length; i += 1) {
-        transition_in(each_blocks[i]);
-      }
-      current = true;
-    },
-    o(local) {
-      each_blocks = each_blocks.filter(Boolean);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        transition_out(each_blocks[i]);
-      }
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach(each_1_anchor);
-      }
-      destroy_each(each_blocks, detaching);
-    }
-  };
-}
-function create_each_block_4(ctx) {
-  let div;
-  let week;
-  let t;
-  let div_class_value;
-  let current;
-  week = new Week2({
-    props: {
-      dates: (
-        /*$_viewDates*/
-        ctx[0]
-      ),
-      resource: (
-        /*resource*/
-        ctx[26]
-      )
-    }
-  });
-  return {
-    c() {
-      div = element2("div");
-      create_component(week.$$.fragment);
-      t = space();
-      attr2(div, "class", div_class_value = /*$theme*/
-      ctx[5].resource);
-    },
-    m(target, anchor) {
-      insert(target, div, anchor);
-      mount_component(week, div, null);
-      append2(div, t);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      const week_changes = {};
-      if (dirty[0] & /*$_viewDates*/
-      1) week_changes.dates = /*$_viewDates*/
-      ctx2[0];
-      if (dirty[0] & /*$_viewResources*/
-      2) week_changes.resource = /*resource*/
-      ctx2[26];
-      week.$set(week_changes);
-      if (!current || dirty[0] & /*$theme*/
-      32 && div_class_value !== (div_class_value = /*$theme*/
-      ctx2[5].resource)) {
-        attr2(div, "class", div_class_value);
-      }
-    },
-    i(local) {
-      if (current) return;
-      transition_in(week.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out(week.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach(div);
-      }
-      destroy_component(week);
-    }
-  };
-}
-function create_each_block_3(ctx) {
-  let week;
-  let current;
-  week = new Week2({
-    props: {
-      dates: [
-        /*date*/
-        ctx[23]
-      ],
-      resource: (
-        /*resource*/
-        ctx[26]
-      )
-    }
-  });
-  return {
-    c() {
-      create_component(week.$$.fragment);
-    },
-    m(target, anchor) {
-      mount_component(week, target, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      const week_changes = {};
-      if (dirty[0] & /*$_viewDates*/
-      1) week_changes.dates = [
-        /*date*/
-        ctx2[23]
-      ];
-      if (dirty[0] & /*$_viewResources*/
-      2) week_changes.resource = /*resource*/
-      ctx2[26];
-      week.$set(week_changes);
-    },
-    i(local) {
-      if (current) return;
-      transition_in(week.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out(week.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      destroy_component(week, detaching);
-    }
-  };
-}
-function create_each_block_2(ctx) {
-  let div;
-  let t;
-  let div_class_value;
-  let current;
-  let each_value_3 = ensure_array_like(
-    /*$_viewResources*/
-    ctx[1]
-  );
-  let each_blocks = [];
-  for (let i = 0; i < each_value_3.length; i += 1) {
-    each_blocks[i] = create_each_block_3(get_each_context_3(ctx, each_value_3, i));
-  }
-  const out = (i) => transition_out(each_blocks[i], 1, 1, () => {
-    each_blocks[i] = null;
-  });
-  return {
-    c() {
-      div = element2("div");
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].c();
-      }
-      t = space();
-      attr2(div, "class", div_class_value = /*$theme*/
-      ctx[5].resource);
-    },
-    m(target, anchor) {
-      insert(target, div, anchor);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        if (each_blocks[i]) {
-          each_blocks[i].m(div, null);
-        }
-      }
-      append2(div, t);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      if (dirty[0] & /*$_viewDates, $_viewResources*/
-      3) {
-        each_value_3 = ensure_array_like(
-          /*$_viewResources*/
-          ctx2[1]
-        );
-        let i;
-        for (i = 0; i < each_value_3.length; i += 1) {
-          const child_ctx = get_each_context_3(ctx2, each_value_3, i);
-          if (each_blocks[i]) {
-            each_blocks[i].p(child_ctx, dirty);
-            transition_in(each_blocks[i], 1);
-          } else {
-            each_blocks[i] = create_each_block_3(child_ctx);
-            each_blocks[i].c();
-            transition_in(each_blocks[i], 1);
-            each_blocks[i].m(div, t);
-          }
-        }
-        group_outros();
-        for (i = each_value_3.length; i < each_blocks.length; i += 1) {
-          out(i);
-        }
-        check_outros();
-      }
-      if (!current || dirty[0] & /*$theme*/
-      32 && div_class_value !== (div_class_value = /*$theme*/
-      ctx2[5].resource)) {
-        attr2(div, "class", div_class_value);
-      }
-    },
-    i(local) {
-      if (current) return;
-      for (let i = 0; i < each_value_3.length; i += 1) {
-        transition_in(each_blocks[i]);
-      }
-      current = true;
-    },
-    o(local) {
-      each_blocks = each_blocks.filter(Boolean);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        transition_out(each_blocks[i]);
-      }
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach(div);
-      }
-      destroy_each(each_blocks, detaching);
-    }
-  };
-}
-function create_default_slot_12(ctx) {
-  let current_block_type_index;
-  let if_block2;
-  let if_block_anchor;
-  let current;
-  const if_block_creators = [create_if_block_12, create_else_block];
-  const if_blocks = [];
-  function select_block_type_2(ctx2, dirty) {
-    if (
-      /*$datesAboveResources*/
-      ctx2[2]
-    ) return 0;
-    return 1;
-  }
-  current_block_type_index = select_block_type_2(ctx);
-  if_block2 = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
-  return {
-    c() {
-      if_block2.c();
-      if_block_anchor = empty();
-    },
-    m(target, anchor) {
-      if_blocks[current_block_type_index].m(target, anchor);
-      insert(target, if_block_anchor, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      let previous_block_index = current_block_type_index;
-      current_block_type_index = select_block_type_2(ctx2);
-      if (current_block_type_index === previous_block_index) {
-        if_blocks[current_block_type_index].p(ctx2, dirty);
-      } else {
-        group_outros();
-        transition_out(if_blocks[previous_block_index], 1, 1, () => {
-          if_blocks[previous_block_index] = null;
-        });
-        check_outros();
-        if_block2 = if_blocks[current_block_type_index];
-        if (!if_block2) {
-          if_block2 = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx2);
-          if_block2.c();
-        } else {
-          if_block2.p(ctx2, dirty);
-        }
-        transition_in(if_block2, 1);
-        if_block2.m(if_block_anchor.parentNode, if_block_anchor);
-      }
-    },
-    i(local) {
-      if (current) return;
-      transition_in(if_block2);
-      current = true;
-    },
-    o(local) {
-      transition_out(if_block2);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach(if_block_anchor);
-      }
-      if_blocks[current_block_type_index].d(detaching);
-    }
-  };
-}
-function create_each_block_12(ctx) {
-  let day;
-  let current;
-  day = new Day$12({
-    props: {
-      date: (
-        /*$datesAboveResources*/
-        ctx[2] ? (
-          /*item0*/
-          ctx[17]
-        ) : (
-          /*item1*/
-          ctx[20]
-        )
-      ),
-      resource: (
-        /*$datesAboveResources*/
-        ctx[2] ? (
-          /*item1*/
-          ctx[20]
-        ) : (
-          /*item0*/
-          ctx[17]
-        )
-      )
-    }
-  });
-  return {
-    c() {
-      create_component(day.$$.fragment);
-    },
-    m(target, anchor) {
-      mount_component(day, target, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      const day_changes = {};
-      if (dirty[0] & /*$datesAboveResources, loops*/
-      12) day_changes.date = /*$datesAboveResources*/
-      ctx2[2] ? (
-        /*item0*/
-        ctx2[17]
-      ) : (
-        /*item1*/
-        ctx2[20]
-      );
-      if (dirty[0] & /*$datesAboveResources, loops*/
-      12) day_changes.resource = /*$datesAboveResources*/
-      ctx2[2] ? (
-        /*item1*/
-        ctx2[20]
-      ) : (
-        /*item0*/
-        ctx2[17]
-      );
-      day.$set(day_changes);
-    },
-    i(local) {
-      if (current) return;
-      transition_in(day.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out(day.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      destroy_component(day, detaching);
-    }
-  };
-}
-function create_each_block2(ctx) {
-  let div;
-  let t;
-  let div_class_value;
-  let current;
-  let each_value_1 = ensure_array_like(
-    /*loops*/
-    ctx[3][1]
-  );
-  let each_blocks = [];
-  for (let i = 0; i < each_value_1.length; i += 1) {
-    each_blocks[i] = create_each_block_12(get_each_context_12(ctx, each_value_1, i));
-  }
-  const out = (i) => transition_out(each_blocks[i], 1, 1, () => {
-    each_blocks[i] = null;
-  });
-  return {
-    c() {
-      div = element2("div");
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].c();
-      }
-      t = space();
-      attr2(div, "class", div_class_value = /*$theme*/
-      ctx[5].resource);
-    },
-    m(target, anchor) {
-      insert(target, div, anchor);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        if (each_blocks[i]) {
-          each_blocks[i].m(div, null);
-        }
-      }
-      append2(div, t);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      if (dirty[0] & /*$datesAboveResources, loops*/
-      12) {
-        each_value_1 = ensure_array_like(
-          /*loops*/
-          ctx2[3][1]
-        );
-        let i;
-        for (i = 0; i < each_value_1.length; i += 1) {
-          const child_ctx = get_each_context_12(ctx2, each_value_1, i);
-          if (each_blocks[i]) {
-            each_blocks[i].p(child_ctx, dirty);
-            transition_in(each_blocks[i], 1);
-          } else {
-            each_blocks[i] = create_each_block_12(child_ctx);
-            each_blocks[i].c();
-            transition_in(each_blocks[i], 1);
-            each_blocks[i].m(div, t);
-          }
-        }
-        group_outros();
-        for (i = each_value_1.length; i < each_blocks.length; i += 1) {
-          out(i);
-        }
-        check_outros();
-      }
-      if (!current || dirty[0] & /*$theme*/
-      32 && div_class_value !== (div_class_value = /*$theme*/
-      ctx2[5].resource)) {
-        attr2(div, "class", div_class_value);
-      }
-    },
-    i(local) {
-      if (current) return;
-      for (let i = 0; i < each_value_1.length; i += 1) {
-        transition_in(each_blocks[i]);
-      }
-      current = true;
-    },
-    o(local) {
-      each_blocks = each_blocks.filter(Boolean);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        transition_out(each_blocks[i]);
-      }
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach(div);
-      }
-      destroy_each(each_blocks, detaching);
-    }
-  };
-}
-function create_default_slot2(ctx) {
-  let each_1_anchor;
-  let current;
-  let each_value = ensure_array_like(
-    /*loops*/
-    ctx[3][0]
-  );
-  let each_blocks = [];
-  for (let i = 0; i < each_value.length; i += 1) {
-    each_blocks[i] = create_each_block2(get_each_context2(ctx, each_value, i));
-  }
-  const out = (i) => transition_out(each_blocks[i], 1, 1, () => {
-    each_blocks[i] = null;
-  });
-  return {
-    c() {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].c();
-      }
-      each_1_anchor = empty();
-    },
-    m(target, anchor) {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        if (each_blocks[i]) {
-          each_blocks[i].m(target, anchor);
-        }
-      }
-      insert(target, each_1_anchor, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      if (dirty[0] & /*$theme, loops, $datesAboveResources*/
-      44) {
-        each_value = ensure_array_like(
-          /*loops*/
-          ctx2[3][0]
-        );
-        let i;
-        for (i = 0; i < each_value.length; i += 1) {
-          const child_ctx = get_each_context2(ctx2, each_value, i);
-          if (each_blocks[i]) {
-            each_blocks[i].p(child_ctx, dirty);
-            transition_in(each_blocks[i], 1);
-          } else {
-            each_blocks[i] = create_each_block2(child_ctx);
-            each_blocks[i].c();
-            transition_in(each_blocks[i], 1);
-            each_blocks[i].m(each_1_anchor.parentNode, each_1_anchor);
-          }
-        }
-        group_outros();
-        for (i = each_value.length; i < each_blocks.length; i += 1) {
-          out(i);
-        }
-        check_outros();
-      }
-    },
-    i(local) {
-      if (current) return;
-      for (let i = 0; i < each_value.length; i += 1) {
-        transition_in(each_blocks[i]);
-      }
-      current = true;
-    },
-    o(local) {
-      each_blocks = each_blocks.filter(Boolean);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        transition_out(each_blocks[i]);
-      }
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach(each_1_anchor);
-      }
-      destroy_each(each_blocks, detaching);
-    }
-  };
-}
-function create_fragment3(ctx) {
-  let div1;
-  let section;
-  let t0;
-  let div0;
-  let div0_class_value;
-  let div1_class_value;
-  let t1;
-  let t2;
-  let body;
-  let current;
-  section = new Section2({
-    props: {
-      $$slots: { default: [create_default_slot_22] },
-      $$scope: { ctx }
-    }
-  });
-  let if_block2 = (
-    /*$allDaySlot*/
-    ctx[8] && create_if_block2(ctx)
-  );
-  body = new Body({
-    props: {
-      $$slots: { default: [create_default_slot2] },
-      $$scope: { ctx }
-    }
-  });
-  return {
-    c() {
-      div1 = element2("div");
-      create_component(section.$$.fragment);
-      t0 = space();
-      div0 = element2("div");
-      t1 = space();
-      if (if_block2) if_block2.c();
-      t2 = space();
-      create_component(body.$$.fragment);
-      attr2(div0, "class", div0_class_value = /*$theme*/
-      ctx[5].hiddenScroll);
-      attr2(div1, "class", div1_class_value = /*$theme*/
-      ctx[5].header);
-    },
-    m(target, anchor) {
-      insert(target, div1, anchor);
-      mount_component(section, div1, null);
-      append2(div1, t0);
-      append2(div1, div0);
-      insert(target, t1, anchor);
-      if (if_block2) if_block2.m(target, anchor);
-      insert(target, t2, anchor);
-      mount_component(body, target, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      const section_changes = {};
-      if (dirty[0] & /*loops, $theme, $datesAboveResources, resourceLabels, $_intlDayHeaderAL, $_intlDayHeader*/
-      252 | dirty[1] & /*$$scope*/
-      16) {
-        section_changes.$$scope = { dirty, ctx: ctx2 };
-      }
-      section.$set(section_changes);
-      if (!current || dirty[0] & /*$theme*/
-      32 && div0_class_value !== (div0_class_value = /*$theme*/
-      ctx2[5].hiddenScroll)) {
-        attr2(div0, "class", div0_class_value);
-      }
-      if (!current || dirty[0] & /*$theme*/
-      32 && div1_class_value !== (div1_class_value = /*$theme*/
-      ctx2[5].header)) {
-        attr2(div1, "class", div1_class_value);
-      }
-      if (
-        /*$allDaySlot*/
-        ctx2[8]
-      ) {
-        if (if_block2) {
-          if_block2.p(ctx2, dirty);
-          if (dirty[0] & /*$allDaySlot*/
-          256) {
-            transition_in(if_block2, 1);
-          }
-        } else {
-          if_block2 = create_if_block2(ctx2);
-          if_block2.c();
-          transition_in(if_block2, 1);
-          if_block2.m(t2.parentNode, t2);
-        }
-      } else if (if_block2) {
-        group_outros();
-        transition_out(if_block2, 1, 1, () => {
-          if_block2 = null;
-        });
-        check_outros();
-      }
-      const body_changes = {};
-      if (dirty[0] & /*loops, $theme, $datesAboveResources*/
-      44 | dirty[1] & /*$$scope*/
-      16) {
-        body_changes.$$scope = { dirty, ctx: ctx2 };
-      }
-      body.$set(body_changes);
-    },
-    i(local) {
-      if (current) return;
-      transition_in(section.$$.fragment, local);
-      transition_in(if_block2);
-      transition_in(body.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out(section.$$.fragment, local);
-      transition_out(if_block2);
-      transition_out(body.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach(div1);
-        detach(t1);
-        detach(t2);
-      }
-      destroy_component(section);
-      if (if_block2) if_block2.d(detaching);
-      destroy_component(body, detaching);
-    }
-  };
-}
-function instance2($$self, $$props, $$invalidate) {
-  let $_viewDates;
-  let $_viewResources;
-  let $datesAboveResources;
-  let $theme;
-  let $_intlDayHeaderAL;
-  let $_intlDayHeader;
-  let $allDaySlot;
-  let { datesAboveResources, _viewDates, _viewResources, _intlDayHeader, _intlDayHeaderAL, allDaySlot, theme } = getContext2("state");
-  component_subscribe($$self, datesAboveResources, (value) => $$invalidate(2, $datesAboveResources = value));
-  component_subscribe($$self, _viewDates, (value) => $$invalidate(0, $_viewDates = value));
-  component_subscribe($$self, _viewResources, (value) => $$invalidate(1, $_viewResources = value));
-  component_subscribe($$self, _intlDayHeader, (value) => $$invalidate(7, $_intlDayHeader = value));
-  component_subscribe($$self, _intlDayHeaderAL, (value) => $$invalidate(6, $_intlDayHeaderAL = value));
-  component_subscribe($$self, allDaySlot, (value) => $$invalidate(8, $allDaySlot = value));
-  component_subscribe($$self, theme, (value) => $$invalidate(5, $theme = value));
-  let loops;
-  let resourceLabels = [];
-  const text_handler = (i, e) => $$invalidate(4, resourceLabels[i] = e.detail + ", ", resourceLabels);
-  $$self.$$.update = () => {
-    if ($$self.$$.dirty[0] & /*$datesAboveResources, $_viewDates, $_viewResources*/
-    7) {
-      $$invalidate(3, loops = $datesAboveResources ? [$_viewDates, $_viewResources] : [$_viewResources, $_viewDates]);
-    }
-  };
-  return [
-    $_viewDates,
-    $_viewResources,
-    $datesAboveResources,
-    loops,
-    resourceLabels,
-    $theme,
-    $_intlDayHeaderAL,
-    $_intlDayHeader,
-    $allDaySlot,
+function View$1($$anchor, $$props) {
+  push($$props, true);
+  const [$$stores, $$cleanup] = setup_stores();
+  const $datesAboveResources = () => store_get(datesAboveResources, "$datesAboveResources", $$stores);
+  const $_viewDates = () => store_get(_viewDates, "$_viewDates", $$stores);
+  const $_viewResources = () => store_get(_viewResources, "$_viewResources", $$stores);
+  const $theme = () => store_get(theme, "$theme", $$stores);
+  const $_today = () => store_get(_today, "$_today", $$stores);
+  const $_intlDayHeaderAL = () => store_get(_intlDayHeaderAL, "$_intlDayHeaderAL", $$stores);
+  const $_intlDayHeader = () => store_get(_intlDayHeader, "$_intlDayHeader", $$stores);
+  const $allDaySlot = () => store_get(allDaySlot, "$allDaySlot", $$stores);
+  let {
     datesAboveResources,
+    _today,
     _viewDates,
     _viewResources,
     _intlDayHeader,
     _intlDayHeaderAL,
     allDaySlot,
-    theme,
-    text_handler
-  ];
-}
-var View2 = class extends SvelteComponent {
-  constructor(options) {
-    super();
-    init2(this, options, instance2, create_fragment3, safe_not_equal2, {}, null, [-1, -1]);
+    theme
+  } = getContext("state");
+  let loops = user_derived(() => $datesAboveResources() ? [$_viewDates(), $_viewResources()] : [$_viewResources(), $_viewDates()]);
+  let resourceLabels = proxy([]);
+  var fragment = root$8();
+  var div = first_child(fragment);
+  var node = child(div);
+  Section(node, {
+    children: ($$anchor2, $$slotProps) => {
+      var fragment_1 = comment();
+      var node_1 = first_child(fragment_1);
+      each(node_1, 17, () => get(loops)[0], index, ($$anchor3, item0, i) => {
+        var div_1 = root_2$3();
+        var node_2 = child(div_1);
+        {
+          var consequent = ($$anchor4) => {
+            var div_2 = root_3$1();
+            var time = child(div_2);
+            action(time, ($$node, $$action_arg) => setContent == null ? void 0 : setContent($$node, $$action_arg), () => $_intlDayHeader().format(get(item0)));
+            reset(div_2);
+            template_effect(
+              ($0, $1, $2, $3) => {
+                var _a3;
+                set_class(div_2, 1, `${(_a3 = $theme().day) != null ? _a3 : ""} ${$0 != null ? $0 : ""}${$1 != null ? $1 : ""}`);
+                set_attribute2(time, "datetime", $2);
+                set_attribute2(time, "aria-label", $3);
+              },
+              [
+                () => {
+                  var _a3;
+                  return (_a3 = $theme().weekdays) == null ? void 0 : _a3[get(item0).getUTCDay()];
+                },
+                () => datesEqual(get(item0), $_today()) ? " " + $theme().today : "",
+                () => toISOString(get(item0), 10),
+                () => $_intlDayHeaderAL().format(get(item0))
+              ]
+            );
+            append($$anchor4, div_2);
+          };
+          var alternate = ($$anchor4) => {
+            var div_3 = root_4$1();
+            var node_3 = child(div_3);
+            Label$1(node_3, {
+              get resource() {
+                return get(item0);
+              },
+              setLabel: (e) => resourceLabels[i] = e.detail + ", "
+            });
+            reset(div_3);
+            template_effect(() => set_class(div_3, 1, $theme().day));
+            append($$anchor4, div_3);
+          };
+          if_block(node_2, ($$render) => {
+            if ($datesAboveResources()) $$render(consequent);
+            else $$render(alternate, false);
+          });
+        }
+        var node_4 = sibling(node_2, 2);
+        {
+          var consequent_2 = ($$anchor4) => {
+            var div_4 = root_5();
+            each(div_4, 21, () => get(loops)[1], index, ($$anchor5, item1) => {
+              var fragment_2 = comment();
+              var node_5 = first_child(fragment_2);
+              {
+                var consequent_1 = ($$anchor6) => {
+                  var div_5 = root_7();
+                  var node_6 = child(div_5);
+                  Label$1(node_6, {
+                    get resource() {
+                      return get(item1);
+                    },
+                    get date() {
+                      return get(item0);
+                    }
+                  });
+                  reset(div_5);
+                  template_effect(() => set_class(div_5, 1, $theme().day));
+                  append($$anchor6, div_5);
+                };
+                var alternate_1 = ($$anchor6) => {
+                  var div_6 = root_8();
+                  var time_1 = child(div_6);
+                  action(time_1, ($$node, $$action_arg) => setContent == null ? void 0 : setContent($$node, $$action_arg), () => $_intlDayHeader().format(get(item1)));
+                  reset(div_6);
+                  template_effect(
+                    ($0, $1, $2, $3) => {
+                      var _a3, _b3;
+                      set_class(div_6, 1, `${(_a3 = $theme().day) != null ? _a3 : ""} ${$0 != null ? $0 : ""}${$1 != null ? $1 : ""}`);
+                      set_attribute2(time_1, "datetime", $2);
+                      set_attribute2(time_1, "aria-label", `${(_b3 = resourceLabels[i]) != null ? _b3 : ""}${$3 != null ? $3 : ""}`);
+                    },
+                    [
+                      () => {
+                        var _a3;
+                        return (_a3 = $theme().weekdays) == null ? void 0 : _a3[get(item1).getUTCDay()];
+                      },
+                      () => datesEqual(get(item1), $_today()) ? " " + $theme().today : "",
+                      () => toISOString(get(item1), 10),
+                      () => $_intlDayHeaderAL().format(get(item1))
+                    ]
+                  );
+                  append($$anchor6, div_6);
+                };
+                if_block(node_5, ($$render) => {
+                  if ($datesAboveResources()) $$render(consequent_1);
+                  else $$render(alternate_1, false);
+                });
+              }
+              append($$anchor5, fragment_2);
+            });
+            reset(div_4);
+            template_effect(() => set_class(div_4, 1, $theme().days));
+            append($$anchor4, div_4);
+          };
+          if_block(node_4, ($$render) => {
+            if (get(loops)[1].length > 1) $$render(consequent_2);
+          });
+        }
+        reset(div_1);
+        template_effect(() => set_class(div_1, 1, $theme().resource));
+        append($$anchor3, div_1);
+      });
+      append($$anchor2, fragment_1);
+    },
+    $$slots: { default: true }
+  });
+  var div_7 = sibling(node, 2);
+  reset(div);
+  var node_7 = sibling(div, 2);
+  {
+    var consequent_4 = ($$anchor2) => {
+      var div_8 = root_9();
+      var div_9 = child(div_8);
+      var node_8 = child(div_9);
+      Section(node_8, {
+        children: ($$anchor3, $$slotProps) => {
+          var fragment_3 = comment();
+          var node_9 = first_child(fragment_3);
+          {
+            var consequent_3 = ($$anchor4) => {
+              var fragment_4 = comment();
+              var node_10 = first_child(fragment_4);
+              each(node_10, 1, $_viewDates, index, ($$anchor5, date) => {
+                var div_10 = root_12();
+                each(div_10, 5, $_viewResources, index, ($$anchor6, resource) => {
+                  {
+                    let $0 = user_derived(() => [get(date)]);
+                    Week($$anchor6, {
+                      get dates() {
+                        return get($0);
+                      },
+                      get resource() {
+                        return get(resource);
+                      }
+                    });
+                  }
+                });
+                reset(div_10);
+                template_effect(() => set_class(div_10, 1, $theme().resource));
+                append($$anchor5, div_10);
+              });
+              append($$anchor4, fragment_4);
+            };
+            var alternate_2 = ($$anchor4) => {
+              var fragment_6 = comment();
+              var node_11 = first_child(fragment_6);
+              each(node_11, 1, $_viewResources, index, ($$anchor5, resource) => {
+                var div_11 = root_15();
+                var node_12 = child(div_11);
+                Week(node_12, {
+                  get dates() {
+                    return $_viewDates();
+                  },
+                  get resource() {
+                    return get(resource);
+                  }
+                });
+                reset(div_11);
+                template_effect(() => set_class(div_11, 1, $theme().resource));
+                append($$anchor5, div_11);
+              });
+              append($$anchor4, fragment_6);
+            };
+            if_block(node_9, ($$render) => {
+              if ($datesAboveResources()) $$render(consequent_3);
+              else $$render(alternate_2, false);
+            });
+          }
+          append($$anchor3, fragment_3);
+        },
+        $$slots: { default: true }
+      });
+      var div_12 = sibling(node_8, 2);
+      reset(div_9);
+      reset(div_8);
+      template_effect(() => {
+        set_class(div_8, 1, $theme().allDay);
+        set_class(div_9, 1, $theme().content);
+        set_class(div_12, 1, $theme().hiddenScroll);
+      });
+      append($$anchor2, div_8);
+    };
+    if_block(node_7, ($$render) => {
+      if ($allDaySlot()) $$render(consequent_4);
+    });
   }
-};
-var index3 = {
+  var node_13 = sibling(node_7, 2);
+  Body$1(node_13, {
+    children: ($$anchor2, $$slotProps) => {
+      var fragment_7 = comment();
+      var node_14 = first_child(fragment_7);
+      each(node_14, 17, () => get(loops)[0], index, ($$anchor3, item0) => {
+        var div_13 = root_17();
+        each(div_13, 21, () => get(loops)[1], index, ($$anchor4, item1) => {
+          {
+            let $0 = user_derived(() => $datesAboveResources() ? get(item0) : get(item1));
+            let $1 = user_derived(() => $datesAboveResources() ? get(item1) : get(item0));
+            Day$2($$anchor4, {
+              get date() {
+                return get($0);
+              },
+              get resource() {
+                return get($1);
+              }
+            });
+          }
+        });
+        reset(div_13);
+        template_effect(() => set_class(div_13, 1, $theme().resource));
+        append($$anchor3, div_13);
+      });
+      append($$anchor2, fragment_7);
+    },
+    $$slots: { default: true }
+  });
+  template_effect(() => {
+    set_class(div, 1, $theme().header);
+    set_class(div_7, 1, $theme().hiddenScroll);
+  });
+  append($$anchor, fragment);
+  pop();
+  $$cleanup();
+}
+var index$1 = {
   createOptions(options) {
     options.datesAboveResources = false;
     options.buttonText.resourceTimeGridDay = "resources";
     options.buttonText.resourceTimeGridWeek = "resources";
     options.view = "resourceTimeGridWeek";
     options.views.resourceTimeGridDay = {
-      buttonText: btnTextDay2,
-      component: View2,
+      buttonText: btnTextDay,
+      component: View$1,
       duration: { days: 1 },
-      theme: themeView2("ec-time-grid ec-resource-day-view")
+      theme: themeView("ec-time-grid ec-resource-day-view")
     };
     options.views.resourceTimeGridWeek = {
-      buttonText: btnTextWeek2,
-      component: View2,
+      buttonText: btnTextWeek,
+      component: View$1,
       duration: { weeks: 1 },
-      theme: themeView2("ec-time-grid ec-resource-week-view")
+      theme: themeView("ec-time-grid ec-resource-week-view")
     };
   },
   createStores(state2) {
     if (!("_times" in state2)) {
-      index2.createStores(state2);
+      TimeGrid.createStores(state2);
     }
     if (!("_viewResources" in state2)) {
       state2._viewResources = viewResources(state2);
     }
   }
 };
-
-// node_modules/@event-calendar/resource-timeline/node_modules/svelte/src/runtime/internal/utils.js
-function noop5() {
-}
-function run5(fn) {
-  return fn();
-}
-function blank_object3() {
-  return /* @__PURE__ */ Object.create(null);
-}
-function run_all4(fns) {
-  fns.forEach(run5);
-}
-function is_function4(thing) {
-  return typeof thing === "function";
-}
-function safe_not_equal4(a, b) {
-  return a != a ? b == b : a !== b || a && typeof a === "object" || typeof a === "function";
-}
-function is_empty3(obj) {
-  return Object.keys(obj).length === 0;
-}
-function subscribe3(store, ...callbacks) {
-  if (store == null) {
-    for (const callback of callbacks) {
-      callback(void 0);
-    }
-    return noop5;
-  }
-  const unsub = store.subscribe(...callbacks);
-  return unsub.unsubscribe ? () => unsub.unsubscribe() : unsub;
-}
-function component_subscribe3(component2, store, callback) {
-  component2.$$.on_destroy.push(subscribe3(store, callback));
-}
-function set_store_value3(store, ret, value) {
-  store.set(value);
-  return ret;
-}
-function action_destroyer3(action_result) {
-  return action_result && is_function4(action_result.destroy) ? action_result.destroy : noop5;
-}
-
-// node_modules/@event-calendar/resource-timeline/node_modules/svelte/src/runtime/internal/globals.js
-var globals3 = typeof window !== "undefined" ? window : typeof globalThis !== "undefined" ? globalThis : (
-  // @ts-ignore Node typings have this
-  global
-);
-
-// node_modules/@event-calendar/resource-timeline/node_modules/svelte/src/runtime/internal/ResizeObserverSingleton.js
-var ResizeObserverSingleton3 = class _ResizeObserverSingleton {
-  /** @param {ResizeObserverOptions} options */
-  constructor(options) {
-    /**
-     * @private
-     * @readonly
-     * @type {WeakMap<Element, import('./private.js').Listener>}
-     */
-    __publicField(this, "_listeners", "WeakMap" in globals3 ? /* @__PURE__ */ new WeakMap() : void 0);
-    /**
-     * @private
-     * @type {ResizeObserver}
-     */
-    __publicField(this, "_observer");
-    /** @type {ResizeObserverOptions} */
-    __publicField(this, "options");
-    this.options = options;
-  }
-  /**
-   * @param {Element} element
-   * @param {import('./private.js').Listener} listener
-   * @returns {() => void}
-   */
-  observe(element5, listener) {
-    this._listeners.set(element5, listener);
-    this._getObserver().observe(element5, this.options);
-    return () => {
-      this._listeners.delete(element5);
-      this._observer.unobserve(element5);
-    };
-  }
-  /**
-   * @private
-   */
-  _getObserver() {
-    var _a3;
-    return (_a3 = this._observer) != null ? _a3 : this._observer = new ResizeObserver((entries2) => {
-      var _a4;
-      for (const entry of entries2) {
-        _ResizeObserverSingleton.entries.set(entry.target, entry);
-        (_a4 = this._listeners.get(entry.target)) == null ? void 0 : _a4(entry);
-      }
-    });
-  }
-};
-ResizeObserverSingleton3.entries = "WeakMap" in globals3 ? /* @__PURE__ */ new WeakMap() : void 0;
-
-// node_modules/@event-calendar/resource-timeline/node_modules/svelte/src/runtime/internal/dom.js
-var is_hydrating3 = false;
-function start_hydrating3() {
-  is_hydrating3 = true;
-}
-function end_hydrating3() {
-  is_hydrating3 = false;
-}
-function append4(target, node) {
-  target.appendChild(node);
-}
-function insert3(target, node, anchor) {
-  target.insertBefore(node, anchor || null);
-}
-function detach3(node) {
-  if (node.parentNode) {
-    node.parentNode.removeChild(node);
-  }
-}
-function destroy_each3(iterations, detaching) {
-  for (let i = 0; i < iterations.length; i += 1) {
-    if (iterations[i]) iterations[i].d(detaching);
-  }
-}
-function element4(name) {
-  return document.createElement(name);
-}
-function text4(data) {
-  return document.createTextNode(data);
-}
-function space3() {
-  return text4(" ");
-}
-function empty3() {
-  return text4("");
-}
-function listen5(node, event2, handler, options) {
-  node.addEventListener(event2, handler, options);
-  return () => node.removeEventListener(event2, handler, options);
-}
-function attr4(node, attribute, value) {
-  if (value == null) node.removeAttribute(attribute);
-  else if (node.getAttribute(attribute) !== value) node.setAttribute(attribute, value);
-}
-function children3(element5) {
-  return Array.from(element5.childNodes);
-}
-function set_style4(node, key2, value, important) {
-  if (value == null) {
-    node.style.removeProperty(key2);
-  } else {
-    node.style.setProperty(key2, value, important ? "important" : "");
-  }
-}
-function get_custom_elements_slots4(element5) {
-  const result = {};
-  element5.childNodes.forEach(
-    /** @param {Element} node */
-    (node) => {
-      result[node.slot || "default"] = true;
-    }
-  );
-  return result;
-}
-function construct_svelte_component3(component2, props) {
-  return new component2(props);
-}
-
-// node_modules/@event-calendar/resource-timeline/node_modules/svelte/src/runtime/internal/lifecycle.js
-var current_component3;
-function set_current_component3(component2) {
-  current_component3 = component2;
-}
-function get_current_component3() {
-  if (!current_component3) throw new Error("Function called outside component initialization");
-  return current_component3;
-}
-function onMount4(fn) {
-  get_current_component3().$$.on_mount.push(fn);
-}
-function afterUpdate3(fn) {
-  get_current_component3().$$.after_update.push(fn);
-}
-function getContext4(key2) {
-  return get_current_component3().$$.context.get(key2);
-}
-
-// node_modules/@event-calendar/resource-timeline/node_modules/svelte/src/runtime/internal/scheduler.js
-var dirty_components3 = [];
-var binding_callbacks3 = [];
-var render_callbacks3 = [];
-var flush_callbacks3 = [];
-var resolved_promise3 = /* @__PURE__ */ Promise.resolve();
-var update_scheduled3 = false;
-function schedule_update3() {
-  if (!update_scheduled3) {
-    update_scheduled3 = true;
-    resolved_promise3.then(flush3);
-  }
-}
-function add_render_callback3(fn) {
-  render_callbacks3.push(fn);
-}
-var seen_callbacks3 = /* @__PURE__ */ new Set();
-var flushidx3 = 0;
-function flush3() {
-  if (flushidx3 !== 0) {
-    return;
-  }
-  const saved_component = current_component3;
-  do {
-    try {
-      while (flushidx3 < dirty_components3.length) {
-        const component2 = dirty_components3[flushidx3];
-        flushidx3++;
-        set_current_component3(component2);
-        update4(component2.$$);
-      }
-    } catch (e) {
-      dirty_components3.length = 0;
-      flushidx3 = 0;
-      throw e;
-    }
-    set_current_component3(null);
-    dirty_components3.length = 0;
-    flushidx3 = 0;
-    while (binding_callbacks3.length) binding_callbacks3.pop()();
-    for (let i = 0; i < render_callbacks3.length; i += 1) {
-      const callback = render_callbacks3[i];
-      if (!seen_callbacks3.has(callback)) {
-        seen_callbacks3.add(callback);
-        callback();
-      }
-    }
-    render_callbacks3.length = 0;
-  } while (dirty_components3.length);
-  while (flush_callbacks3.length) {
-    flush_callbacks3.pop()();
-  }
-  update_scheduled3 = false;
-  seen_callbacks3.clear();
-  set_current_component3(saved_component);
-}
-function update4($$) {
-  if ($$.fragment !== null) {
-    $$.update();
-    run_all4($$.before_update);
-    const dirty = $$.dirty;
-    $$.dirty = [-1];
-    $$.fragment && $$.fragment.p($$.ctx, dirty);
-    $$.after_update.forEach(add_render_callback3);
-  }
-}
-function flush_render_callbacks3(fns) {
-  const filtered = [];
-  const targets = [];
-  render_callbacks3.forEach((c) => fns.indexOf(c) === -1 ? filtered.push(c) : targets.push(c));
-  targets.forEach((c) => c());
-  render_callbacks3 = filtered;
-}
-
-// node_modules/@event-calendar/resource-timeline/node_modules/svelte/src/runtime/internal/transitions.js
-var outroing3 = /* @__PURE__ */ new Set();
-var outros3;
-function group_outros3() {
-  outros3 = {
-    r: 0,
-    c: [],
-    p: outros3
-    // parent group
-  };
-}
-function check_outros3() {
-  if (!outros3.r) {
-    run_all4(outros3.c);
-  }
-  outros3 = outros3.p;
-}
-function transition_in3(block2, local) {
-  if (block2 && block2.i) {
-    outroing3.delete(block2);
-    block2.i(local);
-  }
-}
-function transition_out3(block2, local, detach4, callback) {
-  if (block2 && block2.o) {
-    if (outroing3.has(block2)) return;
-    outroing3.add(block2);
-    outros3.c.push(() => {
-      outroing3.delete(block2);
-      if (callback) {
-        if (detach4) block2.d(1);
-        callback();
-      }
-    });
-    block2.o(local);
-  } else if (callback) {
-    callback();
-  }
-}
-
-// node_modules/@event-calendar/resource-timeline/node_modules/svelte/src/runtime/internal/each.js
-function ensure_array_like3(array_like_or_iterator) {
-  return (array_like_or_iterator == null ? void 0 : array_like_or_iterator.length) !== void 0 ? array_like_or_iterator : Array.from(array_like_or_iterator);
-}
-function outro_and_destroy_block2(block2, lookup) {
-  transition_out3(block2, 1, 1, () => {
-    lookup.delete(block2.key);
-  });
-}
-function update_keyed_each2(old_blocks, dirty, get_key, dynamic, ctx, list, lookup, node, destroy, create_each_block4, next2, get_context) {
-  let o = old_blocks.length;
-  let n = list.length;
-  let i = o;
-  const old_indexes = {};
-  while (i--) old_indexes[old_blocks[i].key] = i;
-  const new_blocks = [];
-  const new_lookup = /* @__PURE__ */ new Map();
-  const deltas = /* @__PURE__ */ new Map();
-  const updates = [];
-  i = n;
-  while (i--) {
-    const child_ctx = get_context(ctx, list, i);
-    const key2 = get_key(child_ctx);
-    let block2 = lookup.get(key2);
-    if (!block2) {
-      block2 = create_each_block4(key2, child_ctx);
-      block2.c();
-    } else if (dynamic) {
-      updates.push(() => block2.p(child_ctx, dirty));
-    }
-    new_lookup.set(key2, new_blocks[i] = block2);
-    if (key2 in old_indexes) deltas.set(key2, Math.abs(i - old_indexes[key2]));
-  }
-  const will_move = /* @__PURE__ */ new Set();
-  const did_move = /* @__PURE__ */ new Set();
-  function insert4(block2) {
-    transition_in3(block2, 1);
-    block2.m(node, next2);
-    lookup.set(block2.key, block2);
-    next2 = block2.first;
-    n--;
-  }
-  while (o && n) {
-    const new_block = new_blocks[n - 1];
-    const old_block = old_blocks[o - 1];
-    const new_key = new_block.key;
-    const old_key = old_block.key;
-    if (new_block === old_block) {
-      next2 = new_block.first;
-      o--;
-      n--;
-    } else if (!new_lookup.has(old_key)) {
-      destroy(old_block, lookup);
-      o--;
-    } else if (!lookup.has(new_key) || will_move.has(new_key)) {
-      insert4(new_block);
-    } else if (did_move.has(old_key)) {
-      o--;
-    } else if (deltas.get(new_key) > deltas.get(old_key)) {
-      did_move.add(new_key);
-      insert4(new_block);
-    } else {
-      will_move.add(old_key);
-      o--;
-    }
-  }
-  while (o--) {
-    const old_block = old_blocks[o];
-    if (!new_lookup.has(old_block.key)) destroy(old_block, lookup);
-  }
-  while (n) insert4(new_blocks[n - 1]);
-  run_all4(updates);
-  return new_blocks;
-}
-
-// node_modules/@event-calendar/resource-timeline/node_modules/svelte/src/shared/boolean_attributes.js
-var _boolean_attributes3 = (
-  /** @type {const} */
-  [
-    "allowfullscreen",
-    "allowpaymentrequest",
-    "async",
-    "autofocus",
-    "autoplay",
-    "checked",
-    "controls",
-    "default",
-    "defer",
-    "disabled",
-    "formnovalidate",
-    "hidden",
-    "inert",
-    "ismap",
-    "loop",
-    "multiple",
-    "muted",
-    "nomodule",
-    "novalidate",
-    "open",
-    "playsinline",
-    "readonly",
-    "required",
-    "reversed",
-    "selected"
-  ]
-);
-var boolean_attributes3 = /* @__PURE__ */ new Set([..._boolean_attributes3]);
-
-// node_modules/@event-calendar/resource-timeline/node_modules/svelte/src/runtime/internal/Component.js
-function create_component3(block2) {
-  block2 && block2.c();
-}
-function mount_component3(component2, target, anchor) {
-  const { fragment, after_update } = component2.$$;
-  fragment && fragment.m(target, anchor);
-  add_render_callback3(() => {
-    const new_on_destroy = component2.$$.on_mount.map(run5).filter(is_function4);
-    if (component2.$$.on_destroy) {
-      component2.$$.on_destroy.push(...new_on_destroy);
-    } else {
-      run_all4(new_on_destroy);
-    }
-    component2.$$.on_mount = [];
-  });
-  after_update.forEach(add_render_callback3);
-}
-function destroy_component3(component2, detaching) {
-  const $$ = component2.$$;
-  if ($$.fragment !== null) {
-    flush_render_callbacks3($$.after_update);
-    run_all4($$.on_destroy);
-    $$.fragment && $$.fragment.d(detaching);
-    $$.on_destroy = $$.fragment = null;
-    $$.ctx = [];
-  }
-}
-function make_dirty3(component2, i) {
-  if (component2.$$.dirty[0] === -1) {
-    dirty_components3.push(component2);
-    schedule_update3();
-    component2.$$.dirty.fill(0);
-  }
-  component2.$$.dirty[i / 31 | 0] |= 1 << i % 31;
-}
-function init4(component2, options, instance4, create_fragment5, not_equal2, props, append_styles3 = null, dirty = [-1]) {
-  const parent_component = current_component3;
-  set_current_component3(component2);
-  const $$ = component2.$$ = {
-    fragment: null,
-    ctx: [],
-    // state
-    props,
-    update: noop5,
-    not_equal: not_equal2,
-    bound: blank_object3(),
-    // lifecycle
-    on_mount: [],
-    on_destroy: [],
-    on_disconnect: [],
-    before_update: [],
-    after_update: [],
-    context: new Map(options.context || (parent_component ? parent_component.$$.context : [])),
-    // everything else
-    callbacks: blank_object3(),
-    dirty,
-    skip_bound: false,
-    root: options.target || parent_component.$$.root
-  };
-  append_styles3 && append_styles3($$.root);
-  let ready = false;
-  $$.ctx = instance4 ? instance4(component2, options.props || {}, (i, ret, ...rest) => {
-    const value = rest.length ? rest[0] : ret;
-    if ($$.ctx && not_equal2($$.ctx[i], $$.ctx[i] = value)) {
-      if (!$$.skip_bound && $$.bound[i]) $$.bound[i](value);
-      if (ready) make_dirty3(component2, i);
-    }
-    return ret;
-  }) : [];
-  $$.update();
-  ready = true;
-  run_all4($$.before_update);
-  $$.fragment = create_fragment5 ? create_fragment5($$.ctx) : false;
-  if (options.target) {
-    if (options.hydrate) {
-      start_hydrating3();
-      const nodes = children3(options.target);
-      $$.fragment && $$.fragment.l(nodes);
-      nodes.forEach(detach3);
-    } else {
-      $$.fragment && $$.fragment.c();
-    }
-    if (options.intro) transition_in3(component2.$$.fragment);
-    mount_component3(component2, options.target, options.anchor);
-    end_hydrating3();
-    flush3();
-  }
-  set_current_component3(parent_component);
-}
-var SvelteElement4;
-if (typeof HTMLElement === "function") {
-  SvelteElement4 = class extends HTMLElement {
-    constructor($$componentCtor, $$slots, use_shadow_dom) {
-      super();
-      /** The Svelte component constructor */
-      __publicField(this, "$$ctor");
-      /** Slots */
-      __publicField(this, "$$s");
-      /** The Svelte component instance */
-      __publicField(this, "$$c");
-      /** Whether or not the custom element is connected */
-      __publicField(this, "$$cn", false);
-      /** Component props data */
-      __publicField(this, "$$d", {});
-      /** `true` if currently in the process of reflecting component props back to attributes */
-      __publicField(this, "$$r", false);
-      /** @type {Record<string, CustomElementPropDefinition>} Props definition (name, reflected, type etc) */
-      __publicField(this, "$$p_d", {});
-      /** @type {Record<string, Function[]>} Event listeners */
-      __publicField(this, "$$l", {});
-      /** @type {Map<Function, Function>} Event listener unsubscribe functions */
-      __publicField(this, "$$l_u", /* @__PURE__ */ new Map());
-      this.$$ctor = $$componentCtor;
-      this.$$s = $$slots;
-      if (use_shadow_dom) {
-        this.attachShadow({ mode: "open" });
-      }
-    }
-    addEventListener(type, listener, options) {
-      this.$$l[type] = this.$$l[type] || [];
-      this.$$l[type].push(listener);
-      if (this.$$c) {
-        const unsub = this.$$c.$on(type, listener);
-        this.$$l_u.set(listener, unsub);
-      }
-      super.addEventListener(type, listener, options);
-    }
-    removeEventListener(type, listener, options) {
-      super.removeEventListener(type, listener, options);
-      if (this.$$c) {
-        const unsub = this.$$l_u.get(listener);
-        if (unsub) {
-          unsub();
-          this.$$l_u.delete(listener);
-        }
-      }
-      if (this.$$l[type]) {
-        const idx = this.$$l[type].indexOf(listener);
-        if (idx >= 0) {
-          this.$$l[type].splice(idx, 1);
-        }
-      }
-    }
-    connectedCallback() {
-      return __async(this, null, function* () {
-        this.$$cn = true;
-        if (!this.$$c) {
-          let create_slot2 = function(name) {
-            return () => {
-              let node;
-              const obj = {
-                c: function create() {
-                  node = element4("slot");
-                  if (name !== "default") {
-                    attr4(node, "name", name);
-                  }
-                },
-                /**
-                 * @param {HTMLElement} target
-                 * @param {HTMLElement} [anchor]
-                 */
-                m: function mount2(target, anchor) {
-                  insert3(target, node, anchor);
-                },
-                d: function destroy(detaching) {
-                  if (detaching) {
-                    detach3(node);
-                  }
-                }
-              };
-              return obj;
-            };
-          };
-          yield Promise.resolve();
-          if (!this.$$cn || this.$$c) {
-            return;
-          }
-          const $$slots = {};
-          const existing_slots = get_custom_elements_slots4(this);
-          for (const name of this.$$s) {
-            if (name in existing_slots) {
-              $$slots[name] = [create_slot2(name)];
-            }
-          }
-          for (const attribute of this.attributes) {
-            const name = this.$$g_p(attribute.name);
-            if (!(name in this.$$d)) {
-              this.$$d[name] = get_custom_element_value4(name, attribute.value, this.$$p_d, "toProp");
-            }
-          }
-          for (const key2 in this.$$p_d) {
-            if (!(key2 in this.$$d) && this[key2] !== void 0) {
-              this.$$d[key2] = this[key2];
-              delete this[key2];
-            }
-          }
-          this.$$c = new this.$$ctor({
-            target: this.shadowRoot || this,
-            props: __spreadProps(__spreadValues({}, this.$$d), {
-              $$slots,
-              $$scope: {
-                ctx: []
-              }
-            })
-          });
-          const reflect_attributes = () => {
-            this.$$r = true;
-            for (const key2 in this.$$p_d) {
-              this.$$d[key2] = this.$$c.$$.ctx[this.$$c.$$.props[key2]];
-              if (this.$$p_d[key2].reflect) {
-                const attribute_value = get_custom_element_value4(
-                  key2,
-                  this.$$d[key2],
-                  this.$$p_d,
-                  "toAttribute"
-                );
-                if (attribute_value == null) {
-                  this.removeAttribute(this.$$p_d[key2].attribute || key2);
-                } else {
-                  this.setAttribute(this.$$p_d[key2].attribute || key2, attribute_value);
-                }
-              }
-            }
-            this.$$r = false;
-          };
-          this.$$c.$$.after_update.push(reflect_attributes);
-          reflect_attributes();
-          for (const type in this.$$l) {
-            for (const listener of this.$$l[type]) {
-              const unsub = this.$$c.$on(type, listener);
-              this.$$l_u.set(listener, unsub);
-            }
-          }
-          this.$$l = {};
-        }
-      });
-    }
-    // We don't need this when working within Svelte code, but for compatibility of people using this outside of Svelte
-    // and setting attributes through setAttribute etc, this is helpful
-    attributeChangedCallback(attr5, _oldValue, newValue) {
-      var _a3;
-      if (this.$$r) return;
-      attr5 = this.$$g_p(attr5);
-      this.$$d[attr5] = get_custom_element_value4(attr5, newValue, this.$$p_d, "toProp");
-      (_a3 = this.$$c) == null ? void 0 : _a3.$set({ [attr5]: this.$$d[attr5] });
-    }
-    disconnectedCallback() {
-      this.$$cn = false;
-      Promise.resolve().then(() => {
-        if (!this.$$cn && this.$$c) {
-          this.$$c.$destroy();
-          this.$$c = void 0;
-        }
-      });
-    }
-    $$g_p(attribute_name) {
-      return Object.keys(this.$$p_d).find(
-        (key2) => this.$$p_d[key2].attribute === attribute_name || !this.$$p_d[key2].attribute && key2.toLowerCase() === attribute_name
-      ) || attribute_name;
-    }
-  };
-}
-function get_custom_element_value4(prop2, value, props_definition, transform) {
-  var _a3;
-  const type = (_a3 = props_definition[prop2]) == null ? void 0 : _a3.type;
-  value = type === "Boolean" && typeof value !== "boolean" ? value != null : value;
-  if (!transform || !props_definition[prop2]) {
-    return value;
-  } else if (transform === "toAttribute") {
-    switch (type) {
-      case "Object":
-      case "Array":
-        return value == null ? null : JSON.stringify(value);
-      case "Boolean":
-        return value ? "" : null;
-      case "Number":
-        return value == null ? null : value;
-      default:
-        return value;
-    }
-  } else {
-    switch (type) {
-      case "Object":
-      case "Array":
-        return value && JSON.parse(value);
-      case "Boolean":
-        return value;
-      // conversion already handled above
-      case "Number":
-        return value != null ? +value : value;
-      default:
-        return value;
-    }
-  }
-}
-var SvelteComponent3 = class {
-  constructor() {
-    /**
-     * ### PRIVATE API
-     *
-     * Do not use, may change at any time
-     *
-     * @type {any}
-     */
-    __publicField(this, "$$");
-    /**
-     * ### PRIVATE API
-     *
-     * Do not use, may change at any time
-     *
-     * @type {any}
-     */
-    __publicField(this, "$$set");
-  }
-  /** @returns {void} */
-  $destroy() {
-    destroy_component3(this, 1);
-    this.$destroy = noop5;
-  }
-  /**
-   * @template {Extract<keyof Events, string>} K
-   * @param {K} type
-   * @param {((e: Events[K]) => void) | null | undefined} callback
-   * @returns {() => void}
-   */
-  $on(type, callback) {
-    if (!is_function4(callback)) {
-      return noop5;
-    }
-    const callbacks = this.$$.callbacks[type] || (this.$$.callbacks[type] = []);
-    callbacks.push(callback);
-    return () => {
-      const index5 = callbacks.indexOf(callback);
-      if (index5 !== -1) callbacks.splice(index5, 1);
-    };
-  }
-  /**
-   * @param {Partial<Props>} props
-   * @returns {void}
-   */
-  $set(props) {
-    if (this.$$set && !is_empty3(props)) {
-      this.$$.skip_bound = true;
-      this.$$set(props);
-      this.$$.skip_bound = false;
-    }
-  }
-};
-
-// node_modules/@event-calendar/resource-timeline/node_modules/svelte/src/runtime/store/index.js
-var subscriber_queue4 = [];
-function readable4(value, start) {
-  return {
-    subscribe: writable4(value, start).subscribe
-  };
-}
-function writable4(value, start = noop5) {
-  let stop;
-  const subscribers = /* @__PURE__ */ new Set();
-  function set2(new_value) {
-    if (safe_not_equal4(value, new_value)) {
-      value = new_value;
-      if (stop) {
-        const run_queue = !subscriber_queue4.length;
-        for (const subscriber of subscribers) {
-          subscriber[1]();
-          subscriber_queue4.push(subscriber, value);
-        }
-        if (run_queue) {
-          for (let i = 0; i < subscriber_queue4.length; i += 2) {
-            subscriber_queue4[i][0](subscriber_queue4[i + 1]);
-          }
-          subscriber_queue4.length = 0;
-        }
-      }
-    }
-  }
-  function update5(fn) {
-    set2(fn(value));
-  }
-  function subscribe4(run6, invalidate = noop5) {
-    const subscriber = [run6, invalidate];
-    subscribers.add(subscriber);
-    if (subscribers.size === 1) {
-      stop = start(set2, update5) || noop5;
-    }
-    run6(value);
-    return () => {
-      subscribers.delete(subscriber);
-      if (subscribers.size === 0 && stop) {
-        stop();
-        stop = null;
-      }
-    };
-  }
-  return { set: set2, update: update5, subscribe: subscribe4 };
-}
-function derived5(stores, fn, initial_value) {
-  const single = !Array.isArray(stores);
-  const stores_array = single ? [stores] : stores;
-  if (!stores_array.every(Boolean)) {
-    throw new Error("derived() expects stores as input, got a falsy value");
-  }
-  const auto = fn.length < 2;
-  return readable4(initial_value, (set2, update5) => {
-    let started = false;
-    const values = [];
-    let pending2 = 0;
-    let cleanup = noop5;
-    const sync = () => {
-      if (pending2) {
-        return;
-      }
-      cleanup();
-      const result = fn(single ? values[0] : values, set2, update5);
-      if (auto) {
-        set2(result);
-      } else {
-        cleanup = is_function4(result) ? result : noop5;
-      }
-    };
-    const unsubscribers = stores_array.map(
-      (store, i) => subscribe3(
-        store,
-        (value) => {
-          values[i] = value;
-          pending2 &= ~(1 << i);
-          if (started) {
-            sync();
-          }
-        },
-        () => {
-          pending2 |= 1 << i;
-        }
-      )
-    );
-    started = true;
-    sync();
-    return function stop() {
-      run_all4(unsubscribers);
-      cleanup();
-      started = false;
-    };
-  });
-}
-
-// node_modules/@event-calendar/resource-timeline/node_modules/@event-calendar/core/index.js
-function keyEnter3(fn) {
-  return function(e) {
-    return e.key === "Enter" || e.key === " " && !e.preventDefault() ? fn.call(this, e) : void 0;
-  };
-}
-function setContent4(node, content) {
-  let actions = {
-    update(content2) {
-      if (typeof content2 == "string") {
-        node.innerText = content2;
-      } else if (content2 == null ? void 0 : content2.domNodes) {
-        node.replaceChildren(...content2.domNodes);
-      } else if (content2 == null ? void 0 : content2.html) {
-        node.innerHTML = content2.html;
-      }
-    }
-  };
-  actions.update(content);
-  return actions;
-}
-var DAY_IN_SECONDS3 = 86400;
-function createDuration3(input) {
-  if (typeof input === "number") {
-    input = { seconds: input };
-  } else if (typeof input === "string") {
-    let seconds = 0, exp = 2;
-    for (let part of input.split(":", 3)) {
-      seconds += parseInt(part, 10) * Math.pow(60, exp--);
-    }
-    input = { seconds };
-  } else if (input instanceof Date) {
-    input = { hours: input.getUTCHours(), minutes: input.getUTCMinutes(), seconds: input.getUTCSeconds() };
-  }
-  let weeks = input.weeks || input.week || 0;
-  return {
-    years: input.years || input.year || 0,
-    months: input.months || input.month || 0,
-    days: weeks * 7 + (input.days || input.day || 0),
-    seconds: (input.hours || input.hour || 0) * 60 * 60 + (input.minutes || input.minute || 0) * 60 + (input.seconds || input.second || 0),
-    inWeeks: !!weeks
-  };
-}
-function cloneDate3(date) {
-  return new Date(date.getTime());
-}
-function addDuration3(date, duration, x = 1) {
-  date.setUTCFullYear(date.getUTCFullYear() + x * duration.years);
-  let month = date.getUTCMonth() + x * duration.months;
-  date.setUTCMonth(month);
-  month %= 12;
-  if (month < 0) {
-    month += 12;
-  }
-  while (date.getUTCMonth() !== month) {
-    subtractDay3(date);
-  }
-  date.setUTCDate(date.getUTCDate() + x * duration.days);
-  date.setUTCSeconds(date.getUTCSeconds() + x * duration.seconds);
-  return date;
-}
-function addDay3(date, x = 1) {
-  date.setUTCDate(date.getUTCDate() + x);
-  return date;
-}
-function subtractDay3(date, x = 1) {
-  return addDay3(date, -x);
-}
-function toLocalDate4(date) {
-  return new Date(
-    date.getUTCFullYear(),
-    date.getUTCMonth(),
-    date.getUTCDate(),
-    date.getUTCHours(),
-    date.getUTCMinutes(),
-    date.getUTCSeconds()
-  );
-}
-function toISOString4(date, len = 19) {
-  return date.toISOString().substring(0, len);
-}
-function datesEqual3(date1, ...dates2) {
-  return dates2.every((date2) => date1.getTime() === date2.getTime());
-}
-function copyTime3(toDate, fromDate) {
-  toDate.setUTCHours(fromDate.getUTCHours(), fromDate.getUTCMinutes(), fromDate.getUTCSeconds(), 0);
-  return toDate;
-}
-function toSeconds3(duration) {
-  return duration.seconds;
-}
-function assign5(...args) {
-  return Object.assign(...args);
-}
-function floor3(value) {
-  return Math.floor(value);
-}
-function ceil(value) {
-  return Math.ceil(value);
-}
-function min3(...args) {
-  return Math.min(...args);
-}
-function max3(...args) {
-  return Math.max(...args);
-}
-function symbol4() {
-  return Symbol("ec");
-}
-function isArray3(value) {
-  return Array.isArray(value);
-}
-function isFunction4(value) {
-  return typeof value === "function";
-}
-var identity5 = (x) => x;
-function debounce3(fn, handle, queueStore) {
-  queueStore.update((queue) => queue.set(handle, fn));
-}
-function task3(fn, handle, tasks2) {
-  handle != null ? handle : handle = fn;
-  if (!tasks2.has(handle)) {
-    tasks2.set(handle, setTimeout(() => {
-      tasks2.delete(handle);
-      fn();
-    }));
-  }
-}
-var payloadProp4 = symbol4();
-function setPayload4(obj, payload) {
-  obj[payloadProp4] = payload;
-}
-function getPayload3(obj) {
-  return obj[payloadProp4];
-}
-function createElement3(tag2, className, content, attrs = []) {
-  let el = document.createElement(tag2);
-  el.className = className;
-  if (typeof content == "string") {
-    el.innerText = content;
-  } else if (content.domNodes) {
-    el.replaceChildren(...content.domNodes);
-  } else if (content.html) {
-    el.innerHTML = content.html;
-  }
-  for (let attr5 of attrs) {
-    el.setAttribute(...attr5);
-  }
-  return el;
-}
-function rect3(el) {
-  return el.getBoundingClientRect();
-}
-function height3(el) {
-  return rect3(el).height;
-}
-function toViewWithLocalDates3(view2) {
-  view2 = assign5({}, view2);
-  view2.currentStart = toLocalDate4(view2.currentStart);
-  view2.currentEnd = toLocalDate4(view2.currentEnd);
-  view2.activeStart = toLocalDate4(view2.activeStart);
-  view2.activeEnd = toLocalDate4(view2.activeEnd);
-  return view2;
-}
-function createEventChunk3(event2, start, end) {
-  let chunk = {
-    start: event2.start > start ? event2.start : start,
-    end: event2.end < end ? event2.end : end,
-    event: event2
-  };
-  chunk.zeroDuration = datesEqual3(chunk.start, chunk.end);
-  return chunk;
-}
-function sortEventChunks3(chunks) {
-  chunks.sort((a, b) => a.start - b.start || b.event.allDay - a.event.allDay);
-}
-function createEventContent3(chunk, displayEventEnd, eventContent, theme, _intlEventTime, _view) {
-  let timeText = _intlEventTime.formatRange(
-    chunk.start,
-    displayEventEnd && chunk.event.display !== "pointer" && !chunk.zeroDuration ? copyTime3(cloneDate3(chunk.start), chunk.end) : chunk.start
-  );
-  let content;
-  if (eventContent) {
-    content = isFunction4(eventContent) ? eventContent({
-      event: toEventWithLocalDates3(chunk.event),
-      timeText,
-      view: toViewWithLocalDates3(_view)
-    }) : eventContent;
-  }
-  if (content === void 0) {
-    let domNodes;
-    switch (chunk.event.display) {
-      case "background":
-        domNodes = [];
-        break;
-      case "pointer":
-        domNodes = [createTimeElement3(timeText, chunk, theme)];
-        break;
-      default:
-        domNodes = [
-          ...chunk.event.allDay ? [] : [createTimeElement3(timeText, chunk, theme)],
-          createElement3("h4", theme.eventTitle, chunk.event.title)
-        ];
-    }
-    content = { domNodes };
-  }
-  return [timeText, content];
-}
-function createTimeElement3(timeText, chunk, theme) {
-  return createElement3(
-    "time",
-    theme.eventTime,
-    timeText,
-    [["datetime", toISOString4(chunk.start)]]
-  );
-}
-function createEventClasses3(eventClassNames, event2, _view) {
-  let result = event2.classNames;
-  if (eventClassNames) {
-    if (isFunction4(eventClassNames)) {
-      eventClassNames = eventClassNames({
-        event: toEventWithLocalDates3(event2),
-        view: toViewWithLocalDates3(_view)
-      });
-    }
-    result = [
-      ...isArray3(eventClassNames) ? eventClassNames : [eventClassNames],
-      ...result
-    ];
-  }
-  return result;
-}
-function toEventWithLocalDates3(event2) {
-  return _cloneEvent3(event2, toLocalDate4);
-}
-function _cloneEvent3(event2, dateFn) {
-  event2 = assign5({}, event2);
-  event2.start = dateFn(event2.start);
-  event2.end = dateFn(event2.end);
-  return event2;
-}
-function runReposition3(refs, data) {
-  var _a3;
-  refs.length = data.length;
-  let result = [];
-  for (let ref of refs) {
-    result.push((_a3 = ref == null ? void 0 : ref.reposition) == null ? void 0 : _a3.call(ref));
-  }
-  return result;
-}
-function eventIntersects3(event2, start, end, resources) {
-  if (event2.start < end && event2.end > start) {
-    if (resources) {
-      if (!isArray3(resources)) {
-        resources = [resources];
-      }
-      return resources.some((resource) => event2.resourceIds.includes(resource.id));
-    }
-    return true;
-  }
-  return false;
-}
-function helperEvent3(display) {
-  return previewEvent3(display) || ghostEvent3(display) || pointerEvent3(display);
-}
-function bgEvent3(display) {
-  return display === "background";
-}
-function previewEvent3(display) {
-  return display === "preview";
-}
-function ghostEvent3(display) {
-  return display === "ghost";
-}
-function pointerEvent3(display) {
-  return display === "pointer";
-}
-function btnTextDay4(text5) {
-  return btnText4(text5, "day");
-}
-function btnTextWeek4(text5) {
-  return btnText4(text5, "week");
-}
-function btnTextMonth2(text5) {
-  return btnText4(text5, "month");
-}
-function btnText4(text5, period) {
-  return __spreadProps(__spreadValues({}, text5), {
-    next: "Next " + period,
-    prev: "Previous " + period
-  });
-}
-function themeView4(view2) {
-  return (theme) => __spreadProps(__spreadValues({}, theme), { view: view2 });
-}
-function outsideRange3(date, range) {
-  return range.start && date < range.start || range.end && date > range.end;
-}
-function limitToRange3(date, range) {
-  if (range.start && date < range.start) {
-    date = range.start;
-  }
-  if (range.end && date > range.end) {
-    date = range.end;
-  }
-  return date;
-}
-function createResources3(input) {
-  let result = [];
-  _createResources3(input, 0, result);
-  return result;
-}
-function _createResources3(input, level, flat) {
-  let result = [];
-  for (let item of input) {
-    let resource = createResource3(item);
-    result.push(resource);
-    flat.push(resource);
-    let payload = {
-      level,
-      children: [],
-      expanded: true,
-      hidden: false
-    };
-    setPayload4(resource, payload);
-    if (item.children) {
-      payload.children = _createResources3(item.children, level + 1, flat);
-    }
-  }
-  return result;
-}
-function createResource3(input) {
-  var _a3;
-  return {
-    id: String(input.id),
-    title: input.title || "",
-    eventBackgroundColor: input.eventBackgroundColor,
-    eventTextColor: input.eventTextColor,
-    extendedProps: (_a3 = input.extendedProps) != null ? _a3 : {}
-  };
-}
-function resourceBackgroundColor3(event2, resources) {
-  var _a3;
-  return (_a3 = findResource3(event2, resources)) == null ? void 0 : _a3.eventBackgroundColor;
-}
-function resourceTextColor3(event2, resources) {
-  var _a3;
-  return (_a3 = findResource3(event2, resources)) == null ? void 0 : _a3.eventTextColor;
-}
-function findResource3(event2, resources) {
-  return resources.find((resource) => event2.resourceIds.includes(resource.id));
-}
-function viewResources2(state2) {
-  return derived5(
-    [state2.resources, state2.filterResourcesWithEvents, state2._events, state2._activeRange],
-    ([$resources, $filterResourcesWithEvents, $_events, $_activeRange]) => {
-      let result = $resources.filter((resource) => !getPayload3(resource).hidden);
-      if ($filterResourcesWithEvents) {
-        result = $resources.filter((resource) => {
-          for (let event2 of $_events) {
-            if (event2.display !== "background" && event2.resourceIds.includes(resource.id) && event2.start < $_activeRange.end && event2.end > $_activeRange.start) {
-              return true;
-            }
-          }
-          return false;
-        });
-      }
-      if (!result.length) {
-        result = createResources3([{}]);
-      }
-      return result;
-    }
-  );
-}
-function createTimes3(date, $slotDuration, $slotLabelInterval, $_slotTimeLimits, $_intlSlotLabel) {
-  date = cloneDate3(date);
-  let times3 = [];
-  let end = cloneDate3(date);
-  addDuration3(date, $_slotTimeLimits.min);
-  addDuration3(end, $_slotTimeLimits.max);
-  if ($slotLabelInterval === void 0) {
-    $slotLabelInterval = $slotDuration.seconds < 3600 ? createDuration3($slotDuration.seconds * 2) : $slotDuration;
-  }
-  let showAll = $slotLabelInterval.seconds <= 0;
-  let label2;
-  if (!showAll) {
-    label2 = cloneDate3(date);
-  }
-  while (date < end) {
-    times3.push([
-      toISOString4(date),
-      $_intlSlotLabel.format(date),
-      showAll || times3.length && date >= label2
-    ]);
-    while (!showAll && date >= label2) {
-      addDuration3(label2, $slotLabelInterval);
-    }
-    addDuration3(date, $slotDuration);
-  }
-  return times3;
-}
-function createSlotTimeLimits3($slotMinTime, $slotMaxTime, $flexibleSlotTimeLimits, $_viewDates, $_events) {
-  let min$1 = createDuration3($slotMinTime);
-  let max$1 = createDuration3($slotMaxTime);
-  if ($flexibleSlotTimeLimits) {
-    let minMin = createDuration3(min3(toSeconds3(min$1), max3(0, toSeconds3(max$1) - DAY_IN_SECONDS3)));
-    let maxMax = createDuration3(max3(toSeconds3(max$1), toSeconds3(minMin) + DAY_IN_SECONDS3));
-    let filter = isFunction4($flexibleSlotTimeLimits == null ? void 0 : $flexibleSlotTimeLimits.eventFilter) ? $flexibleSlotTimeLimits.eventFilter : (event2) => !bgEvent3(event2.display);
-    loop: for (let date of $_viewDates) {
-      let start = addDuration3(cloneDate3(date), min$1);
-      let end = addDuration3(cloneDate3(date), max$1);
-      let minStart = addDuration3(cloneDate3(date), minMin);
-      let maxEnd = addDuration3(cloneDate3(date), maxMax);
-      for (let event2 of $_events) {
-        if (!event2.allDay && filter(event2) && event2.start < maxEnd && event2.end > minStart) {
-          if (event2.start < start) {
-            let seconds = max3((event2.start - date) / 1e3, toSeconds3(minMin));
-            if (seconds < toSeconds3(min$1)) {
-              min$1.seconds = seconds;
-            }
-          }
-          if (event2.end > end) {
-            let seconds = min3((event2.end - date) / 1e3, toSeconds3(maxMax));
-            if (seconds > toSeconds3(max$1)) {
-              max$1.seconds = seconds;
-            }
-          }
-          if (toSeconds3(min$1) === toSeconds3(minMin) && toSeconds3(max$1) === toSeconds3(maxMax)) {
-            break loop;
-          }
-        }
-      }
-    }
-  }
-  return { min: min$1, max: max$1 };
-}
-
-// node_modules/@event-calendar/resource-timeline/index.js
 function dayTimeLimits(state2) {
-  return derived5(
-    [state2.slotMinTime, state2.slotMaxTime, state2.flexibleSlotTimeLimits, state2._viewDates, state2._events],
-    ([$slotMinTime, $slotMaxTime, $flexibleSlotTimeLimits, $_viewDates, $_events]) => {
+  return derived2(
+    [state2.slotMinTime, state2.slotMaxTime, state2.flexibleSlotTimeLimits, state2._viewDates, state2._filteredEvents],
+    ([$slotMinTime, $slotMaxTime, $flexibleSlotTimeLimits, $_viewDates, $_filteredEvents]) => {
       let dayTimeLimits2 = {};
       for (let date of $_viewDates) {
-        dayTimeLimits2[date.getTime()] = createSlotTimeLimits3(
+        dayTimeLimits2[date.getTime()] = createSlotTimeLimits(
           $slotMinTime,
           $slotMaxTime,
           $flexibleSlotTimeLimits,
           [date],
-          $_events
+          $_filteredEvents
         );
       }
       return dayTimeLimits2;
@@ -20008,1227 +10760,339 @@ function dayTimeLimits(state2) {
   );
 }
 function dayTimes(state2) {
-  return derived5(
+  return derived2(
     [state2._viewDates, state2.slotDuration, state2.slotLabelInterval, state2._dayTimeLimits, state2._intlSlotLabel],
     ([$_viewDates, $slotDuration, $slotLabelInterval, $_dayTimeLimits, $_intlSlotLabel]) => {
       let dayTimes2 = {};
       for (let date of $_viewDates) {
         let time = date.getTime();
-        dayTimes2[time] = time in $_dayTimeLimits ? createTimes3(date, $slotDuration, $slotLabelInterval, $_dayTimeLimits[time], $_intlSlotLabel) : [];
+        dayTimes2[time] = time in $_dayTimeLimits ? createTimes(date, $slotDuration, $slotLabelInterval, $_dayTimeLimits[time], $_intlSlotLabel) : [];
       }
       return dayTimes2;
     }
   );
 }
 function nestedResources(state2) {
-  return derived5(state2.resources, ($resources) => $resources.some((resource) => getPayload3(resource).children.length));
+  return derived2(state2.resources, ($resources) => $resources.some((resource) => getPayload(resource).children.length));
 }
-function create_fragment$82(ctx) {
-  let span;
-  let setContent_action;
-  let mounted;
-  let dispose;
-  return {
-    c() {
-      span = element4("span");
-    },
-    m(target, anchor) {
-      insert3(target, span, anchor);
-      ctx[7](span);
-      if (!mounted) {
-        dispose = action_destroyer3(setContent_action = setContent4.call(
-          null,
-          span,
-          /*content*/
-          ctx[1]
-        ));
-        mounted = true;
-      }
-    },
-    p(ctx2, [dirty]) {
-      if (setContent_action && is_function4(setContent_action.update) && dirty & /*content*/
-      2) setContent_action.update.call(
-        null,
-        /*content*/
-        ctx2[1]
-      );
-    },
-    i: noop5,
-    o: noop5,
-    d(detaching) {
-      if (detaching) {
-        detach3(span);
-      }
-      ctx[7](null);
-      mounted = false;
-      dispose();
+var root$7 = from_html(`<span></span>`);
+function Label($$anchor, $$props) {
+  push($$props, true);
+  const [$$stores, $$cleanup] = setup_stores();
+  const $resourceLabelContent = () => store_get(resourceLabelContent, "$resourceLabelContent", $$stores);
+  const $resourceLabelDidMount = () => store_get(resourceLabelDidMount, "$resourceLabelDidMount", $$stores);
+  let date = prop($$props, "date", 3, void 0);
+  let { resourceLabelContent, resourceLabelDidMount } = getContext("state");
+  let el = state(void 0);
+  let content = user_derived(() => {
+    if ($resourceLabelContent()) {
+      return isFunction($resourceLabelContent()) ? $resourceLabelContent()({
+        resource: $$props.resource,
+        date: date() ? toLocalDate(date()) : void 0
+      }) : $resourceLabelContent();
+    } else {
+      return $$props.resource.title;
     }
-  };
-}
-function instance$82($$self, $$props, $$invalidate) {
-  let $resourceLabelDidMount;
-  let $resourceLabelContent;
-  let { resource } = $$props;
-  let { date = void 0 } = $$props;
-  let { resourceLabelContent, resourceLabelDidMount } = getContext4("state");
-  component_subscribe3($$self, resourceLabelContent, (value) => $$invalidate(6, $resourceLabelContent = value));
-  component_subscribe3($$self, resourceLabelDidMount, (value) => $$invalidate(8, $resourceLabelDidMount = value));
-  let el;
-  let content;
-  onMount4(() => {
-    if (isFunction4($resourceLabelDidMount)) {
-      $resourceLabelDidMount({
-        resource,
-        date: date ? toLocalDate4(date) : void 0,
-        el
+  });
+  onMount(() => {
+    if (isFunction($resourceLabelDidMount())) {
+      $resourceLabelDidMount()({
+        resource: $$props.resource,
+        date: date() ? toLocalDate(date()) : void 0,
+        el: get(el)
       });
     }
   });
-  function span_binding($$value) {
-    binding_callbacks3[$$value ? "unshift" : "push"](() => {
-      el = $$value;
-      $$invalidate(0, el);
-    });
-  }
-  $$self.$$set = ($$props2) => {
-    if ("resource" in $$props2) $$invalidate(4, resource = $$props2.resource);
-    if ("date" in $$props2) $$invalidate(5, date = $$props2.date);
-  };
-  $$self.$$.update = () => {
-    if ($$self.$$.dirty & /*$resourceLabelContent, resource, date*/
-    112) {
-      if ($resourceLabelContent) {
-        $$invalidate(1, content = isFunction4($resourceLabelContent) ? $resourceLabelContent({
-          resource,
-          date: date ? toLocalDate4(date) : void 0
-        }) : $resourceLabelContent);
-      } else {
-        $$invalidate(1, content = resource.title);
-      }
-    }
-  };
-  return [
-    el,
-    content,
-    resourceLabelContent,
-    resourceLabelDidMount,
-    resource,
-    date,
-    $resourceLabelContent,
-    span_binding
-  ];
+  var span = root$7();
+  bind_this(span, ($$value) => set(el, $$value), () => get(el));
+  action(span, ($$node, $$action_arg) => setContent == null ? void 0 : setContent($$node, $$action_arg), () => get(content));
+  append($$anchor, span);
+  pop();
+  $$cleanup();
 }
-var Label2 = class extends SvelteComponent3 {
-  constructor(options) {
-    super();
-    init4(this, options, instance$82, create_fragment$82, safe_not_equal4, { resource: 4, date: 5 });
-  }
-};
-function get_each_context$52(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[7] = list[i];
-  return child_ctx;
+function onclick(_, expanded, payload, toggle, resources) {
+  set(expanded, !get(expanded));
+  get(payload).expanded = get(expanded);
+  toggle(get(payload).children, get(expanded));
+  resources.update(identity);
 }
-function create_each_block$52(ctx) {
-  let span;
-  let span_class_value;
-  return {
-    c() {
-      span = element4("span");
-      attr4(span, "class", span_class_value = /*$theme*/
-      ctx[1].expander);
-    },
-    m(target, anchor) {
-      insert3(target, span, anchor);
-    },
-    p(ctx2, dirty) {
-      if (dirty & /*$theme*/
-      2 && span_class_value !== (span_class_value = /*$theme*/
-      ctx2[1].expander)) {
-        attr4(span, "class", span_class_value);
-      }
-    },
-    d(detaching) {
-      if (detaching) {
-        detach3(span);
-      }
-    }
-  };
-}
-function create_if_block$4(ctx) {
-  let button;
-  let button_class_value;
-  let mounted;
-  let dispose;
-  function select_block_type(ctx2, dirty) {
-    if (
-      /*payload*/
-      ctx2[0].expanded
-    ) return create_if_block_1$12;
-    return create_else_block$1;
-  }
-  let current_block_type = select_block_type(ctx);
-  let if_block2 = current_block_type(ctx);
-  return {
-    c() {
-      button = element4("button");
-      if_block2.c();
-      attr4(button, "class", button_class_value = /*$theme*/
-      ctx[1].button);
-    },
-    m(target, anchor) {
-      insert3(target, button, anchor);
-      if_block2.m(button, null);
-      if (!mounted) {
-        dispose = listen5(
-          button,
-          "click",
-          /*handleClick*/
-          ctx[3]
-        );
-        mounted = true;
-      }
-    },
-    p(ctx2, dirty) {
-      if (current_block_type !== (current_block_type = select_block_type(ctx2))) {
-        if_block2.d(1);
-        if_block2 = current_block_type(ctx2);
-        if (if_block2) {
-          if_block2.c();
-          if_block2.m(button, null);
-        }
-      }
-      if (dirty & /*$theme*/
-      2 && button_class_value !== (button_class_value = /*$theme*/
-      ctx2[1].button)) {
-        attr4(button, "class", button_class_value);
-      }
-    },
-    d(detaching) {
-      if (detaching) {
-        detach3(button);
-      }
-      if_block2.d();
-      mounted = false;
-      dispose();
-    }
-  };
-}
-function create_else_block$1(ctx) {
-  let t;
-  return {
-    c() {
-      t = text4("+");
-    },
-    m(target, anchor) {
-      insert3(target, t, anchor);
-    },
-    d(detaching) {
-      if (detaching) {
-        detach3(t);
-      }
-    }
-  };
-}
-function create_if_block_1$12(ctx) {
-  let t;
-  return {
-    c() {
-      t = text4("\u2212");
-    },
-    m(target, anchor) {
-      insert3(target, t, anchor);
-    },
-    d(detaching) {
-      if (detaching) {
-        detach3(t);
-      }
-    }
-  };
-}
-function create_fragment$72(ctx) {
-  let t;
-  let span;
-  let span_class_value;
-  let each_value = ensure_array_like3(Array(
-    /*payload*/
-    ctx[0].level
-  ));
-  let each_blocks = [];
-  for (let i = 0; i < each_value.length; i += 1) {
-    each_blocks[i] = create_each_block$52(get_each_context$52(ctx, each_value, i));
-  }
-  let if_block2 = (
-    /*payload*/
-    ctx[0].children.length && create_if_block$4(ctx)
-  );
-  return {
-    c() {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].c();
-      }
-      t = space3();
-      span = element4("span");
-      if (if_block2) if_block2.c();
-      attr4(span, "class", span_class_value = /*$theme*/
-      ctx[1].expander);
-    },
-    m(target, anchor) {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        if (each_blocks[i]) {
-          each_blocks[i].m(target, anchor);
-        }
-      }
-      insert3(target, t, anchor);
-      insert3(target, span, anchor);
-      if (if_block2) if_block2.m(span, null);
-    },
-    p(ctx2, [dirty]) {
-      if (dirty & /*$theme, payload*/
-      3) {
-        each_value = ensure_array_like3(Array(
-          /*payload*/
-          ctx2[0].level
-        ));
-        let i;
-        for (i = 0; i < each_value.length; i += 1) {
-          const child_ctx = get_each_context$52(ctx2, each_value, i);
-          if (each_blocks[i]) {
-            each_blocks[i].p(child_ctx, dirty);
-          } else {
-            each_blocks[i] = create_each_block$52(child_ctx);
-            each_blocks[i].c();
-            each_blocks[i].m(t.parentNode, t);
-          }
-        }
-        for (; i < each_blocks.length; i += 1) {
-          each_blocks[i].d(1);
-        }
-        each_blocks.length = each_value.length;
-      }
-      if (
-        /*payload*/
-        ctx2[0].children.length
-      ) {
-        if (if_block2) {
-          if_block2.p(ctx2, dirty);
-        } else {
-          if_block2 = create_if_block$4(ctx2);
-          if_block2.c();
-          if_block2.m(span, null);
-        }
-      } else if (if_block2) {
-        if_block2.d(1);
-        if_block2 = null;
-      }
-      if (dirty & /*$theme*/
-      2 && span_class_value !== (span_class_value = /*$theme*/
-      ctx2[1].expander)) {
-        attr4(span, "class", span_class_value);
-      }
-    },
-    i: noop5,
-    o: noop5,
-    d(detaching) {
-      if (detaching) {
-        detach3(t);
-        detach3(span);
-      }
-      destroy_each3(each_blocks, detaching);
-      if (if_block2) if_block2.d();
-    }
-  };
-}
-function instance$72($$self, $$props, $$invalidate) {
-  let $theme;
-  let { resource } = $$props;
-  let { resources, theme } = getContext4("state");
-  component_subscribe3($$self, theme, (value) => $$invalidate(1, $theme = value));
-  let payload = {};
-  function handleClick() {
-    $$invalidate(0, payload.expanded = !payload.expanded, payload);
-    toggle(payload.children, payload.expanded);
-    resources.update(identity5);
-  }
-  function toggle(children4, expand) {
-    for (let child2 of children4) {
-      let payload2 = getPayload3(child2);
+var root_1$4 = from_html(`<span></span>`);
+var root_2$2 = from_html(`<button><!></button>`);
+var root$6 = from_html(`<!> <span><!></span>`, 1);
+function Expander($$anchor, $$props) {
+  push($$props, true);
+  const [$$stores, $$cleanup] = setup_stores();
+  const $theme = () => store_get(theme, "$theme", $$stores);
+  let { resources, theme } = getContext("state");
+  let payload = state({});
+  let expanded = state(true);
+  user_pre_effect(() => {
+    set(payload, getPayload($$props.resource));
+    set(expanded, get(payload).expanded, true);
+  });
+  function toggle(children, expand) {
+    for (let child2 of children) {
+      let payload2 = getPayload(child2);
       payload2.hidden = !expand;
       if (payload2.expanded) {
         toggle(payload2.children, expand);
       }
     }
   }
-  $$self.$$set = ($$props2) => {
-    if ("resource" in $$props2) $$invalidate(4, resource = $$props2.resource);
-  };
-  $$self.$$.update = () => {
-    if ($$self.$$.dirty & /*resource*/
-    16) {
-      $$invalidate(0, payload = getPayload3(resource));
-    }
-  };
-  return [payload, $theme, theme, handleClick, resource];
-}
-var Expander = class extends SvelteComponent3 {
-  constructor(options) {
-    super();
-    init4(this, options, instance$72, create_fragment$72, safe_not_equal4, { resource: 4 });
-  }
-};
-function get_each_context$42(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[14] = list[i];
-  return child_ctx;
-}
-function create_if_block$3(ctx) {
-  let expander;
-  let current;
-  expander = new Expander({
-    props: { resource: (
-      /*resource*/
-      ctx[14]
-    ) }
+  var fragment = root$6();
+  var node = first_child(fragment);
+  each(node, 17, () => Array(get(payload).level), index, ($$anchor2, level) => {
+    var span = root_1$4();
+    template_effect(() => set_class(span, 1, $theme().expander));
+    append($$anchor2, span);
   });
-  return {
-    c() {
-      create_component3(expander.$$.fragment);
-    },
-    m(target, anchor) {
-      mount_component3(expander, target, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      const expander_changes = {};
-      if (dirty & /*$_viewResources*/
-      8) expander_changes.resource = /*resource*/
-      ctx2[14];
-      expander.$set(expander_changes);
-    },
-    i(local) {
-      if (current) return;
-      transition_in3(expander.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out3(expander.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      destroy_component3(expander, detaching);
-    }
-  };
-}
-function create_each_block$42(ctx) {
-  let div;
-  let t0;
-  let label2;
-  let t1;
-  let div_class_value;
-  let current;
-  let if_block2 = (
-    /*$_nestedResources*/
-    ctx[5] && create_if_block$3(ctx)
-  );
-  label2 = new Label2({
-    props: { resource: (
-      /*resource*/
-      ctx[14]
-    ) }
-  });
-  return {
-    c() {
-      var _a3;
-      div = element4("div");
-      if (if_block2) if_block2.c();
-      t0 = space3();
-      create_component3(label2.$$.fragment);
-      t1 = space3();
-      attr4(div, "class", div_class_value = /*$theme*/
-      ctx[1].resource);
-      set_style4(div, "flex-basis", max3(
-        /*$_resHs*/
-        (_a3 = ctx[4].get(
-          /*resource*/
-          ctx[14]
-        )) != null ? _a3 : 0,
-        34
-      ) + "px");
-      attr4(div, "role", "rowheader");
-    },
-    m(target, anchor) {
-      insert3(target, div, anchor);
-      if (if_block2) if_block2.m(div, null);
-      append4(div, t0);
-      mount_component3(label2, div, null);
-      append4(div, t1);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      var _a3;
-      if (
-        /*$_nestedResources*/
-        ctx2[5]
-      ) {
-        if (if_block2) {
-          if_block2.p(ctx2, dirty);
-          if (dirty & /*$_nestedResources*/
-          32) {
-            transition_in3(if_block2, 1);
-          }
-        } else {
-          if_block2 = create_if_block$3(ctx2);
-          if_block2.c();
-          transition_in3(if_block2, 1);
-          if_block2.m(div, t0);
-        }
-      } else if (if_block2) {
-        group_outros3();
-        transition_out3(if_block2, 1, 1, () => {
-          if_block2 = null;
+  var span_1 = sibling(node, 2);
+  var node_1 = child(span_1);
+  {
+    var consequent_1 = ($$anchor2) => {
+      var button = root_2$2();
+      button.__click = [onclick, expanded, payload, toggle, resources];
+      var node_2 = child(button);
+      {
+        var consequent = ($$anchor3) => {
+          var text2 = text("\u2212");
+          append($$anchor3, text2);
+        };
+        var alternate = ($$anchor3) => {
+          var text_1 = text("+");
+          append($$anchor3, text_1);
+        };
+        if_block(node_2, ($$render) => {
+          if (get(expanded)) $$render(consequent);
+          else $$render(alternate, false);
         });
-        check_outros3();
       }
-      const label_changes = {};
-      if (dirty & /*$_viewResources*/
-      8) label_changes.resource = /*resource*/
-      ctx2[14];
-      label2.$set(label_changes);
-      if (!current || dirty & /*$theme*/
-      2 && div_class_value !== (div_class_value = /*$theme*/
-      ctx2[1].resource)) {
-        attr4(div, "class", div_class_value);
-      }
-      if (!current || dirty & /*$_resHs, $_viewResources*/
-      24) {
-        set_style4(div, "flex-basis", max3(
-          /*$_resHs*/
-          (_a3 = ctx2[4].get(
-            /*resource*/
-            ctx2[14]
-          )) != null ? _a3 : 0,
-          34
-        ) + "px");
-      }
-    },
-    i(local) {
-      if (current) return;
-      transition_in3(if_block2);
-      transition_in3(label2.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out3(if_block2);
-      transition_out3(label2.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach3(div);
-      }
-      if (if_block2) if_block2.d();
-      destroy_component3(label2);
-    }
-  };
-}
-function create_fragment$62(ctx) {
-  let div2;
-  let div0;
-  let div0_class_value;
-  let t;
-  let div1;
-  let div1_class_value;
-  let div2_class_value;
-  let current;
-  let each_value = ensure_array_like3(
-    /*$_viewResources*/
-    ctx[3]
-  );
-  let each_blocks = [];
-  for (let i = 0; i < each_value.length; i += 1) {
-    each_blocks[i] = create_each_block$42(get_each_context$42(ctx, each_value, i));
-  }
-  const out = (i) => transition_out3(each_blocks[i], 1, 1, () => {
-    each_blocks[i] = null;
-  });
-  return {
-    c() {
-      div2 = element4("div");
-      div0 = element4("div");
-      t = space3();
-      div1 = element4("div");
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].c();
-      }
-      attr4(div0, "class", div0_class_value = /*$theme*/
-      ctx[1].sidebarTitle);
-      set_style4(
-        div0,
-        "flex-basis",
-        /*titleHeight*/
-        ctx[0] + "px"
-      );
-      attr4(div1, "class", div1_class_value = /*$theme*/
-      ctx[1].content);
-      attr4(div2, "class", div2_class_value = /*$theme*/
-      ctx[1].sidebar);
-    },
-    m(target, anchor) {
-      insert3(target, div2, anchor);
-      append4(div2, div0);
-      append4(div2, t);
-      append4(div2, div1);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        if (each_blocks[i]) {
-          each_blocks[i].m(div1, null);
-        }
-      }
-      ctx[12](div1);
-      current = true;
-    },
-    p(ctx2, [dirty]) {
-      if (!current || dirty & /*$theme*/
-      2 && div0_class_value !== (div0_class_value = /*$theme*/
-      ctx2[1].sidebarTitle)) {
-        attr4(div0, "class", div0_class_value);
-      }
-      if (!current || dirty & /*titleHeight*/
-      1) {
-        set_style4(
-          div0,
-          "flex-basis",
-          /*titleHeight*/
-          ctx2[0] + "px"
-        );
-      }
-      if (dirty & /*$theme, $_resHs, $_viewResources, $_nestedResources*/
-      58) {
-        each_value = ensure_array_like3(
-          /*$_viewResources*/
-          ctx2[3]
-        );
-        let i;
-        for (i = 0; i < each_value.length; i += 1) {
-          const child_ctx = get_each_context$42(ctx2, each_value, i);
-          if (each_blocks[i]) {
-            each_blocks[i].p(child_ctx, dirty);
-            transition_in3(each_blocks[i], 1);
-          } else {
-            each_blocks[i] = create_each_block$42(child_ctx);
-            each_blocks[i].c();
-            transition_in3(each_blocks[i], 1);
-            each_blocks[i].m(div1, null);
-          }
-        }
-        group_outros3();
-        for (i = each_value.length; i < each_blocks.length; i += 1) {
-          out(i);
-        }
-        check_outros3();
-      }
-      if (!current || dirty & /*$theme*/
-      2 && div1_class_value !== (div1_class_value = /*$theme*/
-      ctx2[1].content)) {
-        attr4(div1, "class", div1_class_value);
-      }
-      if (!current || dirty & /*$theme*/
-      2 && div2_class_value !== (div2_class_value = /*$theme*/
-      ctx2[1].sidebar)) {
-        attr4(div2, "class", div2_class_value);
-      }
-    },
-    i(local) {
-      if (current) return;
-      for (let i = 0; i < each_value.length; i += 1) {
-        transition_in3(each_blocks[i]);
-      }
-      current = true;
-    },
-    o(local) {
-      each_blocks = each_blocks.filter(Boolean);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        transition_out3(each_blocks[i]);
-      }
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach3(div2);
-      }
-      destroy_each3(each_blocks, detaching);
-      ctx[12](null);
-    }
-  };
-}
-function instance$62($$self, $$props, $$invalidate) {
-  let $_headerEl;
-  let $theme;
-  let $_sidebarEl;
-  let $_viewResources;
-  let $_resHs;
-  let $_nestedResources;
-  let { _viewResources, _headerEl, _resHs, _sidebarEl, _nestedResources, theme } = getContext4("state");
-  component_subscribe3($$self, _viewResources, (value) => $$invalidate(3, $_viewResources = value));
-  component_subscribe3($$self, _headerEl, (value) => $$invalidate(13, $_headerEl = value));
-  component_subscribe3($$self, _resHs, (value) => $$invalidate(4, $_resHs = value));
-  component_subscribe3($$self, _sidebarEl, (value) => $$invalidate(2, $_sidebarEl = value));
-  component_subscribe3($$self, _nestedResources, (value) => $$invalidate(5, $_nestedResources = value));
-  component_subscribe3($$self, theme, (value) => $$invalidate(1, $theme = value));
-  let titleHeight = 0;
-  afterUpdate3(() => {
-    $$invalidate(0, titleHeight = $_headerEl.clientHeight);
-  });
-  function div1_binding($$value) {
-    binding_callbacks3[$$value ? "unshift" : "push"](() => {
-      $_sidebarEl = $$value;
-      _sidebarEl.set($_sidebarEl);
+      reset(button);
+      template_effect(() => set_class(button, 1, $theme().button));
+      append($$anchor2, button);
+    };
+    if_block(node_1, ($$render) => {
+      var _a3;
+      if ((_a3 = get(payload).children) == null ? void 0 : _a3.length) $$render(consequent_1);
     });
   }
-  return [
-    titleHeight,
-    $theme,
-    $_sidebarEl,
-    $_viewResources,
-    $_resHs,
-    $_nestedResources,
+  reset(span_1);
+  template_effect(() => set_class(span_1, 1, $theme().expander));
+  append($$anchor, fragment);
+  pop();
+  $$cleanup();
+}
+delegate(["click"]);
+var root_1$3 = from_html(`<div role="rowheader"><!> <!></div>`);
+var root$5 = from_html(`<div><div></div> <div></div></div>`);
+function Sidebar($$anchor, $$props) {
+  push($$props, false);
+  const [$$stores, $$cleanup] = setup_stores();
+  const $_bodyEl = () => store_get(_bodyEl, "$_bodyEl", $$stores);
+  const $theme = () => store_get(theme, "$theme", $$stores);
+  const $_headerHeight = () => store_get(_headerHeight, "$_headerHeight", $$stores);
+  const $_sidebarEl = () => store_get(_sidebarEl, "$_sidebarEl", $$stores);
+  const $_viewResources = () => store_get(_viewResources, "$_viewResources", $$stores);
+  const $_resHs = () => store_get(_resHs, "$_resHs", $$stores);
+  const $_nestedResources = () => store_get(_nestedResources, "$_nestedResources", $$stores);
+  let {
     _viewResources,
-    _headerEl,
+    _headerHeight,
+    _bodyEl,
     _resHs,
     _sidebarEl,
     _nestedResources,
-    theme,
-    div1_binding
-  ];
-}
-var Sidebar = class extends SvelteComponent3 {
-  constructor(options) {
-    super();
-    init4(this, options, instance$62, create_fragment$62, safe_not_equal4, {});
+    theme
+  } = getContext("state");
+  function onwheel(jsEvent) {
+    $_bodyEl().scrollBy({ top: jsEvent.deltaY < 0 ? -30 : 30 });
   }
-};
-function get_each_context$32(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[15] = list[i];
-  return child_ctx;
-}
-function get_each_context_1$22(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[18] = list[i];
-  return child_ctx;
-}
-function create_else_block2(ctx) {
-  let div;
-  let time_1;
-  let time_1_datetime_value;
-  let time_1_aria_label_value;
-  let setContent_action;
-  let div_class_value;
-  let mounted;
-  let dispose;
-  return {
-    c() {
-      div = element4("div");
-      time_1 = element4("time");
-      attr4(time_1, "datetime", time_1_datetime_value = toISOString4(
-        /*date*/
-        ctx[15],
-        10
-      ));
-      attr4(time_1, "aria-label", time_1_aria_label_value = /*$_intlDayHeaderAL*/
-      ctx[4].format(
-        /*date*/
-        ctx[15]
-      ));
-      attr4(div, "class", div_class_value = /*$theme*/
-      ctx[0].time);
-      attr4(div, "role", "columnheader");
-    },
-    m(target, anchor) {
-      insert3(target, div, anchor);
-      append4(div, time_1);
-      if (!mounted) {
-        dispose = action_destroyer3(setContent_action = setContent4.call(
-          null,
-          time_1,
-          /*$_intlDayHeader*/
-          ctx[5].format(
-            /*date*/
-            ctx[15]
-          )
-        ));
-        mounted = true;
-      }
-    },
-    p(new_ctx, dirty) {
-      ctx = new_ctx;
-      if (dirty & /*$_viewDates*/
-      4 && time_1_datetime_value !== (time_1_datetime_value = toISOString4(
-        /*date*/
-        ctx[15],
-        10
-      ))) {
-        attr4(time_1, "datetime", time_1_datetime_value);
-      }
-      if (dirty & /*$_intlDayHeaderAL, $_viewDates*/
-      20 && time_1_aria_label_value !== (time_1_aria_label_value = /*$_intlDayHeaderAL*/
-      ctx[4].format(
-        /*date*/
-        ctx[15]
-      ))) {
-        attr4(time_1, "aria-label", time_1_aria_label_value);
-      }
-      if (setContent_action && is_function4(setContent_action.update) && dirty & /*$_intlDayHeader, $_viewDates*/
-      36) setContent_action.update.call(
-        null,
-        /*$_intlDayHeader*/
-        ctx[5].format(
-          /*date*/
-          ctx[15]
-        )
-      );
-      if (dirty & /*$theme*/
-      1 && div_class_value !== (div_class_value = /*$theme*/
-      ctx[0].time)) {
-        attr4(div, "class", div_class_value);
-      }
-    },
-    d(detaching) {
-      if (detaching) {
-        detach3(div);
-      }
-      mounted = false;
-      dispose();
-    }
-  };
-}
-function create_if_block$22(ctx) {
-  let div0;
-  let time_1;
-  let time_1_datetime_value;
-  let time_1_aria_label_value;
-  let setContent_action;
-  let div0_class_value;
-  let t;
-  let div1;
-  let div1_class_value;
-  let mounted;
-  let dispose;
-  let each_value_1 = ensure_array_like3(
-    /*$_dayTimes*/
-    ctx[6][
-      /*date*/
-      ctx[15].getTime()
-    ]
-  );
-  let each_blocks = [];
-  for (let i = 0; i < each_value_1.length; i += 1) {
-    each_blocks[i] = create_each_block_1$22(get_each_context_1$22(ctx, each_value_1, i));
-  }
-  return {
-    c() {
-      div0 = element4("div");
-      time_1 = element4("time");
-      t = space3();
-      div1 = element4("div");
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].c();
-      }
-      attr4(time_1, "datetime", time_1_datetime_value = toISOString4(
-        /*date*/
-        ctx[15],
-        10
-      ));
-      attr4(time_1, "aria-label", time_1_aria_label_value = /*$_intlDayHeaderAL*/
-      ctx[4].format(
-        /*date*/
-        ctx[15]
-      ));
-      attr4(div0, "class", div0_class_value = /*$theme*/
-      ctx[0].dayHead);
-      attr4(div1, "class", div1_class_value = /*$theme*/
-      ctx[0].times);
-    },
-    m(target, anchor) {
-      insert3(target, div0, anchor);
-      append4(div0, time_1);
-      insert3(target, t, anchor);
-      insert3(target, div1, anchor);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        if (each_blocks[i]) {
-          each_blocks[i].m(div1, null);
-        }
-      }
-      if (!mounted) {
-        dispose = action_destroyer3(setContent_action = setContent4.call(
-          null,
-          time_1,
-          /*$_intlDayHeader*/
-          ctx[5].format(
-            /*date*/
-            ctx[15]
-          )
-        ));
-        mounted = true;
-      }
-    },
-    p(new_ctx, dirty) {
-      ctx = new_ctx;
-      if (dirty & /*$_viewDates*/
-      4 && time_1_datetime_value !== (time_1_datetime_value = toISOString4(
-        /*date*/
-        ctx[15],
-        10
-      ))) {
-        attr4(time_1, "datetime", time_1_datetime_value);
-      }
-      if (dirty & /*$_intlDayHeaderAL, $_viewDates*/
-      20 && time_1_aria_label_value !== (time_1_aria_label_value = /*$_intlDayHeaderAL*/
-      ctx[4].format(
-        /*date*/
-        ctx[15]
-      ))) {
-        attr4(time_1, "aria-label", time_1_aria_label_value);
-      }
-      if (setContent_action && is_function4(setContent_action.update) && dirty & /*$_intlDayHeader, $_viewDates*/
-      36) setContent_action.update.call(
-        null,
-        /*$_intlDayHeader*/
-        ctx[5].format(
-          /*date*/
-          ctx[15]
-        )
-      );
-      if (dirty & /*$theme*/
-      1 && div0_class_value !== (div0_class_value = /*$theme*/
-      ctx[0].dayHead)) {
-        attr4(div0, "class", div0_class_value);
-      }
-      if (dirty & /*$theme, $_dayTimes, $_viewDates*/
-      69) {
-        each_value_1 = ensure_array_like3(
-          /*$_dayTimes*/
-          ctx[6][
-            /*date*/
-            ctx[15].getTime()
-          ]
-        );
-        let i;
-        for (i = 0; i < each_value_1.length; i += 1) {
-          const child_ctx = get_each_context_1$22(ctx, each_value_1, i);
-          if (each_blocks[i]) {
-            each_blocks[i].p(child_ctx, dirty);
-          } else {
-            each_blocks[i] = create_each_block_1$22(child_ctx);
-            each_blocks[i].c();
-            each_blocks[i].m(div1, null);
+  init();
+  var div = root$5();
+  var div_1 = child(div);
+  var div_2 = sibling(div_1, 2);
+  each(div_2, 5, $_viewResources, index, ($$anchor2, resource) => {
+    var div_3 = root_1$3();
+    var node = child(div_3);
+    {
+      var consequent = ($$anchor3) => {
+        Expander($$anchor3, {
+          get resource() {
+            return get(resource);
           }
-        }
-        for (; i < each_blocks.length; i += 1) {
-          each_blocks[i].d(1);
-        }
-        each_blocks.length = each_value_1.length;
-      }
-      if (dirty & /*$theme*/
-      1 && div1_class_value !== (div1_class_value = /*$theme*/
-      ctx[0].times)) {
-        attr4(div1, "class", div1_class_value);
-      }
-    },
-    d(detaching) {
-      if (detaching) {
-        detach3(div0);
-        detach3(t);
-        detach3(div1);
-      }
-      destroy_each3(each_blocks, detaching);
-      mounted = false;
-      dispose();
+        });
+      };
+      if_block(node, ($$render) => {
+        if ($_nestedResources()) $$render(consequent);
+      });
     }
-  };
-}
-function create_each_block_1$22(ctx) {
-  let div;
-  let time_1;
-  let time_1_datetime_value;
-  let setContent_action;
-  let t;
-  let div_class_value;
-  let mounted;
-  let dispose;
-  return {
-    c() {
-      div = element4("div");
-      time_1 = element4("time");
-      t = space3();
-      attr4(time_1, "datetime", time_1_datetime_value = /*time*/
-      ctx[18][0]);
-      attr4(div, "class", div_class_value = /*$theme*/
-      ctx[0].time);
-      attr4(div, "role", "columnheader");
-    },
-    m(target, anchor) {
-      insert3(target, div, anchor);
-      append4(div, time_1);
-      append4(div, t);
-      if (!mounted) {
-        dispose = action_destroyer3(setContent_action = setContent4.call(
-          null,
-          time_1,
-          /*time*/
-          ctx[18][1]
-        ));
-        mounted = true;
+    var node_1 = sibling(node, 2);
+    Label(node_1, {
+      get resource() {
+        return get(resource);
       }
-    },
-    p(new_ctx, dirty) {
-      ctx = new_ctx;
-      if (dirty & /*$_dayTimes, $_viewDates*/
-      68 && time_1_datetime_value !== (time_1_datetime_value = /*time*/
-      ctx[18][0])) {
-        attr4(time_1, "datetime", time_1_datetime_value);
-      }
-      if (setContent_action && is_function4(setContent_action.update) && dirty & /*$_dayTimes, $_viewDates*/
-      68) setContent_action.update.call(
-        null,
-        /*time*/
-        ctx[18][1]
-      );
-      if (dirty & /*$theme*/
-      1 && div_class_value !== (div_class_value = /*$theme*/
-      ctx[0].time)) {
-        attr4(div, "class", div_class_value);
-      }
-    },
-    d(detaching) {
-      if (detaching) {
-        detach3(div);
-      }
-      mounted = false;
-      dispose();
-    }
-  };
-}
-function create_each_block$32(ctx) {
-  let div;
-  let show_if;
-  let t;
-  let div_class_value;
-  function select_block_type(ctx2, dirty) {
-    if (dirty & /*$slotDuration*/
-    8) show_if = null;
-    if (show_if == null) show_if = !!toSeconds3(
-      /*$slotDuration*/
-      ctx2[3]
-    );
-    if (show_if) return create_if_block$22;
-    return create_else_block2;
-  }
-  let current_block_type = select_block_type(ctx, -1);
-  let if_block2 = current_block_type(ctx);
-  return {
-    c() {
-      var _a3;
-      div = element4("div");
-      if_block2.c();
-      t = space3();
-      attr4(div, "class", div_class_value = /*$theme*/
-      ctx[0].day + " " + /*$theme*/
-      ((_a3 = ctx[0].weekdays) == null ? void 0 : _a3[
-        /*date*/
-        ctx[15].getUTCDay()
-      ]));
-    },
-    m(target, anchor) {
-      insert3(target, div, anchor);
-      if_block2.m(div, null);
-      append4(div, t);
-    },
-    p(ctx2, dirty) {
-      var _a3;
-      if (current_block_type === (current_block_type = select_block_type(ctx2, dirty)) && if_block2) {
-        if_block2.p(ctx2, dirty);
-      } else {
-        if_block2.d(1);
-        if_block2 = current_block_type(ctx2);
-        if (if_block2) {
-          if_block2.c();
-          if_block2.m(div, t);
-        }
-      }
-      if (dirty & /*$theme, $_viewDates*/
-      5 && div_class_value !== (div_class_value = /*$theme*/
-      ctx2[0].day + " " + /*$theme*/
-      ((_a3 = ctx2[0].weekdays) == null ? void 0 : _a3[
-        /*date*/
-        ctx2[15].getUTCDay()
-      ]))) {
-        attr4(div, "class", div_class_value);
-      }
-    },
-    d(detaching) {
-      if (detaching) {
-        detach3(div);
-      }
-      if_block2.d();
-    }
-  };
-}
-function create_fragment$52(ctx) {
-  let div2;
-  let div0;
-  let div0_class_value;
-  let t;
-  let div1;
-  let div1_class_value;
-  let div2_class_value;
-  let each_value = ensure_array_like3(
-    /*$_viewDates*/
-    ctx[2]
-  );
-  let each_blocks = [];
-  for (let i = 0; i < each_value.length; i += 1) {
-    each_blocks[i] = create_each_block$32(get_each_context$32(ctx, each_value, i));
-  }
-  return {
-    c() {
-      div2 = element4("div");
-      div0 = element4("div");
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].c();
-      }
-      t = space3();
-      div1 = element4("div");
-      attr4(div0, "class", div0_class_value = /*$theme*/
-      ctx[0].days);
-      attr4(div0, "role", "row");
-      attr4(div1, "class", div1_class_value = /*$theme*/
-      ctx[0].hiddenScroll);
-      attr4(div2, "class", div2_class_value = /*$theme*/
-      ctx[0].header);
-    },
-    m(target, anchor) {
-      insert3(target, div2, anchor);
-      append4(div2, div0);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        if (each_blocks[i]) {
-          each_blocks[i].m(div0, null);
-        }
-      }
-      append4(div2, t);
-      append4(div2, div1);
-      ctx[14](div2);
-    },
-    p(ctx2, [dirty]) {
-      if (dirty & /*$theme, $_viewDates, $_dayTimes, $_intlDayHeaderAL, $_intlDayHeader, $slotDuration*/
-      125) {
-        each_value = ensure_array_like3(
-          /*$_viewDates*/
-          ctx2[2]
-        );
-        let i;
-        for (i = 0; i < each_value.length; i += 1) {
-          const child_ctx = get_each_context$32(ctx2, each_value, i);
-          if (each_blocks[i]) {
-            each_blocks[i].p(child_ctx, dirty);
-          } else {
-            each_blocks[i] = create_each_block$32(child_ctx);
-            each_blocks[i].c();
-            each_blocks[i].m(div0, null);
-          }
-        }
-        for (; i < each_blocks.length; i += 1) {
-          each_blocks[i].d(1);
-        }
-        each_blocks.length = each_value.length;
-      }
-      if (dirty & /*$theme*/
-      1 && div0_class_value !== (div0_class_value = /*$theme*/
-      ctx2[0].days)) {
-        attr4(div0, "class", div0_class_value);
-      }
-      if (dirty & /*$theme*/
-      1 && div1_class_value !== (div1_class_value = /*$theme*/
-      ctx2[0].hiddenScroll)) {
-        attr4(div1, "class", div1_class_value);
-      }
-      if (dirty & /*$theme*/
-      1 && div2_class_value !== (div2_class_value = /*$theme*/
-      ctx2[0].header)) {
-        attr4(div2, "class", div2_class_value);
-      }
-    },
-    i: noop5,
-    o: noop5,
-    d(detaching) {
-      if (detaching) {
-        detach3(div2);
-      }
-      destroy_each3(each_blocks, detaching);
-      ctx[14](null);
-    }
-  };
-}
-function instance$52($$self, $$props, $$invalidate) {
-  let $theme;
-  let $_headerEl;
-  let $_viewDates;
-  let $slotDuration;
-  let $_intlDayHeaderAL;
-  let $_intlDayHeader;
-  let $_dayTimes;
-  let { _headerEl, _intlDayHeader, _intlDayHeaderAL, _dayTimes, _viewDates, slotDuration, theme } = getContext4("state");
-  component_subscribe3($$self, _headerEl, (value) => $$invalidate(1, $_headerEl = value));
-  component_subscribe3($$self, _intlDayHeader, (value) => $$invalidate(5, $_intlDayHeader = value));
-  component_subscribe3($$self, _intlDayHeaderAL, (value) => $$invalidate(4, $_intlDayHeaderAL = value));
-  component_subscribe3($$self, _dayTimes, (value) => $$invalidate(6, $_dayTimes = value));
-  component_subscribe3($$self, _viewDates, (value) => $$invalidate(2, $_viewDates = value));
-  component_subscribe3($$self, slotDuration, (value) => $$invalidate(3, $slotDuration = value));
-  component_subscribe3($$self, theme, (value) => $$invalidate(0, $theme = value));
-  function div2_binding($$value) {
-    binding_callbacks3[$$value ? "unshift" : "push"](() => {
-      $_headerEl = $$value;
-      _headerEl.set($_headerEl);
     });
-  }
-  return [
-    $theme,
-    $_headerEl,
-    $_viewDates,
-    $slotDuration,
-    $_intlDayHeaderAL,
-    $_intlDayHeader,
-    $_dayTimes,
+    reset(div_3);
+    template_effect(
+      ($0) => {
+        set_class(div_3, 1, $theme().resource);
+        set_style(div_3, `flex-basis: ${$0 != null ? $0 : ""}px`);
+      },
+      [() => {
+        var _a3;
+        return max((_a3 = $_resHs().get(get(resource))) != null ? _a3 : 0, 34);
+      }]
+    );
+    append($$anchor2, div_3);
+  });
+  reset(div_2);
+  bind_this(div_2, ($$value) => store_set(_sidebarEl, $$value), () => $_sidebarEl());
+  reset(div);
+  template_effect(() => {
+    var _a3;
+    set_class(div, 1, $theme().sidebar);
+    set_class(div_1, 1, $theme().sidebarTitle);
+    set_style(div_1, `flex-basis: ${(_a3 = $_headerHeight()) != null ? _a3 : ""}px`);
+    set_class(div_2, 1, $theme().content);
+  });
+  event("wheel", div_2, onwheel);
+  append($$anchor, div);
+  pop();
+  $$cleanup();
+}
+var root_3 = from_html(`<div role="columnheader"><time></time></div>`);
+var root_2$1 = from_html(`<div><time></time></div> <div></div>`, 1);
+var root_4 = from_html(`<div role="columnheader"><time></time></div>`);
+var root_1$2 = from_html(`<div><!></div>`);
+var root$4 = from_html(`<div><div role="row"></div> <div></div></div>`);
+function Header($$anchor, $$props) {
+  push($$props, false);
+  const [$$stores, $$cleanup] = setup_stores();
+  const $theme = () => store_get(theme, "$theme", $$stores);
+  const $_headerEl = () => store_get(_headerEl, "$_headerEl", $$stores);
+  const $_viewDates = () => store_get(_viewDates, "$_viewDates", $$stores);
+  const $_today = () => store_get(_today, "$_today", $$stores);
+  const $slotDuration = () => store_get(slotDuration, "$slotDuration", $$stores);
+  const $_intlDayHeaderAL = () => store_get(_intlDayHeaderAL, "$_intlDayHeaderAL", $$stores);
+  const $_intlDayHeader = () => store_get(_intlDayHeader, "$_intlDayHeader", $$stores);
+  const $_dayTimes = () => store_get(_dayTimes, "$_dayTimes", $$stores);
+  let {
     _headerEl,
+    _headerHeight,
     _intlDayHeader,
     _intlDayHeaderAL,
     _dayTimes,
+    _today,
     _viewDates,
     slotDuration,
-    theme,
-    div2_binding
-  ];
+    theme
+  } = getContext("state");
+  init();
+  var div = root$4();
+  var div_1 = child(div);
+  each(div_1, 5, $_viewDates, index, ($$anchor2, date) => {
+    var div_2 = root_1$2();
+    var node = child(div_2);
+    {
+      var consequent = ($$anchor3) => {
+        var fragment = root_2$1();
+        var div_3 = first_child(fragment);
+        var time_1 = child(div_3);
+        action(time_1, ($$node, $$action_arg) => setContent == null ? void 0 : setContent($$node, $$action_arg), () => $_intlDayHeader().format(get(date)));
+        reset(div_3);
+        var div_4 = sibling(div_3, 2);
+        each(div_4, 5, () => $_dayTimes()[get(date).getTime()], index, ($$anchor4, time) => {
+          var div_5 = root_3();
+          var time_2 = child(div_5);
+          action(time_2, ($$node, $$action_arg) => setContent == null ? void 0 : setContent($$node, $$action_arg), () => get(time)[1]);
+          reset(div_5);
+          template_effect(() => {
+            var _a3;
+            set_class(div_5, 1, `${(_a3 = $theme().time) != null ? _a3 : ""}${get(time)[2] ? "" : " " + $theme().minor}`);
+            set_attribute2(time_2, "datetime", get(time)[0]);
+          });
+          append($$anchor4, div_5);
+        });
+        reset(div_4);
+        template_effect(
+          ($0, $1) => {
+            set_class(div_3, 1, $theme().dayHead);
+            set_attribute2(time_1, "datetime", $0);
+            set_attribute2(time_1, "aria-label", $1);
+            set_class(div_4, 1, $theme().times);
+          },
+          [
+            () => toISOString(get(date), 10),
+            () => $_intlDayHeaderAL().format(get(date))
+          ]
+        );
+        append($$anchor3, fragment);
+      };
+      var alternate = ($$anchor3) => {
+        var div_6 = root_4();
+        var time_3 = child(div_6);
+        action(time_3, ($$node, $$action_arg) => setContent == null ? void 0 : setContent($$node, $$action_arg), () => $_intlDayHeader().format(get(date)));
+        reset(div_6);
+        template_effect(
+          ($0, $1) => {
+            set_class(div_6, 1, $theme().time);
+            set_attribute2(time_3, "datetime", $0);
+            set_attribute2(time_3, "aria-label", $1);
+          },
+          [
+            () => toISOString(get(date), 10),
+            () => $_intlDayHeaderAL().format(get(date))
+          ]
+        );
+        append($$anchor3, div_6);
+      };
+      if_block(node, ($$render) => {
+        if (toSeconds($slotDuration())) $$render(consequent);
+        else $$render(alternate, false);
+      });
+    }
+    reset(div_2);
+    template_effect(($0, $1) => {
+      var _a3;
+      return set_class(div_2, 1, `${(_a3 = $theme().day) != null ? _a3 : ""} ${$0 != null ? $0 : ""}${$1 != null ? $1 : ""}`);
+    }, [
+      () => {
+        var _a3;
+        return (_a3 = $theme().weekdays) == null ? void 0 : _a3[get(date).getUTCDay()];
+      },
+      () => datesEqual(get(date), $_today()) ? " " + $theme().today : ""
+    ]);
+    append($$anchor2, div_2);
+  });
+  reset(div_1);
+  var div_7 = sibling(div_1, 2);
+  reset(div);
+  bind_this(div, ($$value) => store_set(_headerEl, $$value), () => $_headerEl());
+  action(div, ($$node, $$action_arg) => observeResize == null ? void 0 : observeResize($$node, $$action_arg), () => () => store_set(_headerHeight, $_headerEl().clientHeight));
+  template_effect(() => {
+    set_class(div, 1, $theme().header);
+    set_class(div_1, 1, $theme().days);
+    set_class(div_7, 1, $theme().hiddenScroll);
+  });
+  append($$anchor, div);
+  pop();
+  $$cleanup();
 }
-var Header = class extends SvelteComponent3 {
-  constructor(options) {
-    super();
-    init4(this, options, instance$52, create_fragment$52, safe_not_equal4, {});
-  }
-};
-function prepareEventChunks2(chunks, $_viewDates, $_dayTimeLimits, $slotDuration) {
+function prepareEventChunks(chunks, $_viewDates, $_dayTimeLimits, $slotDuration) {
   let longChunks = {};
   let filteredChunks = [];
   if (chunks.length) {
-    sortEventChunks3(chunks);
-    let step = toSeconds3($slotDuration);
+    sortEventChunks(chunks);
+    let step = toSeconds($slotDuration);
     let prevChunk;
     for (let chunk of chunks) {
       let prevDayEnd;
       if (step) {
         let slots = 0;
         for (let i = 0; i < $_viewDates.length; ++i) {
-          let slotTimeLimits3 = getSlotTimeLimits($_dayTimeLimits, $_viewDates[i]);
-          let dayStart = addDuration3(cloneDate3($_viewDates[i]), slotTimeLimits3.min);
-          let dayEnd = addDuration3(cloneDate3($_viewDates[i]), slotTimeLimits3.max);
+          let slotTimeLimits2 = getSlotTimeLimits($_dayTimeLimits, $_viewDates[i]);
+          let dayStart = addDuration(cloneDate($_viewDates[i]), slotTimeLimits2.min);
+          let dayEnd = addDuration(cloneDate($_viewDates[i]), slotTimeLimits2.max);
           if (!chunk.date) {
             if (chunk.start < dayEnd && chunk.end > dayStart) {
               chunk.date = $_viewDates[i];
@@ -21268,7 +11132,7 @@ function prepareEventChunks2(chunks, $_viewDates, $_dayTimeLimits, $slotDuration
         let days2 = 0;
         for (let i = 0; i < $_viewDates.length; ++i) {
           let dayStart = $_viewDates[i];
-          let dayEnd = addDay3(cloneDate3(dayStart));
+          let dayEnd = addDay(cloneDate(dayStart));
           if (!chunk.date) {
             if (chunk.start < dayEnd) {
               chunk.date = dayStart;
@@ -21297,7 +11161,7 @@ function prepareEventChunks2(chunks, $_viewDates, $_dayTimeLimits, $slotDuration
       if (!chunk.date) {
         continue;
       }
-      if (prevChunk && datesEqual3(prevChunk.date, chunk.date)) {
+      if (prevChunk && datesEqual(prevChunk.date, chunk.date)) {
         chunk.prev = prevChunk;
       }
       prevChunk = chunk;
@@ -21306,10 +11170,10 @@ function prepareEventChunks2(chunks, $_viewDates, $_dayTimeLimits, $slotDuration
   }
   return [filteredChunks, longChunks];
 }
-function repositionEvent2(chunk, dayChunks, longChunks, height4, allDay) {
+function repositionEvent(chunk, dayChunks, longChunks, height2, allDay) {
   var _a3;
   chunk.top = 0;
-  chunk.bottom = height4;
+  chunk.bottom = height2;
   let margin = 1;
   let key2 = chunk.date.getTime();
   longChunks = (_a3 = longChunks == null ? void 0 : longChunks[key2]) != null ? _a3 : [];
@@ -21333,1368 +11197,90 @@ function repositionEvent2(chunk, dayChunks, longChunks, height4, allDay) {
 }
 function getSlotTimeLimits($_dayTimeLimits, date) {
   var _a3;
-  return (_a3 = $_dayTimeLimits[date.getTime()]) != null ? _a3 : { min: createDuration3(0), max: createDuration3(0) };
+  return (_a3 = $_dayTimeLimits[date.getTime()]) != null ? _a3 : { min: createDuration(0), max: createDuration(0) };
 }
-function create_if_block$12(ctx) {
-  let article;
-  let switch_instance0;
-  let t0;
-  let div;
-  let div_class_value;
-  let setContent_action;
-  let t1;
-  let switch_instance1;
-  let article_role_value;
-  let article_tabindex_value;
-  let current;
-  let mounted;
-  let dispose;
-  var switch_value = (
-    /*$_interaction*/
-    ctx[11].resizer
-  );
-  function switch_props(ctx2, dirty) {
-    return {
-      props: { start: true, event: (
-        /*event*/
-        ctx2[0]
-      ) }
-    };
-  }
-  if (switch_value) {
-    switch_instance0 = construct_svelte_component3(switch_value, switch_props(ctx));
-    switch_instance0.$on("pointerdown", function() {
-      if (is_function4(
-        /*createDragHandler*/
-        ctx[32](
-          /*$_interaction*/
-          ctx[11],
-          ["x", "start"]
-        )
-      )) ctx[32](
-        /*$_interaction*/
-        ctx[11],
-        ["x", "start"]
-      ).apply(this, arguments);
-    });
-  }
-  var switch_value_1 = (
-    /*$_interaction*/
-    ctx[11].resizer
-  );
-  function switch_props_1(ctx2, dirty) {
-    return { props: { event: (
-      /*event*/
-      ctx2[0]
-    ) } };
-  }
-  if (switch_value_1) {
-    switch_instance1 = construct_svelte_component3(switch_value_1, switch_props_1(ctx));
-    switch_instance1.$on("pointerdown", function() {
-      if (is_function4(
-        /*createDragHandler*/
-        ctx[32](
-          /*$_interaction*/
-          ctx[11],
-          ["x", "end"]
-        )
-      )) ctx[32](
-        /*$_interaction*/
-        ctx[11],
-        ["x", "end"]
-      ).apply(this, arguments);
-    });
-  }
-  return {
-    c() {
-      article = element4("article");
-      if (switch_instance0) create_component3(switch_instance0.$$.fragment);
-      t0 = space3();
-      div = element4("div");
-      t1 = space3();
-      if (switch_instance1) create_component3(switch_instance1.$$.fragment);
-      attr4(div, "class", div_class_value = /*$theme*/
-      ctx[3].eventBody);
-      attr4(
-        article,
-        "class",
-        /*classes*/
-        ctx[5]
-      );
-      attr4(
-        article,
-        "style",
-        /*style*/
-        ctx[6]
-      );
-      attr4(article, "role", article_role_value = /*onclick*/
-      ctx[8] ? "button" : void 0);
-      attr4(article, "tabindex", article_tabindex_value = /*onclick*/
-      ctx[8] ? 0 : void 0);
-    },
-    m(target, anchor) {
-      insert3(target, article, anchor);
-      if (switch_instance0) mount_component3(switch_instance0, article, null);
-      append4(article, t0);
-      append4(article, div);
-      append4(article, t1);
-      if (switch_instance1) mount_component3(switch_instance1, article, null);
-      ctx[51](article);
-      current = true;
-      if (!mounted) {
-        dispose = [
-          action_destroyer3(setContent_action = setContent4.call(
-            null,
-            div,
-            /*content*/
-            ctx[7]
-          )),
-          listen5(article, "click", function() {
-            if (is_function4(
-              /*onclick*/
-              ctx[8]
-            )) ctx[8].apply(this, arguments);
-          }),
-          listen5(article, "keydown", function() {
-            if (is_function4(
-              /*onclick*/
-              ctx[8] && keyEnter3(
-                /*onclick*/
-                ctx[8]
-              )
-            )) /*onclick*/
-            (ctx[8] && keyEnter3(
-              /*onclick*/
-              ctx[8]
-            )).apply(this, arguments);
-          }),
-          listen5(article, "mouseenter", function() {
-            if (is_function4(
-              /*createHandler*/
-              ctx[31](
-                /*$eventMouseEnter*/
-                ctx[9],
-                /*display*/
-                ctx[1]
-              )
-            )) ctx[31](
-              /*$eventMouseEnter*/
-              ctx[9],
-              /*display*/
-              ctx[1]
-            ).apply(this, arguments);
-          }),
-          listen5(article, "mouseleave", function() {
-            if (is_function4(
-              /*createHandler*/
-              ctx[31](
-                /*$eventMouseLeave*/
-                ctx[10],
-                /*display*/
-                ctx[1]
-              )
-            )) ctx[31](
-              /*$eventMouseLeave*/
-              ctx[10],
-              /*display*/
-              ctx[1]
-            ).apply(this, arguments);
-          }),
-          listen5(article, "pointerdown", function() {
-            if (is_function4(!bgEvent3(
-              /*display*/
-              ctx[1]
-            ) && !helperEvent3(
-              /*display*/
-              ctx[1]
-            ) && /*createDragHandler*/
-            ctx[32](
-              /*$_interaction*/
-              ctx[11]
-            ))) (!bgEvent3(
-              /*display*/
-              ctx[1]
-            ) && !helperEvent3(
-              /*display*/
-              ctx[1]
-            ) && /*createDragHandler*/
-            ctx[32](
-              /*$_interaction*/
-              ctx[11]
-            )).apply(this, arguments);
-          })
-        ];
-        mounted = true;
-      }
-    },
-    p(new_ctx, dirty) {
-      ctx = new_ctx;
-      if (dirty[0] & /*$_interaction*/
-      2048 && switch_value !== (switch_value = /*$_interaction*/
-      ctx[11].resizer)) {
-        if (switch_instance0) {
-          group_outros3();
-          const old_component = switch_instance0;
-          transition_out3(old_component.$$.fragment, 1, 0, () => {
-            destroy_component3(old_component, 1);
-          });
-          check_outros3();
-        }
-        if (switch_value) {
-          switch_instance0 = construct_svelte_component3(switch_value, switch_props(ctx));
-          switch_instance0.$on("pointerdown", function() {
-            if (is_function4(
-              /*createDragHandler*/
-              ctx[32](
-                /*$_interaction*/
-                ctx[11],
-                ["x", "start"]
-              )
-            )) ctx[32](
-              /*$_interaction*/
-              ctx[11],
-              ["x", "start"]
-            ).apply(this, arguments);
-          });
-          create_component3(switch_instance0.$$.fragment);
-          transition_in3(switch_instance0.$$.fragment, 1);
-          mount_component3(switch_instance0, article, t0);
-        } else {
-          switch_instance0 = null;
-        }
-      } else if (switch_value) {
-        const switch_instance0_changes = {};
-        if (dirty[0] & /*event*/
-        1) switch_instance0_changes.event = /*event*/
-        ctx[0];
-        switch_instance0.$set(switch_instance0_changes);
-      }
-      if (!current || dirty[0] & /*$theme*/
-      8 && div_class_value !== (div_class_value = /*$theme*/
-      ctx[3].eventBody)) {
-        attr4(div, "class", div_class_value);
-      }
-      if (setContent_action && is_function4(setContent_action.update) && dirty[0] & /*content*/
-      128) setContent_action.update.call(
-        null,
-        /*content*/
-        ctx[7]
-      );
-      if (dirty[0] & /*$_interaction*/
-      2048 && switch_value_1 !== (switch_value_1 = /*$_interaction*/
-      ctx[11].resizer)) {
-        if (switch_instance1) {
-          group_outros3();
-          const old_component = switch_instance1;
-          transition_out3(old_component.$$.fragment, 1, 0, () => {
-            destroy_component3(old_component, 1);
-          });
-          check_outros3();
-        }
-        if (switch_value_1) {
-          switch_instance1 = construct_svelte_component3(switch_value_1, switch_props_1(ctx));
-          switch_instance1.$on("pointerdown", function() {
-            if (is_function4(
-              /*createDragHandler*/
-              ctx[32](
-                /*$_interaction*/
-                ctx[11],
-                ["x", "end"]
-              )
-            )) ctx[32](
-              /*$_interaction*/
-              ctx[11],
-              ["x", "end"]
-            ).apply(this, arguments);
-          });
-          create_component3(switch_instance1.$$.fragment);
-          transition_in3(switch_instance1.$$.fragment, 1);
-          mount_component3(switch_instance1, article, null);
-        } else {
-          switch_instance1 = null;
-        }
-      } else if (switch_value_1) {
-        const switch_instance1_changes = {};
-        if (dirty[0] & /*event*/
-        1) switch_instance1_changes.event = /*event*/
-        ctx[0];
-        switch_instance1.$set(switch_instance1_changes);
-      }
-      if (!current || dirty[0] & /*classes*/
-      32) {
-        attr4(
-          article,
-          "class",
-          /*classes*/
-          ctx[5]
-        );
-      }
-      if (!current || dirty[0] & /*style*/
-      64) {
-        attr4(
-          article,
-          "style",
-          /*style*/
-          ctx[6]
-        );
-      }
-      if (!current || dirty[0] & /*onclick*/
-      256 && article_role_value !== (article_role_value = /*onclick*/
-      ctx[8] ? "button" : void 0)) {
-        attr4(article, "role", article_role_value);
-      }
-      if (!current || dirty[0] & /*onclick*/
-      256 && article_tabindex_value !== (article_tabindex_value = /*onclick*/
-      ctx[8] ? 0 : void 0)) {
-        attr4(article, "tabindex", article_tabindex_value);
-      }
-    },
-    i(local) {
-      if (current) return;
-      if (switch_instance0) transition_in3(switch_instance0.$$.fragment, local);
-      if (switch_instance1) transition_in3(switch_instance1.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      if (switch_instance0) transition_out3(switch_instance0.$$.fragment, local);
-      if (switch_instance1) transition_out3(switch_instance1.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach3(article);
-      }
-      if (switch_instance0) destroy_component3(switch_instance0);
-      if (switch_instance1) destroy_component3(switch_instance1);
-      ctx[51](null);
-      mounted = false;
-      run_all4(dispose);
+function Event2($$anchor, $$props) {
+  push($$props, true);
+  const [$$stores, $$cleanup] = setup_stores();
+  const $slotWidth = () => store_get(slotWidth, "$slotWidth", $$stores);
+  const $slotDuration = () => store_get(slotDuration, "$slotDuration", $$stores);
+  let dayChunks = prop($$props, "dayChunks", 19, () => []), longChunks = prop($$props, "longChunks", 19, () => ({})), resource = prop($$props, "resource", 3, void 0);
+  let { slotDuration, slotWidth } = getContext("state");
+  let el = state(void 0);
+  let margin = state(proxy(helperEvent($$props.chunk.event.display) ? 1 : 0));
+  let event2 = user_derived(() => $$props.chunk.event);
+  let width = user_derived(() => "slots" in $$props.chunk ? $$props.chunk.slots * $slotWidth() : $$props.chunk.days * 100);
+  let styles = user_derived(() => (style) => {
+    if ("slots" in $$props.chunk) {
+      let left = $$props.chunk.offset * $slotWidth();
+      style["left"] = `${left}px`;
+      style["width"] = `${get(width)}px`;
+    } else {
+      style["width"] = `${get(width)}%`;
     }
-  };
-}
-function create_fragment$42(ctx) {
-  let if_block_anchor;
-  let current;
-  let if_block2 = (
-    /*width*/
-    ctx[2] > 0 && create_if_block$12(ctx)
-  );
-  return {
-    c() {
-      if (if_block2) if_block2.c();
-      if_block_anchor = empty3();
-    },
-    m(target, anchor) {
-      if (if_block2) if_block2.m(target, anchor);
-      insert3(target, if_block_anchor, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      if (
-        /*width*/
-        ctx2[2] > 0
-      ) {
-        if (if_block2) {
-          if_block2.p(ctx2, dirty);
-          if (dirty[0] & /*width*/
-          4) {
-            transition_in3(if_block2, 1);
-          }
-        } else {
-          if_block2 = create_if_block$12(ctx2);
-          if_block2.c();
-          transition_in3(if_block2, 1);
-          if_block2.m(if_block_anchor.parentNode, if_block_anchor);
-        }
-      } else if (if_block2) {
-        group_outros3();
-        transition_out3(if_block2, 1, 1, () => {
-          if_block2 = null;
-        });
-        check_outros3();
+    let marginTop = get(margin);
+    if (get(event2)._margin) {
+      let [_margin, _resource] = get(event2)._margin;
+      if (resource() === _resource) {
+        marginTop = _margin;
       }
-    },
-    i(local) {
-      if (current) return;
-      transition_in3(if_block2);
-      current = true;
-    },
-    o(local) {
-      transition_out3(if_block2);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach3(if_block_anchor);
-      }
-      if (if_block2) if_block2.d(detaching);
     }
-  };
-}
-function instance$42($$self, $$props, $$invalidate) {
-  let $slotDuration;
-  let $eventClick;
-  let $_view;
-  let $eventAllUpdated;
-  let $eventDidMount;
-  let $_intlEventTime;
-  let $theme;
-  let $eventContent;
-  let $displayEventEnd;
-  let $eventClassNames;
-  let $_iClasses;
-  let $eventTextColor;
-  let $resources;
-  let $eventColor;
-  let $eventBackgroundColor;
-  let $slotWidth;
-  let $eventMouseEnter;
-  let $eventMouseLeave;
-  let $_interaction;
-  let { chunk } = $$props;
-  let { dayChunks = [] } = $$props;
-  let { longChunks = {} } = $$props;
-  let { resource = void 0 } = $$props;
-  let { displayEventEnd, eventAllUpdated, eventBackgroundColor, eventTextColor, eventColor, eventContent, eventClick, eventDidMount, eventClassNames, eventMouseEnter, eventMouseLeave, resources, slotDuration, slotWidth, theme, _view, _intlEventTime, _interaction, _iClasses, _tasks } = getContext4("state");
-  component_subscribe3($$self, displayEventEnd, (value) => $$invalidate(43, $displayEventEnd = value));
-  component_subscribe3($$self, eventAllUpdated, (value) => $$invalidate(54, $eventAllUpdated = value));
-  component_subscribe3($$self, eventBackgroundColor, (value) => $$invalidate(49, $eventBackgroundColor = value));
-  component_subscribe3($$self, eventTextColor, (value) => $$invalidate(46, $eventTextColor = value));
-  component_subscribe3($$self, eventColor, (value) => $$invalidate(48, $eventColor = value));
-  component_subscribe3($$self, eventContent, (value) => $$invalidate(42, $eventContent = value));
-  component_subscribe3($$self, eventClick, (value) => $$invalidate(39, $eventClick = value));
-  component_subscribe3($$self, eventDidMount, (value) => $$invalidate(55, $eventDidMount = value));
-  component_subscribe3($$self, eventClassNames, (value) => $$invalidate(44, $eventClassNames = value));
-  component_subscribe3($$self, eventMouseEnter, (value) => $$invalidate(9, $eventMouseEnter = value));
-  component_subscribe3($$self, eventMouseLeave, (value) => $$invalidate(10, $eventMouseLeave = value));
-  component_subscribe3($$self, resources, (value) => $$invalidate(47, $resources = value));
-  component_subscribe3($$self, slotDuration, (value) => $$invalidate(53, $slotDuration = value));
-  component_subscribe3($$self, slotWidth, (value) => $$invalidate(50, $slotWidth = value));
-  component_subscribe3($$self, theme, (value) => $$invalidate(3, $theme = value));
-  component_subscribe3($$self, _view, (value) => $$invalidate(40, $_view = value));
-  component_subscribe3($$self, _intlEventTime, (value) => $$invalidate(41, $_intlEventTime = value));
-  component_subscribe3($$self, _interaction, (value) => $$invalidate(11, $_interaction = value));
-  component_subscribe3($$self, _iClasses, (value) => $$invalidate(45, $_iClasses = value));
-  let el;
-  let event2;
-  let display;
-  let classes;
-  let style;
-  let content;
-  let timeText;
-  let onclick;
-  let margin = helperEvent3(chunk.event.display) ? 1 : 0;
-  let width = 0;
-  onMount4(() => {
-    if (isFunction4($eventDidMount)) {
-      $eventDidMount({
-        event: toEventWithLocalDates3(event2),
-        timeText,
-        el,
-        view: toViewWithLocalDates3($_view)
-      });
-    }
+    style["margin-top"] = `${marginTop}px`;
+    return style;
   });
-  afterUpdate3(() => {
-    if (isFunction4($eventAllUpdated) && !helperEvent3(display)) {
-      task3(() => $eventAllUpdated({ view: toViewWithLocalDates3($_view) }), "eau", _tasks);
-    }
-  });
-  function createHandler(fn, display2) {
-    return !helperEvent3(display2) && isFunction4(fn) ? (jsEvent) => fn({
-      event: toEventWithLocalDates3(event2),
-      el,
-      jsEvent,
-      view: toViewWithLocalDates3($_view)
-    }) : void 0;
-  }
-  function createDragHandler(interaction, resize) {
-    return interaction.action ? (jsEvent) => interaction.action.drag(event2, jsEvent, resize, void 0, [margin, resource], chunk.zeroDuration) : void 0;
-  }
   function reposition() {
-    if (!el) {
+    if (!get(el)) {
       return 0;
     }
-    let h = height3(el);
-    $$invalidate(38, margin = repositionEvent2(chunk, dayChunks, longChunks, h, !toSeconds3($slotDuration)));
-    return margin + h;
+    let h = height(get(el));
+    set(margin, repositionEvent($$props.chunk, dayChunks(), longChunks(), h, !toSeconds($slotDuration())), true);
+    return get(margin) + h;
   }
-  function article_binding($$value) {
-    binding_callbacks3[$$value ? "unshift" : "push"](() => {
-      el = $$value;
-      $$invalidate(4, el);
-    });
-  }
-  $$self.$$set = ($$props2) => {
-    if ("chunk" in $$props2) $$invalidate(33, chunk = $$props2.chunk);
-    if ("dayChunks" in $$props2) $$invalidate(34, dayChunks = $$props2.dayChunks);
-    if ("longChunks" in $$props2) $$invalidate(35, longChunks = $$props2.longChunks);
-    if ("resource" in $$props2) $$invalidate(36, resource = $$props2.resource);
-  };
-  $$self.$$.update = () => {
-    if ($$self.$$.dirty[1] & /*chunk*/
-    4) {
-      $$invalidate(0, event2 = chunk.event);
-    }
-    if ($$self.$$.dirty[0] & /*event, width, style, display, $theme*/
-    79 | $$self.$$.dirty[1] & /*chunk, $slotWidth, $resources, $eventBackgroundColor, $eventColor, $eventTextColor, margin, resource, $_iClasses, $eventClassNames, $_view*/
-    1041060) {
-      {
-        $$invalidate(1, display = event2.display);
-        if ("slots" in chunk) {
-          let left = chunk.offset * $slotWidth;
-          $$invalidate(2, width = chunk.slots * $slotWidth);
-          $$invalidate(6, style = `left:${left}px;width:${width}px;`);
-        } else {
-          $$invalidate(2, width = chunk.days * 100);
-          $$invalidate(6, style = `width:${width}%;`);
+  var fragment = comment();
+  var node = first_child(fragment);
+  {
+    var consequent = ($$anchor2) => {
+      InteractableEvent($$anchor2, {
+        get chunk() {
+          return $$props.chunk;
+        },
+        get styles() {
+          return get(styles);
+        },
+        axis: "x",
+        forceMargin: () => [get(margin), resource()],
+        get el() {
+          return get(el);
+        },
+        set el($$value) {
+          set(el, $$value, true);
         }
-        let bgColor = event2.backgroundColor || resourceBackgroundColor3(event2, $resources) || $eventBackgroundColor || $eventColor;
-        let txtColor = event2.textColor || resourceTextColor3(event2, $resources) || $eventTextColor;
-        let marginTop = margin;
-        if (event2._margin) {
-          let [_margin, _resource] = event2._margin;
-          if (resource === _resource) {
-            marginTop = _margin;
-          }
-        }
-        $$invalidate(6, style += `margin-top:${marginTop}px;`);
-        if (bgColor) {
-          $$invalidate(6, style += `background-color:${bgColor};`);
-        }
-        if (txtColor) {
-          $$invalidate(6, style += `color:${txtColor};`);
-        }
-        $$invalidate(6, style += event2.styles.join(";"));
-        $$invalidate(5, classes = [
-          bgEvent3(display) ? $theme.bgEvent : $theme.event,
-          ...$_iClasses([], event2),
-          ...createEventClasses3($eventClassNames, event2, $_view)
-        ].join(" "));
-      }
-    }
-    if ($$self.$$.dirty[0] & /*$theme*/
-    8 | $$self.$$.dirty[1] & /*chunk, $displayEventEnd, $eventContent, $_intlEventTime, $_view*/
-    7684) {
-      $$invalidate(7, [timeText, content] = createEventContent3(chunk, $displayEventEnd, $eventContent, $theme, $_intlEventTime, $_view), content);
-    }
-    if ($$self.$$.dirty[0] & /*display*/
-    2 | $$self.$$.dirty[1] & /*$eventClick*/
-    256) {
-      $$invalidate(8, onclick = !bgEvent3(display) && createHandler($eventClick, display));
-    }
-  };
-  return [
-    event2,
-    display,
-    width,
-    $theme,
-    el,
-    classes,
-    style,
-    content,
-    onclick,
-    $eventMouseEnter,
-    $eventMouseLeave,
-    $_interaction,
-    displayEventEnd,
-    eventAllUpdated,
-    eventBackgroundColor,
-    eventTextColor,
-    eventColor,
-    eventContent,
-    eventClick,
-    eventDidMount,
-    eventClassNames,
-    eventMouseEnter,
-    eventMouseLeave,
-    resources,
-    slotDuration,
-    slotWidth,
-    theme,
-    _view,
-    _intlEventTime,
-    _interaction,
-    _iClasses,
-    createHandler,
-    createDragHandler,
-    chunk,
-    dayChunks,
-    longChunks,
-    resource,
-    reposition,
-    margin,
-    $eventClick,
-    $_view,
-    $_intlEventTime,
-    $eventContent,
-    $displayEventEnd,
-    $eventClassNames,
-    $_iClasses,
-    $eventTextColor,
-    $resources,
-    $eventColor,
-    $eventBackgroundColor,
-    $slotWidth,
-    article_binding
-  ];
-}
-var Event4 = class extends SvelteComponent3 {
-  constructor(options) {
-    super();
-    init4(
-      this,
-      options,
-      instance$42,
-      create_fragment$42,
-      safe_not_equal4,
-      {
-        chunk: 33,
-        dayChunks: 34,
-        longChunks: 35,
-        resource: 36,
-        reposition: 37
-      },
-      null,
-      [-1, -1]
-    );
-  }
-  get reposition() {
-    return this.$$.ctx[37];
-  }
-};
-function get_each_context$22(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[37] = list[i];
-  child_ctx[38] = list;
-  child_ctx[39] = i;
-  return child_ctx;
-}
-function get_each_context_1$12(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[37] = list[i];
-  return child_ctx;
-}
-function create_if_block3(ctx) {
-  let each_blocks_1 = [];
-  let each0_lookup = /* @__PURE__ */ new Map();
-  let t0;
-  let show_if_1 = (
-    /*iChunks*/
-    ctx[3][
-      /*pointerIdx*/
-      ctx[14]
-    ] && /*chunkIntersects*/
-    ctx[25](
-      /*iChunks*/
-      ctx[3][
-        /*pointerIdx*/
-        ctx[14]
-      ]
-    )
-  );
-  let t1;
-  let each_blocks = [];
-  let each1_lookup = /* @__PURE__ */ new Map();
-  let t2;
-  let show_if = (
-    /*iChunks*/
-    ctx[3][0] && /*chunkIntersects*/
-    ctx[25](
-      /*iChunks*/
-      ctx[3][0]
-    )
-  );
-  let if_block1_anchor;
-  let current;
-  let each_value_1 = ensure_array_like3(
-    /*dayBgChunks*/
-    ctx[8]
-  );
-  const get_key = (ctx2) => (
-    /*chunk*/
-    ctx2[37].event
-  );
-  for (let i = 0; i < each_value_1.length; i += 1) {
-    let child_ctx = get_each_context_1$12(ctx, each_value_1, i);
-    let key2 = get_key(child_ctx);
-    each0_lookup.set(key2, each_blocks_1[i] = create_each_block_1$12(key2, child_ctx));
-  }
-  let if_block0 = show_if_1 && create_if_block_23(ctx);
-  let each_value = ensure_array_like3(
-    /*dayChunks*/
-    ctx[7]
-  );
-  const get_key_1 = (ctx2) => (
-    /*chunk*/
-    ctx2[37].event
-  );
-  for (let i = 0; i < each_value.length; i += 1) {
-    let child_ctx = get_each_context$22(ctx, each_value, i);
-    let key2 = get_key_1(child_ctx);
-    each1_lookup.set(key2, each_blocks[i] = create_each_block$22(key2, child_ctx));
-  }
-  let if_block1 = show_if && create_if_block_13(ctx);
-  return {
-    c() {
-      for (let i = 0; i < each_blocks_1.length; i += 1) {
-        each_blocks_1[i].c();
-      }
-      t0 = space3();
-      if (if_block0) if_block0.c();
-      t1 = space3();
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].c();
-      }
-      t2 = space3();
-      if (if_block1) if_block1.c();
-      if_block1_anchor = empty3();
-    },
-    m(target, anchor) {
-      for (let i = 0; i < each_blocks_1.length; i += 1) {
-        if (each_blocks_1[i]) {
-          each_blocks_1[i].m(target, anchor);
-        }
-      }
-      insert3(target, t0, anchor);
-      if (if_block0) if_block0.m(target, anchor);
-      insert3(target, t1, anchor);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        if (each_blocks[i]) {
-          each_blocks[i].m(target, anchor);
-        }
-      }
-      insert3(target, t2, anchor);
-      if (if_block1) if_block1.m(target, anchor);
-      insert3(target, if_block1_anchor, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      if (dirty[0] & /*dayBgChunks*/
-      256) {
-        each_value_1 = ensure_array_like3(
-          /*dayBgChunks*/
-          ctx2[8]
-        );
-        group_outros3();
-        each_blocks_1 = update_keyed_each2(each_blocks_1, dirty, get_key, 1, ctx2, each_value_1, each0_lookup, t0.parentNode, outro_and_destroy_block2, create_each_block_1$12, t0, get_each_context_1$12);
-        check_outros3();
-      }
-      if (dirty[0] & /*iChunks, pointerIdx*/
-      16392) show_if_1 = /*iChunks*/
-      ctx2[3][
-        /*pointerIdx*/
-        ctx2[14]
-      ] && /*chunkIntersects*/
-      ctx2[25](
-        /*iChunks*/
-        ctx2[3][
-          /*pointerIdx*/
-          ctx2[14]
-        ]
-      );
-      if (show_if_1) {
-        if (if_block0) {
-          if_block0.p(ctx2, dirty);
-          if (dirty[0] & /*iChunks, pointerIdx*/
-          16392) {
-            transition_in3(if_block0, 1);
-          }
-        } else {
-          if_block0 = create_if_block_23(ctx2);
-          if_block0.c();
-          transition_in3(if_block0, 1);
-          if_block0.m(t1.parentNode, t1);
-        }
-      } else if (if_block0) {
-        group_outros3();
-        transition_out3(if_block0, 1, 1, () => {
-          if_block0 = null;
-        });
-        check_outros3();
-      }
-      if (dirty[0] & /*dayChunks, longChunks, resource, refs*/
-      4230) {
-        each_value = ensure_array_like3(
-          /*dayChunks*/
-          ctx2[7]
-        );
-        group_outros3();
-        each_blocks = update_keyed_each2(each_blocks, dirty, get_key_1, 1, ctx2, each_value, each1_lookup, t2.parentNode, outro_and_destroy_block2, create_each_block$22, t2, get_each_context$22);
-        check_outros3();
-      }
-      if (dirty[0] & /*iChunks*/
-      8) show_if = /*iChunks*/
-      ctx2[3][0] && /*chunkIntersects*/
-      ctx2[25](
-        /*iChunks*/
-        ctx2[3][0]
-      );
-      if (show_if) {
-        if (if_block1) {
-          if_block1.p(ctx2, dirty);
-          if (dirty[0] & /*iChunks*/
-          8) {
-            transition_in3(if_block1, 1);
-          }
-        } else {
-          if_block1 = create_if_block_13(ctx2);
-          if_block1.c();
-          transition_in3(if_block1, 1);
-          if_block1.m(if_block1_anchor.parentNode, if_block1_anchor);
-        }
-      } else if (if_block1) {
-        group_outros3();
-        transition_out3(if_block1, 1, 1, () => {
-          if_block1 = null;
-        });
-        check_outros3();
-      }
-    },
-    i(local) {
-      if (current) return;
-      for (let i = 0; i < each_value_1.length; i += 1) {
-        transition_in3(each_blocks_1[i]);
-      }
-      transition_in3(if_block0);
-      for (let i = 0; i < each_value.length; i += 1) {
-        transition_in3(each_blocks[i]);
-      }
-      transition_in3(if_block1);
-      current = true;
-    },
-    o(local) {
-      for (let i = 0; i < each_blocks_1.length; i += 1) {
-        transition_out3(each_blocks_1[i]);
-      }
-      transition_out3(if_block0);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        transition_out3(each_blocks[i]);
-      }
-      transition_out3(if_block1);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach3(t0);
-        detach3(t1);
-        detach3(t2);
-        detach3(if_block1_anchor);
-      }
-      for (let i = 0; i < each_blocks_1.length; i += 1) {
-        each_blocks_1[i].d(detaching);
-      }
-      if (if_block0) if_block0.d(detaching);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].d(detaching);
-      }
-      if (if_block1) if_block1.d(detaching);
-    }
-  };
-}
-function create_each_block_1$12(key_1, ctx) {
-  let first;
-  let event2;
-  let current;
-  event2 = new Event4({ props: { chunk: (
-    /*chunk*/
-    ctx[37]
-  ) } });
-  return {
-    key: key_1,
-    first: null,
-    c() {
-      first = empty3();
-      create_component3(event2.$$.fragment);
-      this.first = first;
-    },
-    m(target, anchor) {
-      insert3(target, first, anchor);
-      mount_component3(event2, target, anchor);
-      current = true;
-    },
-    p(new_ctx, dirty) {
-      ctx = new_ctx;
-      const event_changes = {};
-      if (dirty[0] & /*dayBgChunks*/
-      256) event_changes.chunk = /*chunk*/
-      ctx[37];
-      event2.$set(event_changes);
-    },
-    i(local) {
-      if (current) return;
-      transition_in3(event2.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out3(event2.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach3(first);
-      }
-      destroy_component3(event2, detaching);
-    }
-  };
-}
-function create_if_block_23(ctx) {
-  let event2;
-  let current;
-  event2 = new Event4({
-    props: {
-      chunk: (
-        /*iChunks*/
-        ctx[3][
-          /*pointerIdx*/
-          ctx[14]
-        ]
-      )
-    }
-  });
-  return {
-    c() {
-      create_component3(event2.$$.fragment);
-    },
-    m(target, anchor) {
-      mount_component3(event2, target, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      const event_changes = {};
-      if (dirty[0] & /*iChunks, pointerIdx*/
-      16392) event_changes.chunk = /*iChunks*/
-      ctx2[3][
-        /*pointerIdx*/
-        ctx2[14]
-      ];
-      event2.$set(event_changes);
-    },
-    i(local) {
-      if (current) return;
-      transition_in3(event2.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out3(event2.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      destroy_component3(event2, detaching);
-    }
-  };
-}
-function create_each_block$22(key_1, ctx) {
-  let first;
-  let event2;
-  let i = (
-    /*i*/
-    ctx[39]
-  );
-  let current;
-  const assign_event = () => (
-    /*event_binding*/
-    ctx[33](event2, i)
-  );
-  const unassign_event = () => (
-    /*event_binding*/
-    ctx[33](null, i)
-  );
-  let event_props = {
-    chunk: (
-      /*chunk*/
-      ctx[37]
-    ),
-    dayChunks: (
-      /*dayChunks*/
-      ctx[7]
-    ),
-    longChunks: (
-      /*longChunks*/
-      ctx[2]
-    ),
-    resource: (
-      /*resource*/
-      ctx[1]
-    )
-  };
-  event2 = new Event4({ props: event_props });
-  assign_event();
-  return {
-    key: key_1,
-    first: null,
-    c() {
-      first = empty3();
-      create_component3(event2.$$.fragment);
-      this.first = first;
-    },
-    m(target, anchor) {
-      insert3(target, first, anchor);
-      mount_component3(event2, target, anchor);
-      current = true;
-    },
-    p(new_ctx, dirty) {
-      ctx = new_ctx;
-      if (i !== /*i*/
-      ctx[39]) {
-        unassign_event();
-        i = /*i*/
-        ctx[39];
-        assign_event();
-      }
-      const event_changes = {};
-      if (dirty[0] & /*dayChunks*/
-      128) event_changes.chunk = /*chunk*/
-      ctx[37];
-      if (dirty[0] & /*dayChunks*/
-      128) event_changes.dayChunks = /*dayChunks*/
-      ctx[7];
-      if (dirty[0] & /*longChunks*/
-      4) event_changes.longChunks = /*longChunks*/
-      ctx[2];
-      if (dirty[0] & /*resource*/
-      2) event_changes.resource = /*resource*/
-      ctx[1];
-      event2.$set(event_changes);
-    },
-    i(local) {
-      if (current) return;
-      transition_in3(event2.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out3(event2.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach3(first);
-      }
-      unassign_event();
-      destroy_component3(event2, detaching);
-    }
-  };
-}
-function create_if_block_13(ctx) {
-  let event2;
-  let current;
-  event2 = new Event4({
-    props: {
-      chunk: (
-        /*iChunks*/
-        ctx[3][0]
-      ),
-      resource: (
-        /*resource*/
-        ctx[1]
-      )
-    }
-  });
-  return {
-    c() {
-      create_component3(event2.$$.fragment);
-    },
-    m(target, anchor) {
-      mount_component3(event2, target, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      const event_changes = {};
-      if (dirty[0] & /*iChunks*/
-      8) event_changes.chunk = /*iChunks*/
-      ctx2[3][0];
-      if (dirty[0] & /*resource*/
-      2) event_changes.resource = /*resource*/
-      ctx2[1];
-      event2.$set(event_changes);
-    },
-    i(local) {
-      if (current) return;
-      transition_in3(event2.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out3(event2.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      destroy_component3(event2, detaching);
-    }
-  };
-}
-function create_fragment$32(ctx) {
-  let div1;
-  let div0;
-  let div0_class_value;
-  let div1_class_value;
-  let current;
-  let mounted;
-  let dispose;
-  let if_block2 = !/*disabled*/
-  ctx[11] && create_if_block3(ctx);
-  return {
-    c() {
-      var _a3;
-      div1 = element4("div");
-      div0 = element4("div");
-      if (if_block2) if_block2.c();
-      attr4(div0, "class", div0_class_value = /*$theme*/
-      ctx[15].events);
-      attr4(div1, "class", div1_class_value = /*$theme*/
-      ctx[15].day + " " + /*$theme*/
-      ((_a3 = ctx[15].weekdays) == null ? void 0 : _a3[
-        /*date*/
-        ctx[0].getUTCDay()
-      ]) + /*isToday*/
-      (ctx[9] ? " " + /*$theme*/
-      ctx[15].today : "") + /*highlight*/
-      (ctx[10] ? " " + /*$theme*/
-      ctx[15].highlight : "") + /*disabled*/
-      (ctx[11] ? " " + /*$theme*/
-      ctx[15].disabled : ""));
-      set_style4(
-        div1,
-        "flex-grow",
-        /*allDay*/
-        ctx[5] ? null : ceil((toSeconds3(
-          /*slotTimeLimits*/
-          ctx[13].max
-        ) - toSeconds3(
-          /*slotTimeLimits*/
-          ctx[13].min
-        )) / toSeconds3(
-          /*$slotDuration*/
-          ctx[6]
-        ))
-      );
-      attr4(div1, "role", "cell");
-    },
-    m(target, anchor) {
-      insert3(target, div1, anchor);
-      append4(div1, div0);
-      if (if_block2) if_block2.m(div0, null);
-      ctx[34](div1);
-      current = true;
-      if (!mounted) {
-        dispose = listen5(div1, "pointerdown", function() {
-          var _a3, _b3;
-          if (is_function4(
-            /*$_interaction*/
-            (_a3 = ctx[16].action) == null ? void 0 : _a3.select
-          )) (_b3 = ctx[16].action) == null ? void 0 : _b3.select.apply(this, arguments);
-        });
-        mounted = true;
-      }
-    },
-    p(new_ctx, dirty) {
-      var _a3;
-      ctx = new_ctx;
-      if (!/*disabled*/
-      ctx[11]) {
-        if (if_block2) {
-          if_block2.p(ctx, dirty);
-          if (dirty[0] & /*disabled*/
-          2048) {
-            transition_in3(if_block2, 1);
-          }
-        } else {
-          if_block2 = create_if_block3(ctx);
-          if_block2.c();
-          transition_in3(if_block2, 1);
-          if_block2.m(div0, null);
-        }
-      } else if (if_block2) {
-        group_outros3();
-        transition_out3(if_block2, 1, 1, () => {
-          if_block2 = null;
-        });
-        check_outros3();
-      }
-      if (!current || dirty[0] & /*$theme*/
-      32768 && div0_class_value !== (div0_class_value = /*$theme*/
-      ctx[15].events)) {
-        attr4(div0, "class", div0_class_value);
-      }
-      if (!current || dirty[0] & /*$theme, date, isToday, highlight, disabled*/
-      36353 && div1_class_value !== (div1_class_value = /*$theme*/
-      ctx[15].day + " " + /*$theme*/
-      ((_a3 = ctx[15].weekdays) == null ? void 0 : _a3[
-        /*date*/
-        ctx[0].getUTCDay()
-      ]) + /*isToday*/
-      (ctx[9] ? " " + /*$theme*/
-      ctx[15].today : "") + /*highlight*/
-      (ctx[10] ? " " + /*$theme*/
-      ctx[15].highlight : "") + /*disabled*/
-      (ctx[11] ? " " + /*$theme*/
-      ctx[15].disabled : ""))) {
-        attr4(div1, "class", div1_class_value);
-      }
-      if (!current || dirty[0] & /*allDay, slotTimeLimits, $slotDuration*/
-      8288) {
-        set_style4(
-          div1,
-          "flex-grow",
-          /*allDay*/
-          ctx[5] ? null : ceil((toSeconds3(
-            /*slotTimeLimits*/
-            ctx[13].max
-          ) - toSeconds3(
-            /*slotTimeLimits*/
-            ctx[13].min
-          )) / toSeconds3(
-            /*$slotDuration*/
-            ctx[6]
-          ))
-        );
-      }
-    },
-    i(local) {
-      if (current) return;
-      transition_in3(if_block2);
-      current = true;
-    },
-    o(local) {
-      transition_out3(if_block2);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach3(div1);
-      }
-      if (if_block2) if_block2.d();
-      ctx[34](null);
-      mounted = false;
-      dispose();
-    }
-  };
-}
-function instance$32($$self, $$props, $$invalidate) {
-  let $slotWidth;
-  let $slotDuration;
-  let $_dayTimeLimits;
-  let $validRange;
-  let $highlightedDates;
-  let $_today;
-  let $theme;
-  let $_interaction;
-  let { date } = $$props;
-  let { resource } = $$props;
-  let { chunks } = $$props;
-  let { bgChunks } = $$props;
-  let { longChunks } = $$props;
-  let { iChunks = [] } = $$props;
-  let { highlightedDates, slotDuration, slotWidth, theme, validRange, _interaction, _today, _dayTimeLimits } = getContext4("state");
-  component_subscribe3($$self, highlightedDates, (value) => $$invalidate(31, $highlightedDates = value));
-  component_subscribe3($$self, slotDuration, (value) => $$invalidate(6, $slotDuration = value));
-  component_subscribe3($$self, slotWidth, (value) => $$invalidate(35, $slotWidth = value));
-  component_subscribe3($$self, theme, (value) => $$invalidate(15, $theme = value));
-  component_subscribe3($$self, validRange, (value) => $$invalidate(30, $validRange = value));
-  component_subscribe3($$self, _interaction, (value) => $$invalidate(16, $_interaction = value));
-  component_subscribe3($$self, _today, (value) => $$invalidate(32, $_today = value));
-  component_subscribe3($$self, _dayTimeLimits, (value) => $$invalidate(29, $_dayTimeLimits = value));
-  let el;
-  let dayChunks, dayBgChunks;
-  let isToday, highlight, disabled;
-  let refs = [];
-  let slotTimeLimits3;
-  let allDay;
-  let pointerIdx = 1;
-  function chunkIntersects(chunk) {
-    return datesEqual3(chunk.date, date);
-  }
-  function dateFromPoint(x, y) {
-    x -= rect3(el).left;
-    return {
-      allDay,
-      date: allDay ? cloneDate3(date) : addDuration3(addDuration3(cloneDate3(date), slotTimeLimits3.min), $slotDuration, floor3(x / $slotWidth)),
-      resource,
-      dayEl: el,
-      disabled
+      });
     };
-  }
-  function reposition() {
-    return max3(...runReposition3(refs, dayChunks));
-  }
-  function event_binding($$value, i) {
-    binding_callbacks3[$$value ? "unshift" : "push"](() => {
-      refs[i] = $$value;
-      $$invalidate(12, refs);
+    if_block(node, ($$render) => {
+      if (get(width) > 0) $$render(consequent);
     });
   }
-  function div1_binding($$value) {
-    binding_callbacks3[$$value ? "unshift" : "push"](() => {
-      el = $$value;
-      $$invalidate(4, el);
-    });
-  }
-  $$self.$$set = ($$props2) => {
-    if ("date" in $$props2) $$invalidate(0, date = $$props2.date);
-    if ("resource" in $$props2) $$invalidate(1, resource = $$props2.resource);
-    if ("chunks" in $$props2) $$invalidate(26, chunks = $$props2.chunks);
-    if ("bgChunks" in $$props2) $$invalidate(27, bgChunks = $$props2.bgChunks);
-    if ("longChunks" in $$props2) $$invalidate(2, longChunks = $$props2.longChunks);
-    if ("iChunks" in $$props2) $$invalidate(3, iChunks = $$props2.iChunks);
-  };
-  $$self.$$.update = () => {
-    if ($$self.$$.dirty[0] & /*date*/
-    1 | $$self.$$.dirty[1] & /*$_today*/
-    2) {
-      $$invalidate(9, isToday = datesEqual3(date, $_today));
-    }
-    if ($$self.$$.dirty[0] & /*date*/
-    1 | $$self.$$.dirty[1] & /*$highlightedDates*/
-    1) {
-      $$invalidate(10, highlight = $highlightedDates.some((d) => datesEqual3(d, date)));
-    }
-    if ($$self.$$.dirty[0] & /*date, $validRange*/
-    1073741825) {
-      $$invalidate(11, disabled = outsideRange3(date, $validRange));
-    }
-    if ($$self.$$.dirty[0] & /*$_dayTimeLimits, date*/
-    536870913) {
-      $$invalidate(13, slotTimeLimits3 = getSlotTimeLimits($_dayTimeLimits, date));
-    }
-    if ($$self.$$.dirty[0] & /*$slotDuration, allDay*/
-    96) {
-      {
-        $$invalidate(5, allDay = !toSeconds3($slotDuration));
-        $$invalidate(14, pointerIdx = allDay ? 2 : 1);
-      }
-    }
-    if ($$self.$$.dirty[0] & /*chunks*/
-    67108864) {
-      $$invalidate(7, dayChunks = chunks.filter(chunkIntersects));
-    }
-    if ($$self.$$.dirty[0] & /*bgChunks, allDay*/
-    134217760) {
-      $$invalidate(8, dayBgChunks = bgChunks.filter((bgChunk) => (!allDay || bgChunk.event.allDay) && chunkIntersects(bgChunk)));
-    }
-    if ($$self.$$.dirty[0] & /*el*/
-    16) {
-      if (el) {
-        setPayload4(el, dateFromPoint);
-      }
-    }
-  };
-  return [
-    date,
-    resource,
-    longChunks,
-    iChunks,
-    el,
-    allDay,
-    $slotDuration,
-    dayChunks,
-    dayBgChunks,
-    isToday,
-    highlight,
-    disabled,
-    refs,
-    slotTimeLimits3,
-    pointerIdx,
-    $theme,
-    $_interaction,
+  append($$anchor, fragment);
+  var $$pop = pop({ reposition });
+  $$cleanup();
+  return $$pop;
+}
+var root_1$1 = from_html(`<!> <!> <!> <!>`, 1);
+var root$3 = from_html(`<div role="cell"><div><!></div></div>`);
+function Day($$anchor, $$props) {
+  push($$props, true);
+  const [$$stores, $$cleanup] = setup_stores();
+  const $_today = () => store_get(_today, "$_today", $$stores);
+  const $highlightedDates = () => store_get(highlightedDates, "$highlightedDates", $$stores);
+  const $validRange = () => store_get(validRange, "$validRange", $$stores);
+  const $_dayTimeLimits = () => store_get(_dayTimeLimits, "$_dayTimeLimits", $$stores);
+  const $slotDuration = () => store_get(slotDuration, "$slotDuration", $$stores);
+  const $slotWidth = () => store_get(slotWidth, "$slotWidth", $$stores);
+  const $theme = () => store_get(theme, "$theme", $$stores);
+  const $_interaction = () => store_get(_interaction, "$_interaction", $$stores);
+  let iChunks = prop($$props, "iChunks", 19, () => []);
+  let {
     highlightedDates,
     slotDuration,
     slotWidth,
@@ -22702,863 +11288,475 @@ function instance$32($$self, $$props, $$invalidate) {
     validRange,
     _interaction,
     _today,
-    _dayTimeLimits,
-    chunkIntersects,
-    chunks,
-    bgChunks,
-    reposition,
-    $_dayTimeLimits,
-    $validRange,
-    $highlightedDates,
-    $_today,
-    event_binding,
-    div1_binding
-  ];
-}
-var Day3 = class extends SvelteComponent3 {
-  constructor(options) {
-    super();
-    init4(
-      this,
-      options,
-      instance$32,
-      create_fragment$32,
-      safe_not_equal4,
-      {
-        date: 0,
-        resource: 1,
-        chunks: 26,
-        bgChunks: 27,
-        longChunks: 2,
-        iChunks: 3,
-        reposition: 28
-      },
-      null,
-      [-1, -1]
-    );
-  }
-  get reposition() {
-    return this.$$.ctx[28];
-  }
-};
-function get_each_context$12(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[29] = list[i];
-  child_ctx[30] = list;
-  child_ctx[31] = i;
-  return child_ctx;
-}
-function create_each_block$12(ctx) {
-  let day;
-  let i = (
-    /*i*/
-    ctx[31]
-  );
-  let current;
-  const assign_day = () => (
-    /*day_binding*/
-    ctx[25](day, i)
-  );
-  const unassign_day = () => (
-    /*day_binding*/
-    ctx[25](null, i)
-  );
-  let day_props = {
-    date: (
-      /*date*/
-      ctx[29]
-    ),
-    resource: (
-      /*resource*/
-      ctx[0]
-    ),
-    chunks: (
-      /*chunks*/
-      ctx[1]
-    ),
-    bgChunks: (
-      /*bgChunks*/
-      ctx[2]
-    ),
-    longChunks: (
-      /*longChunks*/
-      ctx[4]
-    ),
-    iChunks: (
-      /*iChunks*/
-      ctx[5]
-    )
-  };
-  day = new Day3({ props: day_props });
-  assign_day();
-  return {
-    c() {
-      create_component3(day.$$.fragment);
-    },
-    m(target, anchor) {
-      mount_component3(day, target, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      if (i !== /*i*/
-      ctx2[31]) {
-        unassign_day();
-        i = /*i*/
-        ctx2[31];
-        assign_day();
-      }
-      const day_changes = {};
-      if (dirty[0] & /*$_viewDates*/
-      8) day_changes.date = /*date*/
-      ctx2[29];
-      if (dirty[0] & /*resource*/
-      1) day_changes.resource = /*resource*/
-      ctx2[0];
-      if (dirty[0] & /*chunks*/
-      2) day_changes.chunks = /*chunks*/
-      ctx2[1];
-      if (dirty[0] & /*bgChunks*/
-      4) day_changes.bgChunks = /*bgChunks*/
-      ctx2[2];
-      if (dirty[0] & /*longChunks*/
-      16) day_changes.longChunks = /*longChunks*/
-      ctx2[4];
-      if (dirty[0] & /*iChunks*/
-      32) day_changes.iChunks = /*iChunks*/
-      ctx2[5];
-      day.$set(day_changes);
-    },
-    i(local) {
-      if (current) return;
-      transition_in3(day.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out3(day.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      unassign_day();
-      destroy_component3(day, detaching);
-    }
-  };
-}
-function create_fragment$22(ctx) {
-  let div;
-  let div_class_value;
-  let current;
-  let mounted;
-  let dispose;
-  let each_value = ensure_array_like3(
-    /*$_viewDates*/
-    ctx[3]
-  );
-  let each_blocks = [];
-  for (let i = 0; i < each_value.length; i += 1) {
-    each_blocks[i] = create_each_block$12(get_each_context$12(ctx, each_value, i));
-  }
-  const out = (i) => transition_out3(each_blocks[i], 1, 1, () => {
-    each_blocks[i] = null;
-  });
-  return {
-    c() {
-      div = element4("div");
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].c();
-      }
-      attr4(div, "class", div_class_value = /*$theme*/
-      ctx[8].days);
-      set_style4(div, "flex-basis", max3(
-        /*height*/
-        ctx[7],
-        34
-      ) + "px");
-      attr4(div, "role", "row");
-    },
-    m(target, anchor) {
-      insert3(target, div, anchor);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        if (each_blocks[i]) {
-          each_blocks[i].m(div, null);
-        }
-      }
-      current = true;
-      if (!mounted) {
-        dispose = listen5(
-          window,
-          "resize",
-          /*reposition*/
-          ctx[17]
-        );
-        mounted = true;
-      }
-    },
-    p(ctx2, dirty) {
-      if (dirty[0] & /*$_viewDates, resource, chunks, bgChunks, longChunks, iChunks, refs*/
-      127) {
-        each_value = ensure_array_like3(
-          /*$_viewDates*/
-          ctx2[3]
-        );
-        let i;
-        for (i = 0; i < each_value.length; i += 1) {
-          const child_ctx = get_each_context$12(ctx2, each_value, i);
-          if (each_blocks[i]) {
-            each_blocks[i].p(child_ctx, dirty);
-            transition_in3(each_blocks[i], 1);
-          } else {
-            each_blocks[i] = create_each_block$12(child_ctx);
-            each_blocks[i].c();
-            transition_in3(each_blocks[i], 1);
-            each_blocks[i].m(div, null);
-          }
-        }
-        group_outros3();
-        for (i = each_value.length; i < each_blocks.length; i += 1) {
-          out(i);
-        }
-        check_outros3();
-      }
-      if (!current || dirty[0] & /*$theme*/
-      256 && div_class_value !== (div_class_value = /*$theme*/
-      ctx2[8].days)) {
-        attr4(div, "class", div_class_value);
-      }
-      if (!current || dirty[0] & /*height*/
-      128) {
-        set_style4(div, "flex-basis", max3(
-          /*height*/
-          ctx2[7],
-          34
-        ) + "px");
-      }
-    },
-    i(local) {
-      if (current) return;
-      for (let i = 0; i < each_value.length; i += 1) {
-        transition_in3(each_blocks[i]);
-      }
-      current = true;
-    },
-    o(local) {
-      each_blocks = each_blocks.filter(Boolean);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        transition_out3(each_blocks[i]);
-      }
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach3(div);
-      }
-      destroy_each3(each_blocks, detaching);
-      mounted = false;
-      dispose();
-    }
-  };
-}
-function instance$22($$self, $$props, $$invalidate) {
-  let $slotDuration;
-  let $_dayTimeLimits;
-  let $_viewDates;
-  let $_iEvents;
-  let $_events;
-  let $_resHs;
-  let $validRange;
-  let $theme;
-  let { resource } = $$props;
-  let { _viewDates, _events: _events2, _iEvents, _queue2, _resHs, _dayTimeLimits, slotDuration, theme, validRange } = getContext4("state");
-  component_subscribe3($$self, _viewDates, (value) => $$invalidate(3, $_viewDates = value));
-  component_subscribe3($$self, _events2, (value) => $$invalidate(23, $_events = value));
-  component_subscribe3($$self, _iEvents, (value) => $$invalidate(22, $_iEvents = value));
-  component_subscribe3($$self, _resHs, (value) => $$invalidate(26, $_resHs = value));
-  component_subscribe3($$self, _dayTimeLimits, (value) => $$invalidate(21, $_dayTimeLimits = value));
-  component_subscribe3($$self, slotDuration, (value) => $$invalidate(20, $slotDuration = value));
-  component_subscribe3($$self, theme, (value) => $$invalidate(8, $theme = value));
-  component_subscribe3($$self, validRange, (value) => $$invalidate(24, $validRange = value));
-  let chunks, bgChunks, longChunks, iChunks = [];
-  let start;
-  let end;
+    _dayTimeLimits
+  } = getContext("state");
+  let el = state(void 0);
   let refs = [];
-  let height4 = 0;
-  let debounceHandle = {};
-  function reposition() {
-    debounce3(
-      () => {
-        $$invalidate(7, height4 = ceil(max3(...runReposition3(refs, $_viewDates))) + 10);
-        $_resHs.set(resource, height4);
-        _resHs.set($_resHs);
-      },
-      debounceHandle,
-      _queue2
-    );
+  let isToday = user_derived(() => datesEqual($$props.date, $_today()));
+  let highlight = user_derived(() => $highlightedDates().some((d) => datesEqual(d, $$props.date)));
+  let disabled = user_derived(() => outsideRange($$props.date, $validRange()));
+  let slotTimeLimits2 = user_derived(() => getSlotTimeLimits($_dayTimeLimits(), $$props.date));
+  let allDay = user_derived(() => !toSeconds($slotDuration()));
+  let pointerIdx = user_derived(() => get(allDay) ? 2 : 1);
+  let dayChunks = user_derived(() => $$props.chunks.filter(chunkIntersects));
+  let dayBgChunks = user_derived(() => $$props.bgChunks.filter((bgChunk) => (!get(allDay) || bgChunk.event.allDay) && chunkIntersects(bgChunk)));
+  function chunkIntersects(chunk) {
+    return datesEqual(chunk.date, $$props.date);
   }
-  function day_binding($$value, i) {
-    binding_callbacks3[$$value ? "unshift" : "push"](() => {
-      refs[i] = $$value;
-      $$invalidate(6, refs);
+  function dateFromPoint(x, y) {
+    x -= rect(get(el)).left;
+    return {
+      allDay: get(allDay),
+      date: get(allDay) ? cloneDate($$props.date) : addDuration(addDuration(cloneDate($$props.date), get(slotTimeLimits2).min), $slotDuration(), floor(x / $slotWidth())),
+      resource: $$props.resource,
+      dayEl: get(el),
+      disabled: get(disabled)
+    };
+  }
+  user_effect(() => {
+    setPayload(get(el), dateFromPoint);
+  });
+  function reposition() {
+    return max(...runReposition(refs, get(dayChunks)));
+  }
+  var div = root$3();
+  div.__pointerdown = function(...$$args) {
+    var _a3, _b3;
+    (_b3 = (_a3 = $_interaction().action) == null ? void 0 : _a3.select) == null ? void 0 : _b3.apply(this, $$args);
+  };
+  var div_1 = child(div);
+  var node = child(div_1);
+  {
+    var consequent_2 = ($$anchor2) => {
+      var fragment = root_1$1();
+      var node_1 = first_child(fragment);
+      each(node_1, 17, () => get(dayBgChunks), (chunk) => chunk.event, ($$anchor3, chunk) => {
+        Event2($$anchor3, {
+          get chunk() {
+            return get(chunk);
+          }
+        });
+      });
+      var node_2 = sibling(node_1, 2);
+      {
+        var consequent = ($$anchor3) => {
+          Event2($$anchor3, {
+            get chunk() {
+              return iChunks()[get(pointerIdx)];
+            }
+          });
+        };
+        if_block(node_2, ($$render) => {
+          if (iChunks()[get(pointerIdx)] && chunkIntersects(iChunks()[get(pointerIdx)])) $$render(consequent);
+        });
+      }
+      var node_3 = sibling(node_2, 2);
+      each(node_3, 19, () => get(dayChunks), (chunk) => chunk.event, ($$anchor3, chunk, i) => {
+        bind_this(
+          Event2($$anchor3, {
+            get chunk() {
+              return get(chunk);
+            },
+            get dayChunks() {
+              return get(dayChunks);
+            },
+            get longChunks() {
+              return $$props.longChunks;
+            },
+            get resource() {
+              return $$props.resource;
+            }
+          }),
+          ($$value, i2) => refs[i2] = $$value,
+          (i2) => refs == null ? void 0 : refs[i2],
+          () => [get(i)]
+        );
+      });
+      var node_4 = sibling(node_3, 2);
+      {
+        var consequent_1 = ($$anchor3) => {
+          Event2($$anchor3, {
+            get chunk() {
+              return iChunks()[0];
+            },
+            get resource() {
+              return $$props.resource;
+            }
+          });
+        };
+        if_block(node_4, ($$render) => {
+          if (iChunks()[0] && chunkIntersects(iChunks()[0])) $$render(consequent_1);
+        });
+      }
+      append($$anchor2, fragment);
+    };
+    if_block(node, ($$render) => {
+      if (!get(disabled)) $$render(consequent_2);
     });
   }
-  $$self.$$set = ($$props2) => {
-    if ("resource" in $$props2) $$invalidate(0, resource = $$props2.resource);
-  };
-  $$self.$$.update = () => {
-    if ($$self.$$.dirty[0] & /*$_viewDates, $validRange, $_dayTimeLimits, start, end*/
-    19660808) {
-      {
-        $$invalidate(18, start = cloneDate3(limitToRange3($_viewDates[0], $validRange)));
-        $$invalidate(19, end = cloneDate3(limitToRange3($_viewDates.at(-1), $validRange)));
-        let slotTimeLimits3 = getSlotTimeLimits($_dayTimeLimits, start);
-        addDuration3(start, slotTimeLimits3.min);
-        slotTimeLimits3 = getSlotTimeLimits($_dayTimeLimits, end);
-        slotTimeLimits3.max.seconds > DAY_IN_SECONDS3 ? addDuration3(end, slotTimeLimits3.max) : addDay3(
-          /** @see https://github.com/vkurko/calendar/issues/333 */
-          end
-        );
-      }
-    }
-    if ($$self.$$.dirty[0] & /*$_events, start, end, resource, bgChunks, chunks, $_viewDates, $_dayTimeLimits, $slotDuration*/
-    12320783) {
-      {
-        $$invalidate(1, chunks = []);
-        $$invalidate(2, bgChunks = []);
-        for (let event2 of $_events) {
-          if (eventIntersects3(event2, start, end, resource)) {
-            let chunk = createEventChunk3(event2, start, end);
-            if (bgEvent3(event2.display)) {
-              bgChunks.push(chunk);
-            } else {
-              chunks.push(chunk);
-            }
-          }
-        }
-        $$invalidate(2, [bgChunks] = prepareEventChunks2(bgChunks, $_viewDates, $_dayTimeLimits, $slotDuration), bgChunks);
-        $$invalidate(1, [chunks, longChunks] = prepareEventChunks2(chunks, $_viewDates, $_dayTimeLimits, $slotDuration), chunks, ($$invalidate(4, longChunks), $$invalidate(23, $_events), $$invalidate(18, start), $$invalidate(19, end), $$invalidate(0, resource), $$invalidate(2, bgChunks), $$invalidate(1, chunks), $$invalidate(3, $_viewDates), $$invalidate(21, $_dayTimeLimits), $$invalidate(20, $slotDuration), $$invalidate(24, $validRange)));
-        reposition();
-      }
-    }
-    if ($$self.$$.dirty[0] & /*$_iEvents, start, end, resource, $_viewDates, $_dayTimeLimits, $slotDuration*/
-    8126473) {
-      $$invalidate(5, iChunks = $_iEvents.map((event2) => {
-        let chunk;
-        if (event2 && eventIntersects3(event2, start, end, resource)) {
-          chunk = createEventChunk3(event2, start, end);
-          [[chunk]] = prepareEventChunks2([chunk], $_viewDates, $_dayTimeLimits, $slotDuration);
-        } else {
-          chunk = null;
-        }
-        return chunk;
-      }));
-    }
-  };
-  return [
-    resource,
-    chunks,
-    bgChunks,
-    $_viewDates,
-    longChunks,
-    iChunks,
-    refs,
-    height4,
-    $theme,
+  reset(div_1);
+  reset(div);
+  bind_this(div, ($$value) => set(el, $$value), () => get(el));
+  template_effect(
+    ($0, $1) => {
+      var _a3;
+      set_class(div, 1, `${(_a3 = $theme().day) != null ? _a3 : ""} ${$0 != null ? $0 : ""}${get(isToday) ? " " + $theme().today : ""}${get(highlight) ? " " + $theme().highlight : ""}${get(disabled) ? " " + $theme().disabled : ""}`);
+      set_style(div, `flex-grow: ${$1 != null ? $1 : ""}`);
+      set_class(div_1, 1, $theme().events);
+    },
+    [
+      () => {
+        var _a3;
+        return (_a3 = $theme().weekdays) == null ? void 0 : _a3[$$props.date.getUTCDay()];
+      },
+      () => get(allDay) ? null : ceil((toSeconds(get(slotTimeLimits2).max) - toSeconds(get(slotTimeLimits2).min)) / toSeconds($slotDuration()))
+    ]
+  );
+  append($$anchor, div);
+  var $$pop = pop({ reposition });
+  $$cleanup();
+  return $$pop;
+}
+delegate(["pointerdown"]);
+var root$2 = from_html(`<div role="row"></div>`);
+function Days($$anchor, $$props) {
+  push($$props, true);
+  const [$$stores, $$cleanup] = setup_stores();
+  const $_viewDates = () => store_get(_viewDates, "$_viewDates", $$stores);
+  const $validRange = () => store_get(validRange, "$validRange", $$stores);
+  const $_dayTimeLimits = () => store_get(_dayTimeLimits, "$_dayTimeLimits", $$stores);
+  const $_filteredEvents = () => store_get(_filteredEvents, "$_filteredEvents", $$stores);
+  const $slotDuration = () => store_get(slotDuration, "$slotDuration", $$stores);
+  const $_iEvents = () => store_get(_iEvents, "$_iEvents", $$stores);
+  const $_resHs = () => store_get(_resHs, "$_resHs", $$stores);
+  const $theme = () => store_get(theme, "$theme", $$stores);
+  let {
     _viewDates,
-    _events2,
+    _filteredEvents,
     _iEvents,
     _resHs,
     _dayTimeLimits,
     slotDuration,
     theme,
-    validRange,
-    reposition,
-    start,
-    end,
-    $slotDuration,
-    $_dayTimeLimits,
-    $_iEvents,
-    $_events,
-    $validRange,
-    day_binding
-  ];
-}
-var Days = class extends SvelteComponent3 {
-  constructor(options) {
-    super();
-    init4(this, options, instance$22, create_fragment$22, safe_not_equal4, { resource: 0 }, null, [-1, -1]);
-  }
-};
-function get_each_context3(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[26] = list[i];
-  return child_ctx;
-}
-function get_each_context_13(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[29] = list[i];
-  return child_ctx;
-}
-function get_each_context_22(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[32] = list[i];
-  return child_ctx;
-}
-function create_each_block_22(ctx) {
-  let div;
-  let div_class_value;
-  return {
-    c() {
-      div = element4("div");
-      attr4(div, "class", div_class_value = /*$theme*/
-      ctx[2].line);
-    },
-    m(target, anchor) {
-      insert3(target, div, anchor);
-    },
-    p(ctx2, dirty) {
-      if (dirty[0] & /*$theme*/
-      4 && div_class_value !== (div_class_value = /*$theme*/
-      ctx2[2].line)) {
-        attr4(div, "class", div_class_value);
-      }
-    },
-    d(detaching) {
-      if (detaching) {
-        detach3(div);
+    validRange
+  } = getContext("state");
+  let refs = [];
+  let height2 = state(0);
+  let $$d = user_derived(() => {
+    let start2 = cloneDate(limitToRange($_viewDates()[0], $validRange()));
+    let end2 = cloneDate(limitToRange($_viewDates().at(-1), $validRange()));
+    let slotTimeLimits2 = getSlotTimeLimits($_dayTimeLimits(), start2);
+    addDuration(start2, slotTimeLimits2.min);
+    slotTimeLimits2 = getSlotTimeLimits($_dayTimeLimits(), end2);
+    if (slotTimeLimits2.max.seconds > DAY_IN_SECONDS) {
+      addDuration(end2, slotTimeLimits2.max);
+    } else {
+      addDay(end2);
+    }
+    return [start2, end2];
+  }), $$array = user_derived(() => to_array(get($$d), 2)), start = user_derived(() => get($$array)[0]), end = user_derived(() => get($$array)[1]);
+  let $$d_1 = user_derived(() => {
+    let chunks2 = [];
+    let bgChunks2 = [];
+    let longChunks2;
+    for (let event2 of $_filteredEvents()) {
+      if (eventIntersects(event2, get(start), get(end), $$props.resource)) {
+        let chunk = createEventChunk(event2, get(start), get(end));
+        if (bgEvent(event2.display)) {
+          bgChunks2.push(chunk);
+        } else {
+          chunks2.push(chunk);
+        }
       }
     }
-  };
-}
-function create_each_block_13(ctx) {
-  let each_1_anchor;
-  let each_value_2 = ensure_array_like3(
-    /*$_dayTimes*/
-    ctx[3][
-      /*date*/
-      ctx[29].getTime()
-    ]
-  );
-  let each_blocks = [];
-  for (let i = 0; i < each_value_2.length; i += 1) {
-    each_blocks[i] = create_each_block_22(get_each_context_22(ctx, each_value_2, i));
-  }
-  return {
-    c() {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].c();
-      }
-      each_1_anchor = empty3();
-    },
-    m(target, anchor) {
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        if (each_blocks[i]) {
-          each_blocks[i].m(target, anchor);
-        }
-      }
-      insert3(target, each_1_anchor, anchor);
-    },
-    p(ctx2, dirty) {
-      if (dirty[0] & /*$theme, $_dayTimes, $_viewDates*/
-      14) {
-        each_value_2 = ensure_array_like3(
-          /*$_dayTimes*/
-          ctx2[3][
-            /*date*/
-            ctx2[29].getTime()
-          ]
-        );
-        let i;
-        for (i = 0; i < each_value_2.length; i += 1) {
-          const child_ctx = get_each_context_22(ctx2, each_value_2, i);
-          if (each_blocks[i]) {
-            each_blocks[i].p(child_ctx, dirty);
-          } else {
-            each_blocks[i] = create_each_block_22(child_ctx);
-            each_blocks[i].c();
-            each_blocks[i].m(each_1_anchor.parentNode, each_1_anchor);
-          }
-        }
-        for (; i < each_blocks.length; i += 1) {
-          each_blocks[i].d(1);
-        }
-        each_blocks.length = each_value_2.length;
-      }
-    },
-    d(detaching) {
-      if (detaching) {
-        detach3(each_1_anchor);
-      }
-      destroy_each3(each_blocks, detaching);
+    [bgChunks2] = prepareEventChunks(bgChunks2, $_viewDates(), $_dayTimeLimits(), $slotDuration());
+    [chunks2, longChunks2] = prepareEventChunks(chunks2, $_viewDates(), $_dayTimeLimits(), $slotDuration());
+    return [chunks2, bgChunks2, longChunks2];
+  }), $$array_3 = user_derived(() => to_array(get($$d_1), 3)), chunks = user_derived(() => get($$array_3)[0]), bgChunks = user_derived(() => get($$array_3)[1]), longChunks = user_derived(() => get($$array_3)[2]);
+  let iChunks = user_derived(() => $_iEvents().map((event2) => {
+    let chunk;
+    if (event2 && eventIntersects(event2, get(start), get(end), $$props.resource)) {
+      chunk = createEventChunk(event2, get(start), get(end));
+      [[chunk]] = prepareEventChunks([chunk], $_viewDates(), $_dayTimeLimits(), $slotDuration());
+    } else {
+      chunk = null;
     }
-  };
-}
-function create_each_block3(ctx) {
-  let days2;
-  let current;
-  days2 = new Days({
-    props: { resource: (
-      /*resource*/
-      ctx[26]
-    ) }
+    return chunk;
+  }));
+  function reposition() {
+    set(height2, ceil(max(...runReposition(refs, $_viewDates()))) + 10);
+    $_resHs().set($$props.resource, get(height2));
+    store_set(_resHs, $_resHs());
+  }
+  var div = root$2();
+  each(div, 5, $_viewDates, index, ($$anchor2, date, i) => {
+    bind_this(
+      Day($$anchor2, {
+        get date() {
+          return get(date);
+        },
+        get resource() {
+          return $$props.resource;
+        },
+        get chunks() {
+          return get(chunks);
+        },
+        get bgChunks() {
+          return get(bgChunks);
+        },
+        get longChunks() {
+          return get(longChunks);
+        },
+        get iChunks() {
+          return get(iChunks);
+        }
+      }),
+      ($$value, i2) => refs[i2] = $$value,
+      (i2) => refs == null ? void 0 : refs[i2],
+      () => [i]
+    );
   });
-  return {
-    c() {
-      create_component3(days2.$$.fragment);
+  reset(div);
+  template_effect(
+    ($0) => {
+      set_class(div, 1, $theme().days);
+      set_style(div, `flex-basis: ${$0 != null ? $0 : ""}px`);
     },
-    m(target, anchor) {
-      mount_component3(days2, target, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      const days_changes = {};
-      if (dirty[0] & /*$_viewResources*/
-      16) days_changes.resource = /*resource*/
-      ctx2[26];
-      days2.$set(days_changes);
-    },
-    i(local) {
-      if (current) return;
-      transition_in3(days2.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out3(days2.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      destroy_component3(days2, detaching);
-    }
-  };
-}
-function create_fragment$13(ctx) {
-  let div2;
-  let div1;
-  let div0;
-  let div0_class_value;
-  let t;
-  let div1_class_value;
-  let div2_class_value;
-  let current;
-  let mounted;
-  let dispose;
-  let each_value_1 = ensure_array_like3(
-    /*$_viewDates*/
-    ctx[1]
+    [() => max(get(height2), 34)]
   );
-  let each_blocks_1 = [];
-  for (let i = 0; i < each_value_1.length; i += 1) {
-    each_blocks_1[i] = create_each_block_13(get_each_context_13(ctx, each_value_1, i));
-  }
-  let each_value = ensure_array_like3(
-    /*$_viewResources*/
-    ctx[4]
-  );
-  let each_blocks = [];
-  for (let i = 0; i < each_value.length; i += 1) {
-    each_blocks[i] = create_each_block3(get_each_context3(ctx, each_value, i));
-  }
-  const out = (i) => transition_out3(each_blocks[i], 1, 1, () => {
-    each_blocks[i] = null;
-  });
-  return {
-    c() {
-      div2 = element4("div");
-      div1 = element4("div");
-      div0 = element4("div");
-      for (let i = 0; i < each_blocks_1.length; i += 1) {
-        each_blocks_1[i].c();
-      }
-      t = space3();
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].c();
-      }
-      attr4(div0, "class", div0_class_value = /*$theme*/
-      ctx[2].lines);
-      attr4(div1, "class", div1_class_value = /*$theme*/
-      ctx[2].content);
-      attr4(div2, "class", div2_class_value = /*$theme*/
-      ctx[2].body);
-    },
-    m(target, anchor) {
-      insert3(target, div2, anchor);
-      append4(div2, div1);
-      append4(div1, div0);
-      for (let i = 0; i < each_blocks_1.length; i += 1) {
-        if (each_blocks_1[i]) {
-          each_blocks_1[i].m(div0, null);
-        }
-      }
-      append4(div1, t);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        if (each_blocks[i]) {
-          each_blocks[i].m(div1, null);
-        }
-      }
-      ctx[18](div2);
-      current = true;
-      if (!mounted) {
-        dispose = listen5(
-          div2,
-          "scroll",
-          /*handleScroll*/
-          ctx[16]
-        );
-        mounted = true;
-      }
-    },
-    p(ctx2, dirty) {
-      if (dirty[0] & /*$_dayTimes, $_viewDates, $theme*/
-      14) {
-        each_value_1 = ensure_array_like3(
-          /*$_viewDates*/
-          ctx2[1]
-        );
-        let i;
-        for (i = 0; i < each_value_1.length; i += 1) {
-          const child_ctx = get_each_context_13(ctx2, each_value_1, i);
-          if (each_blocks_1[i]) {
-            each_blocks_1[i].p(child_ctx, dirty);
-          } else {
-            each_blocks_1[i] = create_each_block_13(child_ctx);
-            each_blocks_1[i].c();
-            each_blocks_1[i].m(div0, null);
-          }
-        }
-        for (; i < each_blocks_1.length; i += 1) {
-          each_blocks_1[i].d(1);
-        }
-        each_blocks_1.length = each_value_1.length;
-      }
-      if (!current || dirty[0] & /*$theme*/
-      4 && div0_class_value !== (div0_class_value = /*$theme*/
-      ctx2[2].lines)) {
-        attr4(div0, "class", div0_class_value);
-      }
-      if (dirty[0] & /*$_viewResources*/
-      16) {
-        each_value = ensure_array_like3(
-          /*$_viewResources*/
-          ctx2[4]
-        );
-        let i;
-        for (i = 0; i < each_value.length; i += 1) {
-          const child_ctx = get_each_context3(ctx2, each_value, i);
-          if (each_blocks[i]) {
-            each_blocks[i].p(child_ctx, dirty);
-            transition_in3(each_blocks[i], 1);
-          } else {
-            each_blocks[i] = create_each_block3(child_ctx);
-            each_blocks[i].c();
-            transition_in3(each_blocks[i], 1);
-            each_blocks[i].m(div1, null);
-          }
-        }
-        group_outros3();
-        for (i = each_value.length; i < each_blocks.length; i += 1) {
-          out(i);
-        }
-        check_outros3();
-      }
-      if (!current || dirty[0] & /*$theme*/
-      4 && div1_class_value !== (div1_class_value = /*$theme*/
-      ctx2[2].content)) {
-        attr4(div1, "class", div1_class_value);
-      }
-      if (!current || dirty[0] & /*$theme*/
-      4 && div2_class_value !== (div2_class_value = /*$theme*/
-      ctx2[2].body)) {
-        attr4(div2, "class", div2_class_value);
-      }
-    },
-    i(local) {
-      if (current) return;
-      for (let i = 0; i < each_value.length; i += 1) {
-        transition_in3(each_blocks[i]);
-      }
-      current = true;
-    },
-    o(local) {
-      each_blocks = each_blocks.filter(Boolean);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        transition_out3(each_blocks[i]);
-      }
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach3(div2);
-      }
-      destroy_each3(each_blocks_1, detaching);
-      destroy_each3(each_blocks, detaching);
-      ctx[18](null);
-      mounted = false;
-      dispose();
-    }
-  };
+  append($$anchor, div);
+  var $$pop = pop({ reposition });
+  $$cleanup();
+  return $$pop;
 }
-function instance$13($$self, $$props, $$invalidate) {
-  let $slotWidth;
-  let $slotDuration;
-  let $scrollTime;
-  let $_viewDates;
-  let $_dayTimeLimits;
-  let $_bodyEl;
-  let $_sidebarEl;
-  let $_headerEl;
-  let $theme;
-  let $_dayTimes;
-  let $_viewResources;
-  let { _bodyEl, _headerEl, _sidebarEl, _dayTimes, _dayTimeLimits, _viewResources, _viewDates, scrollTime, slotDuration, slotWidth, theme } = getContext4("state");
-  component_subscribe3($$self, _bodyEl, (value) => $$invalidate(22, $_bodyEl = value));
-  component_subscribe3($$self, _headerEl, (value) => $$invalidate(24, $_headerEl = value));
-  component_subscribe3($$self, _sidebarEl, (value) => $$invalidate(23, $_sidebarEl = value));
-  component_subscribe3($$self, _dayTimes, (value) => $$invalidate(3, $_dayTimes = value));
-  component_subscribe3($$self, _dayTimeLimits, (value) => $$invalidate(21, $_dayTimeLimits = value));
-  component_subscribe3($$self, _viewResources, (value) => $$invalidate(4, $_viewResources = value));
-  component_subscribe3($$self, _viewDates, (value) => $$invalidate(1, $_viewDates = value));
-  component_subscribe3($$self, scrollTime, (value) => $$invalidate(17, $scrollTime = value));
-  component_subscribe3($$self, slotDuration, (value) => $$invalidate(20, $slotDuration = value));
-  component_subscribe3($$self, slotWidth, (value) => $$invalidate(19, $slotWidth = value));
-  component_subscribe3($$self, theme, (value) => $$invalidate(2, $theme = value));
-  let el;
-  function handleScroll() {
-    set_store_value3(_headerEl, $_headerEl.scrollLeft = $_bodyEl.scrollLeft, $_headerEl);
-    set_store_value3(_sidebarEl, $_sidebarEl.scrollTop = $_bodyEl.scrollTop, $_sidebarEl);
-  }
-  function scrollToTime() {
-    let slotTimeLimits3 = getSlotTimeLimits($_dayTimeLimits, $_viewDates[0]);
-    $$invalidate(0, el.scrollLeft = (toSeconds3($scrollTime) - toSeconds3(slotTimeLimits3.min)) / toSeconds3($slotDuration) * $slotWidth, el);
-  }
-  function div2_binding($$value) {
-    binding_callbacks3[$$value ? "unshift" : "push"](() => {
-      el = $$value;
-      $$invalidate(0, el);
-    });
-  }
-  $$self.$$.update = () => {
-    if ($$self.$$.dirty[0] & /*el*/
-    1) {
-      set_store_value3(_bodyEl, $_bodyEl = el, $_bodyEl);
-    }
-    if ($$self.$$.dirty[0] & /*el, $_viewDates, $scrollTime*/
-    131075) {
-      if (el) {
-        scrollToTime();
-      }
-    }
-  };
-  return [
-    el,
-    $_viewDates,
-    $theme,
-    $_dayTimes,
-    $_viewResources,
+var root_2 = from_html(`<div></div>`);
+var root$1 = from_html(`<div><div><div></div> <!></div></div>`);
+function Body($$anchor, $$props) {
+  push($$props, true);
+  const [$$stores, $$cleanup] = setup_stores();
+  const $_dayTimeLimits = () => store_get(_dayTimeLimits, "$_dayTimeLimits", $$stores);
+  const $_viewDates = () => store_get(_viewDates, "$_viewDates", $$stores);
+  const $_bodyEl = () => store_get(_bodyEl, "$_bodyEl", $$stores);
+  const $scrollTime = () => store_get(scrollTime, "$scrollTime", $$stores);
+  const $slotDuration = () => store_get(slotDuration, "$slotDuration", $$stores);
+  const $slotWidth = () => store_get(slotWidth, "$slotWidth", $$stores);
+  const $_resHs = () => store_get(_resHs, "$_resHs", $$stores);
+  const $_viewResources = () => store_get(_viewResources, "$_viewResources", $$stores);
+  const $_filteredEvents = () => store_get(_filteredEvents, "$_filteredEvents", $$stores);
+  const $_headerEl = () => store_get(_headerEl, "$_headerEl", $$stores);
+  const $_sidebarEl = () => store_get(_sidebarEl, "$_sidebarEl", $$stores);
+  const $theme = () => store_get(theme, "$theme", $$stores);
+  const $_dayTimes = () => store_get(_dayTimes, "$_dayTimes", $$stores);
+  let {
     _bodyEl,
+    _bodyHeight,
+    _bodyWidth,
+    _bodyScrollLeft,
     _headerEl,
+    _filteredEvents,
     _sidebarEl,
     _dayTimes,
     _dayTimeLimits,
+    _recheckScrollable,
+    _resHs,
     _viewResources,
     _viewDates,
     scrollTime,
     slotDuration,
     slotWidth,
+    theme
+  } = getContext("state");
+  let refs = [];
+  function scrollToTime() {
+    let slotTimeLimits2 = getSlotTimeLimits($_dayTimeLimits(), $_viewDates()[0]);
+    store_mutate(_bodyEl, untrack($_bodyEl).scrollLeft = (toSeconds($scrollTime()) - toSeconds(slotTimeLimits2.min)) / toSeconds($slotDuration()) * $slotWidth(), untrack($_bodyEl));
+    store_set(_bodyScrollLeft, $_bodyEl().scrollLeft);
+  }
+  user_effect(() => {
+    $_viewDates();
+    $scrollTime();
+    untrack(scrollToTime);
+  });
+  function reposition() {
+    $_resHs().clear();
+    runReposition(refs, $_viewResources());
+  }
+  user_effect(() => {
+    $_filteredEvents();
+    $_viewResources();
+    untrack(reposition);
+  });
+  function onscroll() {
+    store_mutate(_headerEl, untrack($_headerEl).scrollLeft = $_bodyEl().scrollLeft, untrack($_headerEl));
+    store_mutate(_sidebarEl, untrack($_sidebarEl).scrollTop = $_bodyEl().scrollTop, untrack($_sidebarEl));
+    store_set(_bodyScrollLeft, $_bodyEl().scrollLeft);
+  }
+  function onresize() {
+    store_set(_bodyHeight, $_bodyEl().clientHeight);
+    store_set(_bodyWidth, $_bodyEl().clientWidth);
+    store_set(_recheckScrollable, true);
+  }
+  var div = root$1();
+  event("resize", $window, reposition);
+  var div_1 = child(div);
+  var div_2 = child(div_1);
+  each(div_2, 5, $_viewDates, index, ($$anchor2, date) => {
+    var fragment = comment();
+    var node = first_child(fragment);
+    each(node, 1, () => $_dayTimes()[get(date).getTime()], index, ($$anchor3, time) => {
+      var div_3 = root_2();
+      template_effect(() => {
+        var _a3;
+        return set_class(div_3, 1, `${(_a3 = $theme().line) != null ? _a3 : ""}${get(time)[2] ? "" : " " + $theme().minor}`);
+      });
+      append($$anchor3, div_3);
+    });
+    append($$anchor2, fragment);
+  });
+  reset(div_2);
+  var node_1 = sibling(div_2, 2);
+  each(node_1, 1, $_viewResources, index, ($$anchor2, resource, i) => {
+    bind_this(
+      Days($$anchor2, {
+        get resource() {
+          return get(resource);
+        }
+      }),
+      ($$value, i2) => refs[i2] = $$value,
+      (i2) => refs == null ? void 0 : refs[i2],
+      () => [i]
+    );
+  });
+  reset(div_1);
+  reset(div);
+  bind_this(div, ($$value) => store_set(_bodyEl, $$value), () => $_bodyEl());
+  action(div, ($$node, $$action_arg) => observeResize == null ? void 0 : observeResize($$node, $$action_arg), () => onresize);
+  template_effect(() => {
+    set_class(div, 1, $theme().body);
+    set_class(div_1, 1, $theme().content);
+    set_class(div_2, 1, $theme().lines);
+  });
+  event("scroll", div, onscroll);
+  append($$anchor, div);
+  pop();
+  $$cleanup();
+}
+var root_1 = from_html(`<div></div>`);
+function NowIndicator($$anchor, $$props) {
+  push($$props, true);
+  const [$$stores, $$cleanup] = setup_stores();
+  const $_viewDates = () => store_get(_viewDates, "$_viewDates", $$stores);
+  const $_dayTimeLimits = () => store_get(_dayTimeLimits, "$_dayTimeLimits", $$stores);
+  const $_today = () => store_get(_today, "$_today", $$stores);
+  const $_now = () => store_get(_now, "$_now", $$stores);
+  const $slotDuration = () => store_get(slotDuration, "$slotDuration", $$stores);
+  const $slotWidth = () => store_get(slotWidth, "$slotWidth", $$stores);
+  const $_bodyScrollLeft = () => store_get(_bodyScrollLeft, "$_bodyScrollLeft", $$stores);
+  const $_bodyWidth = () => store_get(_bodyWidth, "$_bodyWidth", $$stores);
+  const $theme = () => store_get(theme, "$theme", $$stores);
+  const $_headerHeight = () => store_get(_headerHeight, "$_headerHeight", $$stores);
+  const $_bodyHeight = () => store_get(_bodyHeight, "$_bodyHeight", $$stores);
+  let {
+    slotDuration,
+    slotWidth,
     theme,
-    handleScroll,
-    $scrollTime,
-    div2_binding
-  ];
-}
-var Body2 = class extends SvelteComponent3 {
-  constructor(options) {
-    super();
-    init4(this, options, instance$13, create_fragment$13, safe_not_equal4, {}, null, [-1, -1]);
-  }
-};
-function create_fragment4(ctx) {
-  let div1;
-  let sidebar;
-  let t0;
-  let div0;
-  let header;
-  let t1;
-  let body;
-  let div0_class_value;
-  let div1_class_value;
-  let current;
-  sidebar = new Sidebar({});
-  header = new Header({});
-  body = new Body2({});
-  return {
-    c() {
-      div1 = element4("div");
-      create_component3(sidebar.$$.fragment);
-      t0 = space3();
-      div0 = element4("div");
-      create_component3(header.$$.fragment);
-      t1 = space3();
-      create_component3(body.$$.fragment);
-      attr4(div0, "class", div0_class_value = /*$theme*/
-      ctx[0].main);
-      attr4(div1, "class", div1_class_value = /*$theme*/
-      ctx[0].container);
-    },
-    m(target, anchor) {
-      insert3(target, div1, anchor);
-      mount_component3(sidebar, div1, null);
-      append4(div1, t0);
-      append4(div1, div0);
-      mount_component3(header, div0, null);
-      append4(div0, t1);
-      mount_component3(body, div0, null);
-      current = true;
-    },
-    p(ctx2, [dirty]) {
-      if (!current || dirty & /*$theme*/
-      1 && div0_class_value !== (div0_class_value = /*$theme*/
-      ctx2[0].main)) {
-        attr4(div0, "class", div0_class_value);
+    _bodyHeight,
+    _bodyWidth,
+    _bodyScrollLeft,
+    _headerHeight,
+    _dayTimeLimits,
+    _now,
+    _today,
+    _viewDates
+  } = getContext("state");
+  let left = user_derived(() => {
+    let offset = 0;
+    for (let i = 0; i < $_viewDates().length; ++i) {
+      let slotTimeLimits2 = getSlotTimeLimits($_dayTimeLimits(), $_viewDates()[i]);
+      if (datesEqual($_viewDates()[i], $_today())) {
+        let dayStart = addDuration(cloneDate($_viewDates()[i]), slotTimeLimits2.min);
+        let dayEnd = addDuration(cloneDate($_viewDates()[i]), slotTimeLimits2.max);
+        if ($_now() >= dayStart && $_now() <= dayEnd) {
+          offset += ($_now() - dayStart) / 1e3;
+          break;
+        } else {
+          return null;
+        }
+      } else {
+        offset += slotTimeLimits2.max.seconds - slotTimeLimits2.min.seconds;
       }
-      if (!current || dirty & /*$theme*/
-      1 && div1_class_value !== (div1_class_value = /*$theme*/
-      ctx2[0].container)) {
-        attr4(div1, "class", div1_class_value);
-      }
-    },
-    i(local) {
-      if (current) return;
-      transition_in3(sidebar.$$.fragment, local);
-      transition_in3(header.$$.fragment, local);
-      transition_in3(body.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out3(sidebar.$$.fragment, local);
-      transition_out3(header.$$.fragment, local);
-      transition_out3(body.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching) {
-        detach3(div1);
-      }
-      destroy_component3(sidebar);
-      destroy_component3(header);
-      destroy_component3(body);
     }
-  };
-}
-function instance3($$self, $$props, $$invalidate) {
-  let $theme;
-  let { theme } = getContext4("state");
-  component_subscribe3($$self, theme, (value) => $$invalidate(0, $theme = value));
-  return [$theme, theme];
-}
-var View3 = class extends SvelteComponent3 {
-  constructor(options) {
-    super();
-    init4(this, options, instance3, create_fragment4, safe_not_equal4, {});
+    let step = $slotDuration().seconds;
+    return offset / step * $slotWidth() - $_bodyScrollLeft();
+  });
+  var fragment = comment();
+  var node = first_child(fragment);
+  {
+    var consequent = ($$anchor2) => {
+      var div = root_1();
+      let styles;
+      template_effect(
+        ($0) => {
+          set_class(div, 1, $theme().nowIndicator);
+          styles = set_style(div, "", styles, $0);
+        },
+        [
+          () => {
+            var _a3;
+            return {
+              top: `${$_headerHeight() + 2}px`,
+              left: `${(_a3 = get(left)) != null ? _a3 : ""}px`,
+              height: `${$_bodyHeight() - 1}px`
+            };
+          }
+        ]
+      );
+      append($$anchor2, div);
+    };
+    if_block(node, ($$render) => {
+      if (get(left) !== null && get(left) >= 3 && get(left) <= $_bodyWidth() - 3) $$render(consequent);
+    });
   }
-};
-var index4 = {
+  append($$anchor, fragment);
+  pop();
+  $$cleanup();
+}
+var root = from_html(`<div><!> <div><!> <!> <!></div></div>`);
+function View($$anchor, $$props) {
+  push($$props, false);
+  const [$$stores, $$cleanup] = setup_stores();
+  const $theme = () => store_get(theme, "$theme", $$stores);
+  const $nowIndicator = () => store_get(nowIndicator, "$nowIndicator", $$stores);
+  let { nowIndicator, theme } = getContext("state");
+  init();
+  var div = root();
+  var node = child(div);
+  Sidebar(node, {});
+  var div_1 = sibling(node, 2);
+  var node_1 = child(div_1);
+  Header(node_1, {});
+  var node_2 = sibling(node_1, 2);
+  Body(node_2, {});
+  var node_3 = sibling(node_2, 2);
+  {
+    var consequent = ($$anchor2) => {
+      NowIndicator($$anchor2, {});
+    };
+    if_block(node_3, ($$render) => {
+      if ($nowIndicator()) $$render(consequent);
+    });
+  }
+  reset(div_1);
+  reset(div);
+  template_effect(() => {
+    set_class(div, 1, $theme().container);
+    set_class(div_1, 1, $theme().main);
+  });
+  append($$anchor, div);
+  pop();
+  $$cleanup();
+}
+var index2 = {
   createOptions(options) {
     options.buttonText.resourceTimelineDay = "timeline";
     options.buttonText.resourceTimelineWeek = "timeline";
@@ -23569,26 +11767,26 @@ var index4 = {
     options.theme.container = "ec-container";
     options.view = "resourceTimelineWeek";
     options.views.resourceTimelineDay = {
-      buttonText: btnTextDay4,
-      component: View3,
+      buttonText: btnTextDay,
+      component: View,
       displayEventEnd: false,
       dayHeaderFormat: { weekday: "long" },
       duration: { days: 1 },
       slotDuration: "01:00",
-      theme: themeView4("ec-timeline ec-resource-day-view"),
+      theme: themeView("ec-timeline ec-resource-day-view"),
       titleFormat: { year: "numeric", month: "long", day: "numeric" }
     };
     options.views.resourceTimelineWeek = {
-      buttonText: btnTextWeek4,
-      component: View3,
+      buttonText: btnTextWeek,
+      component: View,
       displayEventEnd: false,
       duration: { weeks: 1 },
       slotDuration: "01:00",
-      theme: themeView4("ec-timeline ec-resource-week-view")
+      theme: themeView("ec-timeline ec-resource-week-view")
     };
     options.views.resourceTimelineMonth = {
-      buttonText: btnTextMonth2,
-      component: View3,
+      buttonText: btnTextMonth,
+      component: View,
       displayEventEnd: false,
       dayHeaderFormat: {
         weekday: "short",
@@ -23596,22 +11794,38 @@ var index4 = {
       },
       duration: { months: 1 },
       slotDuration: { days: 1 },
-      theme: themeView4("ec-timeline ec-resource-month-view"),
+      theme: themeView("ec-timeline ec-resource-month-view"),
       titleFormat: { year: "numeric", month: "long" }
     };
   },
   createStores(state2) {
     if (!("_viewResources" in state2)) {
-      state2._viewResources = viewResources2(state2);
+      state2._viewResources = viewResources(state2);
     }
-    state2._headerEl = writable4(void 0);
+    state2._bodyHeight = writable(0);
+    state2._bodyWidth = writable(0);
+    state2._bodyScrollLeft = writable(0);
+    state2._headerEl = writable(void 0);
+    state2._headerHeight = writable(0);
     state2._dayTimeLimits = dayTimeLimits(state2);
     state2._dayTimes = dayTimes(state2);
     state2._nestedResources = nestedResources(state2);
-    state2._resHs = writable4(/* @__PURE__ */ new Map());
-    state2._sidebarEl = writable4(void 0);
+    state2._resHs = writable(/* @__PURE__ */ new Map());
+    state2._sidebarEl = writable(void 0);
   }
 };
+function createCalendar(target, plugins, options) {
+  return mount(Calendar, {
+    target,
+    props: {
+      plugins,
+      options
+    }
+  });
+}
+function destroyCalendar(calendar) {
+  return unmount(calendar);
+}
 
 // js/static-calendar.js
 function parseJSON(value, fallback2) {
@@ -23627,22 +11841,22 @@ function getAllPluginsFromOptions(options) {
   if (view2.startsWith("timeGrid")) set2.add(TimeGrid);
   if (view2.startsWith("dayGrid")) set2.add(index$4);
   if (view2.startsWith("list")) set2.add(index$2);
-  if (view2.startsWith("resourceTimeGrid")) set2.add(index3);
-  if (view2.startsWith("resourceTimeline")) set2.add(index4);
+  if (view2.startsWith("resourceTimeGrid")) set2.add(index$1);
+  if (view2.startsWith("resourceTimeline")) set2.add(index2);
   const headerToolbar = options.headerToolbar || {};
   const toolbarValues = Object.values(headerToolbar).join(" ");
   if (toolbarValues.includes("dayGridMonth") || toolbarValues.includes("dayGridWeek")) set2.add(index$4);
   if (toolbarValues.includes("timeGridWeek") || toolbarValues.includes("timeGridDay")) set2.add(TimeGrid);
   if (toolbarValues.includes("listWeek") || toolbarValues.includes("listMonth") || toolbarValues.includes("listDay")) set2.add(index$2);
-  if (toolbarValues.includes("resourceTimeGrid")) set2.add(index3);
-  if (toolbarValues.includes("resourceTimeline")) set2.add(index4);
+  if (toolbarValues.includes("resourceTimeGrid")) set2.add(index$1);
+  if (toolbarValues.includes("resourceTimeline")) set2.add(index2);
   const footerToolbar = options.footerToolbar || {};
   const footerValues = Object.values(footerToolbar).join(" ");
   if (footerValues.includes("dayGridMonth") || footerValues.includes("dayGridWeek")) set2.add(index$4);
   if (footerValues.includes("timeGridWeek") || footerValues.includes("timeGridDay")) set2.add(TimeGrid);
   if (footerValues.includes("listWeek") || footerValues.includes("listMonth") || footerValues.includes("listDay")) set2.add(index$2);
-  if (footerValues.includes("resourceTimeGrid")) set2.add(index3);
-  if (footerValues.includes("resourceTimeline")) set2.add(index4);
+  if (footerValues.includes("resourceTimeGrid")) set2.add(index$1);
+  if (footerValues.includes("resourceTimeline")) set2.add(index2);
   if (set2.size === 1) set2.add(TimeGrid);
   return Array.from(set2);
 }
@@ -23743,9 +11957,9 @@ function parseCallbacks(options) {
   }
   return callbacks;
 }
-function initStaticCalendar(element5) {
-  const rawEvents = parseJSON(element5.dataset.events, []);
-  const options = parseJSON(element5.dataset.options, {});
+function initStaticCalendar(element2) {
+  const rawEvents = parseJSON(element2.dataset.events, []);
+  const options = parseJSON(element2.dataset.options, {});
   const view2 = options.view || "dayGridMonth";
   const plugins = options.plugins || getAllPluginsFromOptions(options);
   const events2 = validateEventsForResources(rawEvents, options);
@@ -23754,33 +11968,33 @@ function initStaticCalendar(element5) {
     view: view2,
     events: events2
   }, options), callbacks);
-  const calendar = createCalendar(element5, plugins, calendarOptions);
-  element5._calendarInstance = calendar;
+  const calendar = createCalendar(element2, plugins, calendarOptions);
+  element2._calendarInstance = calendar;
   return calendar;
 }
 function initStaticCalendars() {
   const calendars = document.querySelectorAll(".static-calendar");
   const instances = [];
-  calendars.forEach((element5) => {
-    if (element5._calendarInstance) return;
+  calendars.forEach((element2) => {
+    if (element2._calendarInstance) return;
     try {
-      const calendar = initStaticCalendar(element5);
+      const calendar = initStaticCalendar(element2);
       instances.push(calendar);
     } catch (error) {
-      console.error("Failed to initialize calendar:", error, element5);
+      console.error("Failed to initialize calendar:", error, element2);
     }
   });
   return instances;
 }
-function destroyStaticCalendar(element5) {
-  if (element5._calendarInstance) {
-    destroyCalendar(element5._calendarInstance);
-    element5._calendarInstance = null;
+function destroyStaticCalendar(element2) {
+  if (element2._calendarInstance) {
+    destroyCalendar(element2._calendarInstance);
+    element2._calendarInstance = null;
   }
 }
-function updateStaticCalendarEvents(element5, events2) {
-  if (element5._calendarInstance) {
-    element5._calendarInstance.setOption("events", events2);
+function updateStaticCalendarEvents(element2, events2) {
+  if (element2._calendarInstance) {
+    element2._calendarInstance.setOption("events", events2);
   }
 }
 if (typeof document !== "undefined") {

@@ -7,10 +7,10 @@ import {
   TimeGrid,
   DayGrid,
   List,
-  Interaction
+  Interaction,
+  ResourceTimeGrid,
+  ResourceTimeline
 } from "@event-calendar/core"
-import ResourceTimeGrid from "@event-calendar/resource-time-grid"
-import ResourceTimeline from "@event-calendar/resource-timeline"
 import "@event-calendar/core/index.css"
 function parseJSON(value, fallback) {
   try {
