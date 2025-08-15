@@ -75,7 +75,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 ```elixir
 def deps do
 	[
-		{:calendar_component, "~> 0.1.1"}
+		{:calendar_component, "~> 0.1.2"}
 	]
 end
 ```
