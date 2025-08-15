@@ -10,7 +10,7 @@ Add the library to your dependencies and fetch packages:
 # mix.exs
 
   [
-    {:calendar_component, "~> 0.1.5"}
+    {:calendar_component, "~> 0.1.6"}
   ]
 end
 ```
@@ -33,7 +33,7 @@ Add the library to your dependencies and fetch packages:
 # mix.exs
 def deps do
   [
-    {:calendar_component, "~> 0.1.5"}
+    {:calendar_component, "~> 0.1.6"}
   ]
 end
 ```

@@ -38,7 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Simplified hook registration process
 
 ### Fixed
-- JavaScript import issues when using `{:calendar_component, "~> 0.1.5"}` in Phoenix apps
+- JavaScript import issues when using `{:calendar_component, "~> 0.1.6"}` in Phoenix apps
 - Hook accessibility for external applications
 
 ## [0.1.3] - 2024-12-14

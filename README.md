@@ -128,7 +128,7 @@ Add `calendar_component` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:calendar_component, "~> 0.1.5"}
+    {:calendar_component, "~> 0.1.6"}
   ]
 end
 ```
