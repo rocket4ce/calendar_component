@@ -1,1 +1,5 @@
 ExUnit.start()
+{:ok, _} = LiveCalendar.TestEndpoint.start_link()
+Application.put_env(:phoenix, :json_library, Jason)
+Application.put_env(:phoenix, :format_encoders, json: Jason)
+Application.put_env(:phoenix, :plug_init_mode, :runtime)

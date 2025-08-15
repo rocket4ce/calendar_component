@@ -7,3 +7,11 @@ config :esbuild,
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
+
+if config_env() == :test do
+  config :calendar_component, LiveCalendar.TestEndpoint,
+    secret_key_base: String.duplicate("a", 64),
+    server: false,
+    live_view: [signing_salt: "lv_tests"],
+    url: [host: "localhost"]
+end

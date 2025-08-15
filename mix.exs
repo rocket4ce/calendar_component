@@ -7,6 +7,7 @@ defmodule CalendarComponent.MixProject do
       version: "0.1.0",
       elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
+      elixirc_paths: elixirc_paths(Mix.env()),
       deps: deps(),
       aliases: aliases()
     ]
@@ -22,10 +23,13 @@ defmodule CalendarComponent.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:usage_rules, "~> 0.1", only: [:dev]},
+      {:igniter, "~> 0.6", only: [:dev, :test]},
       {:tzdata, "~> 1.1.3"},
       {:jason, "~> 1.4.4"},
       {:esbuild, "~> 0.10.0"},
       {:phoenix_live_view, "~> 1.1.4"},
+      {:lazy_html, ">= 0.1.0", only: :test},
       {:styler, "~> 1.5", only: [:dev, :test], runtime: false},
       {:mimerl, "~> 1.4"}
 
@@ -33,6 +37,9 @@ defmodule CalendarComponent.MixProject do
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
     ]
   end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
 
   defp aliases do
     [
