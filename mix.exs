@@ -9,7 +9,10 @@ defmodule CalendarComponent.MixProject do
       start_permanent: Mix.env() == :prod,
       elixirc_paths: elixirc_paths(Mix.env()),
       deps: deps(),
-      aliases: aliases()
+      aliases: aliases(),
+      description: description(),
+      name: "Event Calendar Component",
+      package: package()
     ]
   end
 
@@ -47,6 +50,25 @@ defmodule CalendarComponent.MixProject do
       "assets.setup": ["esbuild.install --if-missing"],
       "assets.build": ["esbuild calendar_component"],
       "assets.deploy": ["esbuild calendar_component"]
+    ]
+  end
+
+  defp description do
+    """
+    A Phoenix LiveView component library for rendering interactive calendars.
+    This library builds on EventCalendar by Vlad Kurko: https://github.com/vkurko/calendar/
+    Thanks to the EventCalendar project for providing a lightweight, flexible calendar core.
+    """
+  end
+
+  defp package do
+    [
+      name: "calendar_component",
+      licenses: ["MIT"],
+      links: %{
+        "GitHub" => "https://github.com/rocket4ce/calendar_component",
+        "Documentation" => "https://hexdocs.pm/calendar_component"
+      }
     ]
   end
 end
