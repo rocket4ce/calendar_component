@@ -100,7 +100,7 @@ const liveSocket = new LiveSocket("/live", Socket, { hooks: Hooks })
 liveSocket.connect()
 ```
 
-**Important note**: 
+**Important note**:
 
 Starting with version **0.1.9**, CSS is automatically included when you import the JavaScript component. CSS files are now properly generated as `main.css` and `static-main.css` and loaded automatically.
 

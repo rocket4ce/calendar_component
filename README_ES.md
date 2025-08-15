@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
 })
 ```
 
-**Nota importante**: 
+**Nota importante**:
 
 A partir de la versión **0.1.9**, el CSS se incluye automáticamente cuando importas el JavaScript del componente. Los archivos CSS ahora se generan correctamente como `main.css` y `static-main.css` y se cargan automáticamente.
 
