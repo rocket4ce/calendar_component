@@ -18,13 +18,15 @@
       "import": "./priv/static/assets/static-calendar.js",
       "require": "./priv/static/assets/static-calendar.js"
     },
-    "./css": "./priv/static/assets/calendar-hooks.css"
+    "./css": "./priv/static/assets/calendar-hooks.css",
+    "./static-css": "./priv/static/assets/static-calendar.css"
   },
   "files": [
     "index.js",
     "priv/static/assets/calendar-hooks.js",
     "priv/static/assets/calendar-hooks.css",
-    "priv/static/assets/static-calendar.js"
+    "priv/static/assets/static-calendar.js",
+    "priv/static/assets/static-calendar.css"
   ],
   "keywords": [
     "phoenix",

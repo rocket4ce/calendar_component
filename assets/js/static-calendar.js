@@ -9,7 +9,7 @@ import {
   List,
   Interaction
 } from "@event-calendar/core"
-
+import "@event-calendar/core/index.css"
 function parseJSON(value, fallback) {
   try {
     return value ? JSON.parse(value) : fallback
