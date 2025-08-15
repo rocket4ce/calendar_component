@@ -1,10 +1,12 @@
 defmodule CalendarComponent.MixProject do
   use Mix.Project
 
+  @version "0.1.0"
+
   def project do
     [
       app: :calendar_component,
-      version: "0.1.0",
+      version: @version,
       elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -12,6 +14,7 @@ defmodule CalendarComponent.MixProject do
       aliases: aliases(),
       description: description(),
       name: "Event Calendar Component",
+      docs: docs(),
       package: package(),
       source_url: "https://github.com/rocket4ce/calendar_component"
     ]
@@ -68,6 +71,26 @@ defmodule CalendarComponent.MixProject do
         "GitHub" => "https://github.com/rocket4ce/calendar_component",
         "Documentation" => "https://hexdocs.pm/calendar_component"
       }
+    ]
+  end
+
+  defp docs do
+    [
+      main: "readme",
+      source_ref: "v#{@version}",
+      extras: [
+        "README.md": [title: "Overview"],
+        "README_ES.md": [title: "Descripción (ES)"],
+  "guides/installation.md": [title: "Installation"],
+  "guides/usage.md": [title: "Usage"]
+      ],
+      groups_for_extras: [
+        Guides: [
+          "guides/installation.md",
+          "guides/usage.md"
+        ],
+        Readme: ["README.md", "README_ES.md"]
+      ]
     ]
   end
 end

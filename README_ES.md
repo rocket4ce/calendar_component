@@ -1,6 +1,9 @@
 # CalendarComponent
 
-**TODO: Add description**
+Librería de componentes Phoenix LiveView que renderiza un calendario interactivo basado en EventCalendar y un hook de LiveView. Se distribuye como librería (no una app completa) e incluye assets JS/CSS colocalizados.
+
+[![Hex.pm](https://img.shields.io/hexpm/v/calendar_component.svg)](https://hex.pm/packages/calendar_component)
+[![Hexdocs](https://img.shields.io/badge/docs-hexdocs.pm-blue)](https://hexdocs.pm/calendar_component)
 
 ## Usage
 
@@ -78,9 +81,9 @@ def deps do
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/calendar_component>.
+La documentación se genera con [ExDoc](https://github.com/elixir-lang/ex_doc)
+y se publica en [HexDocs](https://hexdocs.pm). Una vez publicada, puede
+consultarse en <https://hexdocs.pm/calendar_component>.
 
 ## Build assets
 
@@ -241,3 +244,4 @@ opts = %{
 # Del lado del servidor, el hook no empuja automáticamente estos eventos.
 # Puedes manejarlo del lado del cliente con `options.eventDrop`/`eventResize` y
 # usar `pushEvent` manualmente (copiando el hook a tu app para extenderlo) o enviar vía AJAX.
+```

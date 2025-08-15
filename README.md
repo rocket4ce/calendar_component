@@ -1,5 +1,8 @@
 # CalendarComponent
 
+[![Hex.pm](https://img.shields.io/hexpm/v/calendar_component.svg)](https://hex.pm/packages/calendar_component)
+[![Docs](https://img.shields.io/badge/docs-hexdocs.pm-blue)](https://hexdocs.pm/calendar_component)
+
 Phoenix LiveView component library that renders an interactive calendar powered by EventCalendar and a LiveView JavaScript hook. It ships as a library (not a full Phoenix app) and compiles colocated JS/CSS assets.
 
 ## Usage
@@ -77,7 +80,7 @@ def deps do
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc) and published on [HexDocs](https://hexdocs.pm). Once published, the docs can be found at <https://hexdocs.pm/calendar_component>.
+Documentation is generated with [ExDoc](https://github.com/elixir-lang/ex_doc) and published on [HexDocs](https://hexdocs.pm). Once published, the docs are available at <https://hexdocs.pm/calendar_component>.
 
 ## Build assets
 
