@@ -1,6 +1,15 @@
 # CalendarComponent
 
-[![Hex.pm](https://img.shields.io/hexpm/v/calendar_component.svg)](https://hex.pm/packages/calendar_component)
+[![Hex.pm](https:Register the JS hook in your app's LiveSocket:
+
+```js
+import {Socket} from "phoenix"
+import {LiveSocket} from "phoenix_live_view"
+import CalendarHooks from "calendar_component"
+
+const liveSocket = new LiveSocket("/live", Socket, { hooks: CalendarHooks })
+liveSocket.connect()
+```s.io/hexpm/v/calendar_component.svg)](https://hex.pm/packages/calendar_component)
 [![Docs](https://img.shields.io/badge/docs-hexdocs.pm-blue)](https://hexdocs.pm/calendar_component)
 
 Phoenix LiveView component library that renders an interactive calendar powered by EventCalendar and a LiveView JavaScript hook. It ships as a library (not a full Phoenix app) and compiles colocated JS/CSS assets.
@@ -70,28 +79,59 @@ Refer to `docs/event_calendar.md` for the full list of EventCalendar options and
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed by adding `calendar_component` to your list of dependencies in `mix.exs`:
+Add `calendar_component` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
-	[
-		{:calendar_component, "~> 0.1.3"}
-	]
+  [
+    {:calendar_component, "~> 0.1.3"}
+  ]
 end
 ```
 
-Documentation is generated with [ExDoc](https://github.com/elixir-lang/ex_doc) and published on [HexDocs](https://hexdocs.pm). Once published, the docs are available at <https://hexdocs.pm/calendar_component>.
+### JavaScript Setup
 
-## Build assets
+The library provides JavaScript hooks that need to be registered with Phoenix LiveView. There are two main approaches:
 
-Run the esbuild task to (re)compile the JS hooks and CSS output:
+#### Option 1: Direct Import (Recommended)
 
-```bash
-mix assets.build
-```
+In your `assets/js/app.js`:
 
 ```javascript
-import {Hooks as calendar_hook} from "calendar_component";
+import {Socket} from "phoenix"
+import {LiveSocket} from "phoenix_live_view"
+import CalendarHooks from "calendar_component"
+
+// Register the calendar hooks
+let liveSocket = new LiveSocket("/live", Socket, {
+  hooks: CalendarHooks
+})
+liveSocket.connect()
+```
+
+#### Option 2: Using the compiled assets
+
+You can also include the compiled JavaScript file directly. First, add the CSS to your `assets/css/app.css`:
+
+```css
+@import "../deps/calendar_component/priv/static/assets/calendar-hooks.css";
+```
+
+Then in your layout template, include the JavaScript:
+
+```heex
+<script src={~p"/assets/deps/calendar_component/priv/static/assets/calendar-hooks.js"} defer></script>
+```
+
+And register the hooks:
+
+```javascript
+import {Socket} from "phoenix"
+import {LiveSocket} from "phoenix_live_view"
+
+const Hooks = window.LiveCalendarHooks || {}
+let liveSocket = new LiveSocket("/live", Socket, { hooks: Hooks })
+liveSocket.connect()
 ```
 
 ## Phoenix examples

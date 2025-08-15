@@ -1,7 +1,7 @@
 defmodule CalendarComponent.MixProject do
   use Mix.Project
 
-  @version "0.1.3"
+  @version "0.1.4"
 
   def project do
     [
@@ -67,6 +67,7 @@ defmodule CalendarComponent.MixProject do
     [
       name: "calendar_component",
       licenses: ["MIT"],
+      files: ~w(lib priv index.js package.json mix.exs README* LICENSE* CHANGELOG*),
       links: %{
         "GitHub" => "https://github.com/rocket4ce/calendar_component",
         "Documentation" => "https://hexdocs.pm/calendar_component"

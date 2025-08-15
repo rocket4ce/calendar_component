@@ -3,7 +3,8 @@ import Config
 config :esbuild,
   version: "0.25.0",
   calendar_component: [
-    args: ~w(js/calendar-hooks.js --bundle --target=es2016 --format=iife --outdir=../priv/static/assets),
+    args:
+      ~w(js/calendar-hooks.js --bundle --target=es2016 --format=esm --outdir=../priv/static/assets --external:phoenix --external:phoenix_html --external:phoenix_live_view),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]

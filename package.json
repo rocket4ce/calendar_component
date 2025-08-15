@@ -1,0 +1,44 @@
+{
+  "name": "calendar_component",
+  "version": "0.1.4",
+  "description": "Phoenix LiveView calendar component with EventCalendar integration",
+  "main": "index.js",
+  "module": "index.js",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "require": "./index.js"
+    },
+    "./hooks": {
+      "import": "./priv/static/assets/calendar-hooks.js",
+      "require": "./priv/static/assets/calendar-hooks.js"
+    },
+    "./css": "./priv/static/assets/calendar-hooks.css"
+  },
+  "files": [
+    "index.js",
+    "priv/static/assets/calendar-hooks.js",
+    "priv/static/assets/calendar-hooks.css"
+  ],
+  "keywords": [
+    "phoenix",
+    "liveview",
+    "calendar",
+    "elixir"
+  ],
+  "author": "rocket4ce",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rocket4ce/calendar_component.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rocket4ce/calendar_component/issues"
+  },
+  "homepage": "https://github.com/rocket4ce/calendar_component#readme",
+  "peerDependencies": {
+    "phoenix": "^1.6.0",
+    "phoenix_live_view": "^0.18.0"
+  }
+}

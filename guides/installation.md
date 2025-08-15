@@ -21,50 +21,115 @@ Then install deps:
 mix deps.get
 ```
 
-## 2) Assets (JS/CSS for the hook)
+# Installation
 
-This library provides a LiveView hook that initializes EventCalendar. You have two options:
+This guide explains how to install and set up `calendar_component` in your Phoenix project.
 
-- Use the library’s prebuilt assets (placed under `priv/static/assets/`).
-- Copy the hook into your app and build it with your own assets.
+## 1) Dependency in mix.exs
 
-To get started quickly, ensure your layout serves the generated `calendar-hooks.js`. If your app already has its own asset pipeline, copy the hook’s code into it as needed.
+Add the library to your dependencies and fetch packages:
 
-Build the library assets:
-
-```bash
-mix assets.build
+```elixir
+# mix.exs
+def deps do
+  [
+    {:calendar_component, "~> 0.1.3"}
+  ]
+end
 ```
 
-This generates or updates:
-- `priv/static/assets/calendar-hooks.js`
-- `priv/static/assets/calendar-hooks.css`
+Then install deps:
 
-Include these files in your layout or load them via your host app’s asset pipeline.
+```bash
+mix deps.get
+```
 
-## 3) Register the Hook in LiveSocket
+## 2) JavaScript Setup
 
-In your Phoenix app, register the hook when creating the `LiveSocket` (make sure `calendar-hooks.js` is loaded so `window.LiveCalendarHooks` exists):
+This library provides a LiveView hook that initializes EventCalendar. The easiest way to set it up is to import the module directly.
+
+### Option A: Direct Import (Recommended)
+
+In your `assets/js/app.js`:
 
 ```javascript
-import { Socket } from "phoenix"
-import { LiveSocket } from "phoenix_live_view"
-import {Hooks as calendar_hook} from "calendar_component";
+import {Socket} from "phoenix"
+import {LiveSocket} from "phoenix_live_view"
+import CalendarHooks from "calendar_component"
 
-const liveSocket = new LiveSocket("/live", Socket, { hooks: calendar_hook })
+// Register the calendar hooks
+let liveSocket = new LiveSocket("/live", Socket, {
+  hooks: CalendarHooks
+})
 liveSocket.connect()
+```
+
+### Option B: Using prebuilt assets
+
+If you prefer to use the prebuilt assets, first add the CSS to your `assets/css/app.css`:
+
+```css
+@import "../deps/calendar_component/priv/static/assets/calendar-hooks.css";
+```
+
+Then in your layout template, include the JavaScript:
+
+```heex
+<script src={~p"/assets/deps/calendar_component/priv/static/assets/calendar-hooks.js"} defer></script>
+```
+
+And register the hooks in your `assets/js/app.js`:
+
+```javascript
+import {Socket} from "phoenix"
+import {LiveSocket} from "phoenix_live_view"
+
+const Hooks = window.LiveCalendarHooks || {}
+let liveSocket = new LiveSocket("/live", Socket, { hooks: Hooks })
+liveSocket.connect()
+```
+
+## 3) Verification
+
+Once you've set up the hooks, you can verify the installation by using the calendar component in a LiveView:
+
+```elixir
+defmodule MyAppWeb.CalendarLive do
+  use MyAppWeb, :live_view
+  alias LiveCalendar.Components
+
+  def render(assigns) do
+    ~H"""
+    <div>
+      <h1>My Calendar</h1>
+      <Components.calendar
+        id="my-calendar"
+        events={@events}
+        options={%{view: "dayGridMonth"}}
+      />
+    </div>
+    """
+  end
+
+  def mount(_params, _session, socket) do
+    events = [
+      %{
+        id: 1,
+        title: "Sample Event",
+        start: "2024-12-15T10:00:00",
+        end: "2024-12-15T11:00:00"
+      }
+    ]
+
+    {:ok, assign(socket, events: events)}
+  end
+end
 ```
 
 ## 4) Versions and compatibility
 
 - Elixir >= 1.18
 - Phoenix LiveView ~> 1.1.4
-- esbuild ~> 0.10.0 (if you build assets yourself)
+- EventCalendar core ^4.5.1
 
-When building for production, remember to run:
-
-```bash
-MIX_ENV=prod mix assets.deploy
-```
-
-This ensures assets are minified and ready for production.
+When building for production, remember to include the calendar_component assets in your build process.
