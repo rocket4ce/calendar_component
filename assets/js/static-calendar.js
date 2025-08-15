@@ -77,13 +77,13 @@ function parseCallbacks(options) {
 export function initStaticCalendar(element) {
   const events = parseJSON(element.dataset.events, [])
   const options = parseJSON(element.dataset.options, {})
-  
+
   const view = options.view || "dayGridMonth"
   const plugins = options.plugins || pluginsForView(view)
-  
+
   // Parse string callbacks to functions
   const callbacks = parseCallbacks(options)
-  
+
   // Create calendar options in the same format as the LiveView hook
   const calendarOptions = {
     view: view,
@@ -94,10 +94,10 @@ export function initStaticCalendar(element) {
 
   // Use the same createCalendar signature as the LiveView hook
   const calendar = createCalendar(element, plugins, calendarOptions)
-  
+
   // Store the calendar instance on the element for later cleanup
   element._calendarInstance = calendar
-  
+
   return calendar
 }/**
  * Initialize all static calendars on the page
