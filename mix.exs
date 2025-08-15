@@ -43,7 +43,7 @@ defmodule CalendarComponent.MixProject do
 
   defp aliases do
     [
-      setup: ["deps.get", "assets.setup", "assets.build"],
+      setup: ["deps.get", "assets.setup", "assets.build", "format"],
       "assets.setup": ["esbuild.install --if-missing"],
       "assets.build": ["esbuild calendar_component"],
       "assets.deploy": ["esbuild calendar_component"]
