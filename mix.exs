@@ -12,7 +12,8 @@ defmodule CalendarComponent.MixProject do
       aliases: aliases(),
       description: description(),
       name: "Event Calendar Component",
-      package: package()
+      package: package(),
+      source_url: "https://github.com/rocket4ce/calendar_component"
     ]
   end
 
@@ -34,10 +35,8 @@ defmodule CalendarComponent.MixProject do
       {:phoenix_live_view, "~> 1.1.4"},
       {:lazy_html, ">= 0.1.0", only: :test},
       {:styler, "~> 1.5", only: [:dev, :test], runtime: false},
-      {:mimerl, "~> 1.4"}
-
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+      {:mimerl, "~> 1.4"},
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end
 
