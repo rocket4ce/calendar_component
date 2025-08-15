@@ -1,7 +1,7 @@
 defmodule CalendarComponent.MixProject do
   use Mix.Project
 
-  @version "0.1.4"
+  @version "0.1.5"
 
   def project do
     [
@@ -50,8 +50,8 @@ defmodule CalendarComponent.MixProject do
     [
       setup: ["deps.get", "assets.setup", "assets.build", "format"],
       "assets.setup": ["esbuild.install --if-missing"],
-      "assets.build": ["esbuild calendar_component"],
-      "assets.deploy": ["esbuild calendar_component"]
+      "assets.build": ["esbuild calendar_component", "esbuild static_calendar"],
+      "assets.deploy": ["esbuild calendar_component", "esbuild static_calendar"]
     ]
   end
 

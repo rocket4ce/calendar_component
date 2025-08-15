@@ -7,6 +7,11 @@ config :esbuild,
       ~w(js/calendar-hooks.js --bundle --target=es2016 --format=esm --outdir=../priv/static/assets --external:phoenix --external:phoenix_html --external:phoenix_live_view),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
+  ],
+  static_calendar: [
+    args: ~w(js/static-calendar.js --bundle --target=es2016 --format=esm --outdir=../priv/static/assets),
+    cd: Path.expand("../assets", __DIR__),
+    env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
 
 if config_env() == :test do

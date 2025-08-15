@@ -1,6 +1,6 @@
 {
   "name": "calendar_component",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Phoenix LiveView calendar component with EventCalendar integration",
   "main": "index.js",
   "module": "index.js",
@@ -14,12 +14,17 @@
       "import": "./priv/static/assets/calendar-hooks.js",
       "require": "./priv/static/assets/calendar-hooks.js"
     },
+    "./static": {
+      "import": "./priv/static/assets/static-calendar.js",
+      "require": "./priv/static/assets/static-calendar.js"
+    },
     "./css": "./priv/static/assets/calendar-hooks.css"
   },
   "files": [
     "index.js",
     "priv/static/assets/calendar-hooks.js",
-    "priv/static/assets/calendar-hooks.css"
+    "priv/static/assets/calendar-hooks.css",
+    "priv/static/assets/static-calendar.js"
   ],
   "keywords": [
     "phoenix",

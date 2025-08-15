@@ -16,6 +16,8 @@ Phoenix LiveView component library that renders an interactive calendar powered 
 
 ## Usage
 
+### With LiveView
+
 Render the calendar component in HEEx and wire events with Phoenix LiveView JS:
 
 ```elixir
@@ -44,6 +46,48 @@ def handle_event("date_clicked", %{"date" => date}, socket), do: {:noreply, sock
 @impl true
 def handle_event("month_changed", %{"month" => month, "year" => year}, socket), do: {:noreply, socket}
 ```
+
+### With Regular Phoenix Controllers
+
+For traditional Phoenix controllers (without LiveView), use the static calendar component:
+
+```elixir
+# In your controller
+defmodule MyAppWeb.EventController do
+  use MyAppWeb, :controller
+  import LiveCalendar.Components
+
+  def index(conn, _params) do
+    events = [
+      %{id: 1, title: "Meeting", start: "2025-08-01T09:00:00"},
+      %{id: 2, title: "Demo", start: "2025-08-02"}
+    ]
+
+    render(conn, "index.html", events: events)
+  end
+end
+```
+
+In your template:
+
+```elixir
+# events/index.html.heex
+<.static_calendar
+  id="static-calendar"
+  events={@events}
+  options={%{
+    view: "dayGridMonth",
+    eventClick: "function(info) {
+      alert('Event: ' + info.event.title);
+    }",
+    dateClick: "function(info) {
+      console.log('Date clicked:', info.dateStr);
+    }"
+  }}
+/>
+```
+
+The static calendar automatically initializes when the page loads. Events are handled via JavaScript callbacks defined in the options.
 
 Register the JS hook in your app’s LiveSocket (ensure the built asset is loaded so `window.LiveCalendarHooks` exists):
 
@@ -84,16 +128,16 @@ Add `calendar_component` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:calendar_component, "~> 0.1.3"}
+    {:calendar_component, "~> 0.1.5"}
   ]
 end
 ```
 
 ### JavaScript Setup
 
-The library provides JavaScript hooks that need to be registered with Phoenix LiveView. There are two main approaches:
+The library provides JavaScript hooks that need to be registered with Phoenix LiveView, and also supports static calendar initialization for regular Phoenix controllers.
 
-#### Option 1: Direct Import (Recommended)
+#### For LiveView (Option 1): Direct Import (Recommended)
 
 In your `assets/js/app.js`:
 
@@ -109,6 +153,19 @@ let liveSocket = new LiveSocket("/live", Socket, {
 liveSocket.connect()
 ```
 
+#### For Regular Controllers: Static Calendar
+
+In your `assets/js/app.js`:
+
+```javascript
+import { initStaticCalendars } from "calendar_component"
+
+// Initialize static calendars when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+  initStaticCalendars()
+})
+```
+
 #### Option 2: Using the compiled assets
 
 You can also include the compiled JavaScript file directly. First, add the CSS to your `assets/css/app.css`:
@@ -117,26 +174,25 @@ You can also include the compiled JavaScript file directly. First, add the CSS t
 @import "../deps/calendar_component/priv/static/assets/calendar-hooks.css";
 ```
 
-Then in your layout template, include the JavaScript:
+For LiveView, include the LiveView hooks:
 
 ```heex
 <script src={~p"/assets/deps/calendar_component/priv/static/assets/calendar-hooks.js"} defer></script>
 ```
 
-And register the hooks:
+For regular controllers, include the static calendar:
 
-```javascript
-import {Socket} from "phoenix"
-import {LiveSocket} from "phoenix_live_view"
-
-const Hooks = window.LiveCalendarHooks || {}
-let liveSocket = new LiveSocket("/live", Socket, { hooks: Hooks })
-liveSocket.connect()
+```heex
+<script src={~p"/assets/deps/calendar_component/priv/static/assets/static-calendar.js"} defer></script>
 ```
+
+And register accordingly in your JavaScript files.
 
 ## Phoenix examples
 
-### 1) Basic: static render with events
+### LiveView Examples
+
+#### 1) Basic: static render with events
 
 LiveView module:
 
@@ -285,6 +341,115 @@ opts = %{
 # On the server side, the hook does not push these events automatically.
 # You can handle it client-side with `options.eventDrop`/`eventResize` and
 # use `pushEvent` manually (by copying/extending the hook in your app) or send via AJAX.
+```
+
+### Controller Examples (Static Calendar)
+
+#### 1) Basic calendar in a controller
+
+```elixir
+# Controller
+defmodule MyAppWeb.CalendarController do
+  use MyAppWeb, :controller
+  import LiveCalendar.Components
+
+  def show(conn, _params) do
+    events = [
+      %{id: 1, title: "Team Meeting", start: "2025-08-15T10:00:00"},
+      %{id: 2, title: "Project Review", start: "2025-08-16T14:00:00"}
+    ]
+    render(conn, "show.html", events: events)
+  end
+end
+
+# Template: calendar/show.html.heex
+<div class="calendar-container">
+  <h1>My Events</h1>
+  <.static_calendar
+    id="events-calendar"
+    events={@events}
+    options={%{view: "dayGridMonth"}}
+  />
+</div>
+```
+
+#### 2) Interactive calendar with JavaScript callbacks
+
+```elixir
+# Template with interactive callbacks
+<.static_calendar
+  id="interactive-calendar"
+  events={@events}
+  options={%{
+    view: "dayGridMonth",
+    eventClick: "function(info) {
+      window.location.href = '/events/' + info.event.id;
+    }",
+    dateClick: "function(info) {
+      window.location.href = '/events/new?date=' + info.dateStr;
+    }"
+  }}
+/>
+```
+
+#### 3) Advanced calendar with form integration
+
+```elixir
+# Controller with form handling
+defmodule MyAppWeb.EventController do
+  use MyAppWeb, :controller
+  import LiveCalendar.Components
+
+  def index(conn, _params) do
+    events = get_events() # Your function to fetch events
+    render(conn, "index.html", events: events, changeset: Event.changeset(%Event{}))
+  end
+
+  def create(conn, %{"event" => event_params}) do
+    case Events.create_event(event_params) do
+      {:ok, _event} ->
+        conn
+        |> put_flash(:info, "Event created successfully")
+        |> redirect(to: Routes.event_path(conn, :index))
+
+      {:error, changeset} ->
+        events = get_events()
+        render(conn, "index.html", events: events, changeset: changeset)
+    end
+  end
+end
+
+# Template: events/index.html.heex
+<div class="row">
+  <div class="col-md-8">
+    <.static_calendar
+      id="events-calendar"
+      events={@events}
+      options={%{
+        view: "dayGridMonth",
+        eventClick: "function(info) {
+          document.getElementById('event-form').style.display = 'block';
+          document.getElementById('event_title').value = info.event.title;
+        }",
+        dateClick: "function(info) {
+          document.getElementById('event-form').style.display = 'block';
+          document.getElementById('event_start').value = info.dateStr;
+        }"
+      }}
+    />
+  </div>
+  <div class="col-md-4">
+    <div id="event-form" style="display: none;">
+      <.simple_form for={@changeset} action={Routes.event_path(@conn, :create)}>
+        <.input field={@changeset[:title]} label="Title" id="event_title" />
+        <.input field={@changeset[:start]} label="Start Date" type="date" id="event_start" />
+        <:actions>
+          <.button>Create Event</.button>
+        </:actions>
+      </.simple_form>
+    </div>
+  </div>
+</div>
 ```
 
 ## Acknowledgments
