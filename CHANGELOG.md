@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- Fixed headerToolbar and other options not being properly passed to EventCalendar
+- Calendar now correctly uses `initialView` instead of `view` for initial view configuration
+- Resolved issue where calendar would default to timeGridWeek instead of respecting configured initialView
+- All EventCalendar options now properly preserved when passed to the calendar instance
+
 ## [0.1.5] - 2024-12-15
 
 ### Added
