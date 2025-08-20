@@ -171,8 +171,8 @@ function validateEventsForResources(events, options) {
 			const userDateClick = typeof options.dateClick === "function" ? options.dateClick : null
 			const userDatesSet = typeof options.datesSet === "function" ? options.datesSet : null
 
-			// Avoid passing internal lv key to calendar
-			const { lv: _lv, ...baseOptions } = options
+			// Avoid passing internal lv key and invalid view option to calendar
+			const { lv: _lv, view: _view, ...baseOptions } = options
 
 			const merged = {
 				...baseOptions,

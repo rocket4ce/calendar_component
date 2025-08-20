@@ -11936,7 +11936,7 @@ var LiveCalendar = {
     const userEventClick = typeof options.eventClick === "function" ? options.eventClick : null;
     const userDateClick = typeof options.dateClick === "function" ? options.dateClick : null;
     const userDatesSet = typeof options.datesSet === "function" ? options.datesSet : null;
-    const _a3 = options, { lv: _lv } = _a3, baseOptions = __objRest(_a3, ["lv"]);
+    const _a3 = options, { lv: _lv, view: _view } = _a3, baseOptions = __objRest(_a3, ["lv", "view"]);
     const merged = __spreadProps(__spreadValues({}, baseOptions), {
       initialView: view2,
       events: events2,
