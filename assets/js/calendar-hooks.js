@@ -40,7 +40,7 @@ function getAllPluginsFromOptions(options) {
 	const set = new Set([Interaction])
 
 	// Check initial view
-	const view = options.view || "timeGridWeek"
+	const view = options.view || options.initialView || "timeGridWeek"
 	if (view.startsWith("timeGrid")) set.add(TimeGrid)
 	if (view.startsWith("dayGrid")) set.add(DayGrid)
 	if (view.startsWith("list")) set.add(List)
@@ -98,7 +98,7 @@ function validateEvent(event) {
 }
 
 function validateEventsForResources(events, options) {
-	const view = options.view || "timeGridWeek"
+	const view = options.view || options.initialView || "timeGridWeek"
 	const isResourceView = view.startsWith("resource")
 
 	if (!isResourceView) {
@@ -147,7 +147,7 @@ const LiveCalendar = {
 			const rawEvents = parseJSON(this.el.dataset.events, [])
 			const options = parseJSON(this.el.dataset.options, {})
 			const jsCallbacks = parseJSON(this.el.dataset.jsCallbacks, {})
-			const view = options.view || "timeGridWeek"
+			const view = options.view || options.initialView || "timeGridWeek"
 			const plugins = getAllPluginsFromOptions(options)
 
 			// Store JS callbacks for use in event handlers
@@ -171,7 +171,8 @@ const LiveCalendar = {
 			const { lv: _lv, ...baseOptions } = options
 
 			const merged = {
-				view,
+				...baseOptions,
+				initialView: view,
 				events,
 				// Compose user handlers with LiveView pushes and JS commands
 				eventClick: (arg) => {

@@ -11840,7 +11840,7 @@ function parseJSON(value, fallback2) {
 }
 function getAllPluginsFromOptions(options) {
   const set2 = /* @__PURE__ */ new Set([index$3]);
-  const view2 = options.view || "timeGridWeek";
+  const view2 = options.view || options.initialView || "timeGridWeek";
   if (view2.startsWith("timeGrid")) set2.add(TimeGrid);
   if (view2.startsWith("dayGrid")) set2.add(index$4);
   if (view2.startsWith("list")) set2.add(index$2);
@@ -11884,7 +11884,7 @@ function validateEvent(event2) {
   return event2;
 }
 function validateEventsForResources(events2, options) {
-  const view2 = options.view || "timeGridWeek";
+  const view2 = options.view || options.initialView || "timeGridWeek";
   const isResourceView = view2.startsWith("resource");
   if (!isResourceView) {
     return events2.map(validateEvent).filter(Boolean);
@@ -11922,7 +11922,7 @@ var LiveCalendar = {
     const rawEvents = parseJSON(this.el.dataset.events, []);
     const options = parseJSON(this.el.dataset.options, {});
     const jsCallbacks = parseJSON(this.el.dataset.jsCallbacks, {});
-    const view2 = options.view || "timeGridWeek";
+    const view2 = options.view || options.initialView || "timeGridWeek";
     const plugins = getAllPluginsFromOptions(options);
     this._jsCallbacks = jsCallbacks;
     const events2 = validateEventsForResources(rawEvents, options);
@@ -11934,8 +11934,8 @@ var LiveCalendar = {
     const userDateClick = typeof options.dateClick === "function" ? options.dateClick : null;
     const userDatesSet = typeof options.datesSet === "function" ? options.datesSet : null;
     const _a3 = options, { lv: _lv } = _a3, baseOptions = __objRest(_a3, ["lv"]);
-    const merged = __spreadValues({
-      view: view2,
+    const merged = __spreadValues(__spreadProps(__spreadValues({}, baseOptions), {
+      initialView: view2,
       events: events2,
       // Compose user handlers with LiveView pushes and JS commands
       eventClick: (arg) => {
@@ -11985,7 +11985,7 @@ var LiveCalendar = {
         const year = ((_d = (_c2 = arg == null ? void 0 : arg.start) == null ? void 0 : _c2.getFullYear) == null ? void 0 : _d.call(_c2)) || null;
         this.pushEvent(onMonthChangeName, { month, year, start });
       }
-    }, baseOptions);
+    }), baseOptions);
     this._ec = createCalendar(this.el, plugins, merged);
   },
   updated() {
