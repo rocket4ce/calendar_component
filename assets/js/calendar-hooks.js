@@ -142,13 +142,17 @@ function validateEventsForResources(events, options) {
 	}).filter(Boolean)
 }
 
-const LiveCalendar = {
+		const LiveCalendar = {
 		mounted() {
 			const rawEvents = parseJSON(this.el.dataset.events, [])
 			const options = parseJSON(this.el.dataset.options, {})
 			const jsCallbacks = parseJSON(this.el.dataset.jsCallbacks, {})
 			const view = options.view || options.initialView || "timeGridWeek"
 			const plugins = getAllPluginsFromOptions(options)
+
+			// Debug: log the options to see what we're getting
+			console.log('Calendar options received:', options)
+			console.log('Resolved view:', view)
 
 			// Store JS callbacks for use in event handlers
 			this._jsCallbacks = jsCallbacks
@@ -172,6 +176,7 @@ const LiveCalendar = {
 
 			const merged = {
 				...baseOptions,
+				view: view,
 				initialView: view,
 				events,
 				// Compose user handlers with LiveView pushes and JS commands
@@ -222,7 +227,9 @@ const LiveCalendar = {
 				...baseOptions
 			}
 
+			console.log('Final merged options for calendar:', merged)
 			this._ec = createCalendar(this.el, plugins, merged)
+			console.log('Calendar created with view:', this._ec.getOption?.('initialView') || 'unknown')
 		},
 
 	updated() {

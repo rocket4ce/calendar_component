@@ -11919,11 +11919,14 @@ function validateEventsForResources(events2, options) {
 }
 var LiveCalendar = {
   mounted() {
+    var _b3, _c2;
     const rawEvents = parseJSON(this.el.dataset.events, []);
     const options = parseJSON(this.el.dataset.options, {});
     const jsCallbacks = parseJSON(this.el.dataset.jsCallbacks, {});
     const view2 = options.view || options.initialView || "timeGridWeek";
     const plugins = getAllPluginsFromOptions(options);
+    console.log("Calendar options received:", options);
+    console.log("Resolved view:", view2);
     this._jsCallbacks = jsCallbacks;
     const events2 = validateEventsForResources(rawEvents, options);
     const lv = options.lv || {};
@@ -11935,11 +11938,12 @@ var LiveCalendar = {
     const userDatesSet = typeof options.datesSet === "function" ? options.datesSet : null;
     const _a3 = options, { lv: _lv } = _a3, baseOptions = __objRest(_a3, ["lv"]);
     const merged = __spreadValues(__spreadProps(__spreadValues({}, baseOptions), {
+      view: view2,
       initialView: view2,
       events: events2,
       // Compose user handlers with LiveView pushes and JS commands
       eventClick: (arg) => {
-        var _a4, _b3;
+        var _a4, _b4;
         try {
           userEventClick == null ? void 0 : userEventClick(arg);
         } catch (_e) {
@@ -11950,11 +11954,11 @@ var LiveCalendar = {
           } catch (_e) {
           }
         }
-        const payload = { id: (_b3 = arg == null ? void 0 : arg.event) == null ? void 0 : _b3.id, event: safeEvent(arg == null ? void 0 : arg.event) };
+        const payload = { id: (_b4 = arg == null ? void 0 : arg.event) == null ? void 0 : _b4.id, event: safeEvent(arg == null ? void 0 : arg.event) };
         this.pushEvent(onEventClickName, payload);
       },
       dateClick: (arg) => {
-        var _a4, _b3, _c2;
+        var _a4, _b4, _c3;
         try {
           userDateClick == null ? void 0 : userDateClick(arg);
         } catch (_e) {
@@ -11965,11 +11969,11 @@ var LiveCalendar = {
           } catch (_e) {
           }
         }
-        const payload = { date: ((_c2 = (_b3 = arg == null ? void 0 : arg.date) == null ? void 0 : _b3.toISOString) == null ? void 0 : _c2.call(_b3)) || (arg == null ? void 0 : arg.date) || null };
+        const payload = { date: ((_c3 = (_b4 = arg == null ? void 0 : arg.date) == null ? void 0 : _b4.toISOString) == null ? void 0 : _c3.call(_b4)) || (arg == null ? void 0 : arg.date) || null };
         this.pushEvent(onDateClickName, payload);
       },
       datesSet: (arg) => {
-        var _a4, _b3, _c2, _d;
+        var _a4, _b4, _c3, _d;
         try {
           userDatesSet == null ? void 0 : userDatesSet(arg);
         } catch (_e) {
@@ -11981,12 +11985,14 @@ var LiveCalendar = {
           }
         }
         const start = toISODate(arg == null ? void 0 : arg.start);
-        const month = ((_b3 = arg == null ? void 0 : arg.start) == null ? void 0 : _b3.getMonth) ? arg.start.getMonth() + 1 : null;
-        const year = ((_d = (_c2 = arg == null ? void 0 : arg.start) == null ? void 0 : _c2.getFullYear) == null ? void 0 : _d.call(_c2)) || null;
+        const month = ((_b4 = arg == null ? void 0 : arg.start) == null ? void 0 : _b4.getMonth) ? arg.start.getMonth() + 1 : null;
+        const year = ((_d = (_c3 = arg == null ? void 0 : arg.start) == null ? void 0 : _c3.getFullYear) == null ? void 0 : _d.call(_c3)) || null;
         this.pushEvent(onMonthChangeName, { month, year, start });
       }
     }), baseOptions);
+    console.log("Final merged options for calendar:", merged);
     this._ec = createCalendar(this.el, plugins, merged);
+    console.log("Calendar created with view:", ((_c2 = (_b3 = this._ec).getOption) == null ? void 0 : _c2.call(_b3, "initialView")) || "unknown");
   },
   updated() {
     if (!this._ec) return;

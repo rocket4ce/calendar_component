@@ -9,9 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Fixed headerToolbar and other options not being properly passed to EventCalendar
-- Calendar now correctly uses `initialView` instead of `view` for initial view configuration
+- Calendar now correctly uses both `view` and `initialView` for maximum compatibility with EventCalendar versions
 - Resolved issue where calendar would default to timeGridWeek instead of respecting configured initialView
 - All EventCalendar options now properly preserved when passed to the calendar instance
+- Added debug logging to help troubleshoot view initialization issues
 
 ## [0.1.5] - 2024-12-15
 
