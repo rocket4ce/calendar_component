@@ -176,7 +176,6 @@ function validateEventsForResources(events, options) {
 
 			const merged = {
 				...baseOptions,
-				view: view,
 				initialView: view,
 				events,
 				// Compose user handlers with LiveView pushes and JS commands
@@ -223,8 +222,7 @@ function validateEventsForResources(events, options) {
 					const month = arg?.start?.getMonth ? arg.start.getMonth() + 1 : null
 					const year = arg?.start?.getFullYear?.() || null
 					this.pushEvent(onMonthChangeName, { month, year, start })
-				},
-				...baseOptions
+				}
 			}
 
 			console.log('Final merged options for calendar:', merged)

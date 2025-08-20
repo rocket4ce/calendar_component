@@ -11937,8 +11937,7 @@ var LiveCalendar = {
     const userDateClick = typeof options.dateClick === "function" ? options.dateClick : null;
     const userDatesSet = typeof options.datesSet === "function" ? options.datesSet : null;
     const _a3 = options, { lv: _lv } = _a3, baseOptions = __objRest(_a3, ["lv"]);
-    const merged = __spreadValues(__spreadProps(__spreadValues({}, baseOptions), {
-      view: view2,
+    const merged = __spreadProps(__spreadValues({}, baseOptions), {
       initialView: view2,
       events: events2,
       // Compose user handlers with LiveView pushes and JS commands
@@ -11989,7 +11988,7 @@ var LiveCalendar = {
         const year = ((_d = (_c3 = arg == null ? void 0 : arg.start) == null ? void 0 : _c3.getFullYear) == null ? void 0 : _d.call(_c3)) || null;
         this.pushEvent(onMonthChangeName, { month, year, start });
       }
-    }), baseOptions);
+    });
     console.log("Final merged options for calendar:", merged);
     this._ec = createCalendar(this.el, plugins, merged);
     console.log("Calendar created with view:", ((_c2 = (_b3 = this._ec).getOption) == null ? void 0 : _c2.call(_b3, "initialView")) || "unknown");
