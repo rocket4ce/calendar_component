@@ -174,6 +174,9 @@ function validateEventsForResources(events, options) {
 			// Avoid passing internal lv key and invalid view option to calendar
 			const { lv: _lv, view: _view, ...baseOptions } = options
 
+			console.log('Filtered out lv:', _lv, 'and view:', _view)
+			console.log('BaseOptions after filtering:', baseOptions)
+
 			const merged = {
 				...baseOptions,
 				initialView: view,
@@ -227,6 +230,7 @@ function validateEventsForResources(events, options) {
 
 			console.log('Final merged options for calendar:', merged)
 			this._ec = createCalendar(this.el, plugins, merged)
+			this._hasEvents = events.length > 0  // Track if we have events
 			console.log('Calendar created with view:', this._ec.getOption?.('initialView') || 'unknown')
 		},
 
@@ -239,11 +243,24 @@ function validateEventsForResources(events, options) {
 		// Validate events based on current view type and resources
 		const events = validateEventsForResources(rawEvents, options)
 
+		// Defensive: Don't clear calendar if we receive empty events but had events before
+		const shouldUpdateEvents = events.length > 0 || !this._hasEvents
+		this._hasEvents = events.length > 0
+
+		console.log('Updated called - rawEvents count:', rawEvents.length, 'shouldUpdateEvents:', shouldUpdateEvents)
+
 		try {
-			this._ec.setOption("events", events)
+			if (shouldUpdateEvents) {
+				console.log('Updating events to:', events)
+				this._ec.setOption("events", events)
+			} else {
+				console.log('Skipping events update - would clear existing events with empty array')
+			}
+
 			for (const [k, v] of Object.entries(options || {})) {
 				if (k === "events") continue
 				if (k === "lv") continue
+				if (k === "view") continue  // Filter out invalid view option
 				this._ec.setOption(k, v)
 			}
 		} catch (_e) {

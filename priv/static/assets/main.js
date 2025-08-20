@@ -11937,6 +11937,8 @@ var LiveCalendar = {
     const userDateClick = typeof options.dateClick === "function" ? options.dateClick : null;
     const userDatesSet = typeof options.datesSet === "function" ? options.datesSet : null;
     const _a3 = options, { lv: _lv, view: _view } = _a3, baseOptions = __objRest(_a3, ["lv", "view"]);
+    console.log("Filtered out lv:", _lv, "and view:", _view);
+    console.log("BaseOptions after filtering:", baseOptions);
     const merged = __spreadProps(__spreadValues({}, baseOptions), {
       initialView: view2,
       events: events2,
@@ -11991,6 +11993,7 @@ var LiveCalendar = {
     });
     console.log("Final merged options for calendar:", merged);
     this._ec = createCalendar(this.el, plugins, merged);
+    this._hasEvents = events2.length > 0;
     console.log("Calendar created with view:", ((_c2 = (_b3 = this._ec).getOption) == null ? void 0 : _c2.call(_b3, "initialView")) || "unknown");
   },
   updated() {
@@ -11999,11 +12002,20 @@ var LiveCalendar = {
     const options = parseJSON(this.el.dataset.options, {});
     const jsCallbacks = parseJSON(this.el.dataset.jsCallbacks, {});
     const events2 = validateEventsForResources(rawEvents, options);
+    const shouldUpdateEvents = events2.length > 0 || !this._hasEvents;
+    this._hasEvents = events2.length > 0;
+    console.log("Updated called - rawEvents count:", rawEvents.length, "shouldUpdateEvents:", shouldUpdateEvents);
     try {
-      this._ec.setOption("events", events2);
+      if (shouldUpdateEvents) {
+        console.log("Updating events to:", events2);
+        this._ec.setOption("events", events2);
+      } else {
+        console.log("Skipping events update - would clear existing events with empty array");
+      }
       for (const [k, v] of Object.entries(options || {})) {
         if (k === "events") continue;
         if (k === "lv") continue;
+        if (k === "view") continue;
         this._ec.setOption(k, v);
       }
     } catch (_e) {
