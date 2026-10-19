@@ -30,15 +30,13 @@ defmodule CalendarComponent.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:usage_rules, "~> 0.1", only: [:dev]},
-      {:igniter, "~> 0.6", only: [:dev, :test]},
-      {:tzdata, "~> 1.1.3"},
-      {:jason, "~> 1.4.4"},
-      {:esbuild, "~> 0.10.0"},
-      {:phoenix_live_view, ">= 1.1.3"},
+      {:phoenix_live_view, "~> 1.1"},
+      {:jason, "~> 1.4"},
+      {:esbuild, "~> 0.10", only: :dev, runtime: false},
+      {:usage_rules, "~> 1.2", only: :dev},
+      {:igniter, "~> 0.8", only: [:dev, :test]},
       {:lazy_html, ">= 0.1.0", only: :test},
       {:styler, "~> 1.5", only: [:dev, :test], runtime: false},
-      {:mimerl, "~> 1.4"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end
