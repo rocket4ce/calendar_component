@@ -2,7 +2,11 @@
 
 ## Overview
 
-EventCalendar's `headerToolbar` and `footerToolbar` options use a specific syntax for grouping buttons. Understanding this syntax is crucial for creating properly organized toolbar layouts.
+EventCalendar's `headerToolbar` option uses a specific syntax for grouping buttons. Understanding this syntax is crucial for creating properly organized toolbar layouts.
+
+EventCalendar names the sections `start`, `center` and `end`. This library also accepts the
+FullCalendar names `left` and `right` (converted to `start` and `end`), which are used in the
+examples below. EventCalendar has no footer toolbar.
 
 ## Grouping Syntax Rules
 
@@ -73,15 +77,17 @@ This creates two groups:
 ### Complex Grouping
 ```elixir
 headerToolbar: %{
-  left: "prev,next today customButton",
+  left: "prev,next today myButton",
   center: "title",
-  right: "month,agendaWeek agendaDay,list print,export"
+  right: "dayGridMonth,timeGridWeek timeGridDay,listWeek print,export"
 }
 ```
 
 This creates multiple groups:
-- Left: `[prev][next]` | `[today]` | `[customButton]`
-- Right: `[month][agendaWeek]` | `[agendaDay][list]` | `[print][export]`
+- Left: `[prev][next]` | `[today]` | `[myButton]`
+- Right: `[dayGridMonth][timeGridWeek]` | `[timeGridDay][listWeek]` | `[print][export]`
+
+(`myButton`, `print` and `export` must be defined in `customButtons`, see below.)
 
 ## Examples in Practice
 
@@ -119,46 +125,37 @@ end
 />
 ```
 
-### Footer Toolbar
-```elixir
-options: %{
-  headerToolbar: %{
-    left: "prev,next",
-    center: "title",
-    right: "dayGridMonth,timeGridWeek"
-  },
-  footerToolbar: %{
-    left: "today customButton",
-    right: "print,export pdf,excel"
-  }
-}
-```
-
 ## Hiding Sections
 
-You can hide toolbar sections by setting them to `false` or empty string:
+Hide a toolbar section with an empty string:
 
 ```elixir
 headerToolbar: %{
-  left: false,              # Hide left section entirely
-  center: "title",          # Show only title
-  right: ""                 # Hide right section (empty string)
+  start: "",                # Empty start section
+  center: "title",          # Show only the title
+  end: ""                   # Empty end section
 }
 ```
 
 ## Custom Buttons
 
-You can also add custom buttons to any group:
+Custom buttons are defined in `customButtons` and referenced by name in any group:
 
 ```elixir
-headerToolbar: %{
-  left: "prev,next today customRefresh",
-  center: "title",
-  right: "dayGridMonth,timeGridWeek customExport,customPrint"
+options: %{
+  headerToolbar: %{
+    left: "prev,next today customRefresh",
+    center: "title",
+    right: "dayGridMonth,timeGridWeek customExport"
+  },
+  customButtons: %{
+    # LiveView calendar: pushes "refresh_clicked" with %{"button" => "customRefresh", "view" => ...}
+    customRefresh: %{text: "Refresh", push: "refresh_clicked"},
+    # Both calendars: calls a global JavaScript function
+    customExport: %{text: "Export", click: "MyApp.Calendar.export"}
+  }
 }
 ```
-
-The calendar component will pass through custom button names - you'll need to handle them in your EventCalendar configuration.
 
 ## Visual Examples
 
@@ -244,7 +241,7 @@ This test suite covers:
   headerToolbar: %{
     left: "prev,next today customButton",
     center: "title",
-    right: "month,agendaWeek agendaDay,listMonth print,export"
+    right: "dayGridMonth,timeGridWeek timeGridDay,listMonth print,export"
   }
 }
 ```

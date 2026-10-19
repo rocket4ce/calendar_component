@@ -1,7 +1,7 @@
 defmodule CalendarComponent.MixProject do
   use Mix.Project
 
-  @version "0.2.1"
+  @version "0.3.0"
 
   def project do
     [
@@ -80,15 +80,19 @@ defmodule CalendarComponent.MixProject do
       extras: [
         "README.md": [title: "Overview"],
         "guides/installation.md": [title: "Installation"],
-        "guides/usage.md": [title: "Usage"]
+        "guides/usage.md": [title: "Usage"],
+        "guides/static_calendar_usage.md": [title: "Static Calendar"],
+        "docs/security.md": [title: "Security"],
+        "CHANGELOG.md": [title: "Changelog"]
       ],
       groups_for_extras: [
         Guides: [
           "guides/installation.md",
           "guides/usage.md",
-          "guides/static_calendar_usage.md"
+          "guides/static_calendar_usage.md",
+          "docs/security.md"
         ],
-        Readme: ["README.md"]
+        Readme: ["README.md", "CHANGELOG.md"]
       ]
     ]
   end

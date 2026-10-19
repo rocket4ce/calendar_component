@@ -1,20 +1,9 @@
 # Static Calendar Usage Guide
 
-This guide shows how to use the static calendar component with regular Phoenix controllers (no LiveView required) and the various callback options available.
+`static_calendar/1` renders a calendar in regular controller templates, without LiveView.
+Interactions are handled with JavaScript callbacks.
 
-## 1. Basic Setup
-
-### In your Phoenix template (.html.heex)
-
-```elixir
-<.static_calendar
-  id="my-calendar"
-  events={@events}
-  options={%{view: "dayGridMonth"}}
-/>
-```
-
-### In your controller
+## 1. Basic setup
 
 ```elixir
 defmodule MyAppWeb.CalendarController do
@@ -22,8 +11,8 @@ defmodule MyAppWeb.CalendarController do
 
   def index(conn, _params) do
     events = [
-      %{id: 1, title: "Meeting", start: "2025-08-15T10:00:00"},
-      %{id: 2, title: "Demo", start: "2025-08-16T14:00:00"}
+      %{id: 1, title: "Meeting", start: ~N[2026-10-05 10:00:00], end: ~N[2026-10-05 11:00:00]},
+      %{id: 2, title: "Demo", start: ~D[2026-10-06]}
     ]
 
     render(conn, :index, events: events)
@@ -31,111 +20,108 @@ defmodule MyAppWeb.CalendarController do
 end
 ```
 
-## 2. JavaScript Setup
-
-### Install and initialize
-
-```javascript
-// In your app.js or main JavaScript file
-import { initStaticCalendars } from "calendar_component/static";
-
-document.addEventListener('DOMContentLoaded', function() {
-  initStaticCalendars();
-});
+```heex
+<%!-- calendar_html/index.html.heex --%>
+<LiveCalendar.Components.static_calendar
+  id="my-calendar"
+  class="mt-4"
+  events={@events}
+  options={%{view: "dayGridMonth"}}
+/>
 ```
 
-## 3. Event Handling Options
+The element gets the `static-calendar` class plus the classes in `class`. Without a `view`
+option the static calendar opens in `dayGridMonth`.
 
-### Option 1: Global Function References (Recommended)
-
-This is the cleanest approach - define your functions in JavaScript and reference them by name:
+## 2. JavaScript setup
 
 ```javascript
-// Define your callback functions globally
-window.MyCalendar = {
-  handleEventClick(info) {
-    console.log('Event clicked:', info.event.title);
+// assets/js/app.js
+import {initStaticCalendars} from "calendar_component"
+```
 
-    // Example: Show event details in a modal
-    const modal = document.getElementById('event-modal');
-    const title = modal.querySelector('.event-title');
-    const date = modal.querySelector('.event-date');
+Calendars are initialized on `DOMContentLoaded`. Call `initStaticCalendars()` again after
+inserting calendars into the page, already initialized ones are skipped. Apps that don't use
+LiveView can import from `"calendar_component/static"`, a bundle without the LiveView hook.
 
-    title.textContent = info.event.title;
-    date.textContent = info.event.start.toLocaleDateString();
-    modal.style.display = 'block';
-  },
+Other functions:
 
-  handleDateClick(info) {
-    console.log('Date clicked:', info.dateStr);
+```javascript
+import {
+  initStaticCalendar,          // (element) -> calendar
+  getStaticCalendar,           // (element) -> calendar | null
+  updateStaticCalendarEvents,  // (element, events)
+  destroyStaticCalendar        // (element)
+} from "calendar_component"
 
-    // Example: Create new event
-    const title = prompt('Enter event title:');
-    if (title) {
-      // Here you could make an AJAX call to create the event
-      fetch('/events', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          title: title,
-          start: info.dateStr
-        })
-      });
+const calendar = getStaticCalendar(document.getElementById("my-calendar"))
+calendar.setOption("view", "timeGridWeek")
+calendar.gotoDate("2026-12-01")
+```
+
+The returned object is the EventCalendar instance, see its
+[methods](https://github.com/vkurko/calendar#methods).
+
+## 3. Callbacks
+
+Callback options (`eventClick`, `dateClick`, `datesSet`, `eventDrop`, `eventResize`, `select`,
+`eventDidMount`, `eventMouseEnter`, `viewDidMount`, ...) and `customButtons.*.click` can be
+given as strings.
+
+### Global function references (recommended)
+
+```javascript
+window.MyApp = {
+  Calendar: {
+    onEventClick(info) {
+      window.location = `/events/${info.event.id}`
+    },
+
+    onDateClick(info) {
+      window.location = `/events/new?date=${info.dateStr}`
+    },
+
+    onRangeChange(info) {
+      console.log("Visible range:", info.startStr, info.endStr, info.view.type)
     }
-  },
-
-  handleMonthChange(info) {
-    console.log('Month changed to:', info.start);
-
-    // Example: Load events for the new month
-    const year = info.start.getFullYear();
-    const month = info.start.getMonth() + 1;
-
-    fetch(`/events?year=${year}&month=${month}`)
-      .then(response => response.json())
-      .then(events => {
-        // Update calendar events
-        info.view.calendar.removeAllEvents();
-        info.view.calendar.addEventSource(events);
-      });
   }
-};
+}
 ```
 
-Then reference these functions in your Elixir template:
-
-```elixir
-<.static_calendar
+```heex
+<LiveCalendar.Components.static_calendar
   id="my-calendar"
   events={@events}
   options={%{
     view: "dayGridMonth",
-    eventClick: "MyCalendar.handleEventClick",
-    dateClick: "MyCalendar.handleDateClick",
-    datesSet: "MyCalendar.handleMonthChange"
+    eventClick: "MyApp.Calendar.onEventClick",
+    dateClick: "MyApp.Calendar.onDateClick",
+    datesSet: "MyApp.Calendar.onRangeChange"
   }}
 />
 ```
 
-### Option 2: Simple Function Body Strings (Limited)
+References are resolved when the calendar is created, so define the functions before the
+page finishes loading (for example in `app.js`). References that don't exist are ignored with
+a console warning.
 
-For very simple callbacks, you can provide just the function body with security restrictions:
+### Short function bodies (limited)
 
-```elixir
-<.static_calendar
+```heex
+<LiveCalendar.Components.static_calendar
   id="my-calendar"
   events={@events}
-  options={%{
-    view: "dayGridMonth",
-    eventClick: "console.log('Event:', info.event.title)",
-    dateClick: "alert('Date: ' + info.dateStr)"
-  }}
+  options={%{eventClick: "console.log('Event:', info.event.title)"}}
 />
 ```
 
-**Security Note**: This option is limited to simple expressions (max 200 chars) and dangerous keywords are blocked. For anything complex, use global function references.
+The body receives `info`. It is limited to 200 characters and bodies containing `function`,
+`=>`, `eval`, `setTimeout`, `setInterval`, `import`, `constructor` or `prototype` are
+rejected. Never build these strings from user input; see the [security notes](../docs/security.md).
 
-## 4. Complete Example
+## 4. Complete example: loading and saving events over HTTP
+
+Load events from a JSON endpoint with `eventSources`, and save changes made with drag & drop.
 
 ### Controller
 
@@ -143,198 +129,76 @@ For very simple callbacks, you can provide just the function body with security 
 defmodule MyAppWeb.EventController do
   use MyAppWeb, :controller
 
-  def calendar(conn, _params) do
-    events = get_events_for_month(Date.utc_today())
-    render(conn, :calendar, events: events)
+  def index(conn, _params), do: render(conn, :index)
+
+  # GET /api/events?start=...&end=...
+  def feed(conn, %{"start" => start, "end" => finish}) do
+    json(conn, Events.between(start, finish))
   end
 
-  defp get_events_for_month(date) do
-    [
-      %{
-        id: 1,
-        title: "Team Meeting",
-        start: "2025-08-15T10:00:00",
-        backgroundColor: "#3b82f6"
-      },
-      %{
-        id: 2,
-        title: "Project Demo",
-        start: "2025-08-16T14:00:00",
-        backgroundColor: "#10b981"
-      }
-    ]
+  # PUT /api/events/:id
+  def update(conn, %{"id" => id, "start" => start, "end" => finish}) do
+    case Events.reschedule(id, start, finish) do
+      {:ok, event} -> json(conn, event)
+      {:error, _changeset} -> send_resp(conn, 422, "")
+    end
   end
 end
 ```
 
-### Template (calendar.html.heex)
+### Template
 
-```elixir
-<div class="calendar-container">
-  <h1>Event Calendar</h1>
-
-  <.static_calendar
-    id="event-calendar"
-    events={@events}
-    options={%{
-      view: "dayGridMonth",
-      height: "auto",
-      headerToolbar: %{
-        left: "prev,next today",
-        center: "title",
-        right: "dayGridMonth,timeGridWeek,timeGridDay"
-      },
-      eventClick: "EventCalendar.showEventDetails",
-      dateClick: "EventCalendar.createEvent",
-      datesSet: "EventCalendar.loadMonthEvents"
-    }}
-  />
-
-  <!-- Event Details Modal -->
-  <div id="event-modal" class="modal" style="display: none;">
-    <div class="modal-content">
-      <span class="close" onclick="this.parentElement.parentElement.style.display='none'">&times;</span>
-      <h3 class="event-title"></h3>
-      <p class="event-date"></p>
-      <button onclick="EventCalendar.editEvent()">Edit</button>
-      <button onclick="EventCalendar.deleteEvent()">Delete</button>
-    </div>
-  </div>
-</div>
+```heex
+<LiveCalendar.Components.static_calendar
+  id="calendar"
+  options={%{
+    view: "timeGridWeek",
+    editable: true,
+    eventSources: [%{url: ~p"/api/events"}],
+    eventDrop: "MyApp.Calendar.save",
+    eventResize: "MyApp.Calendar.save"
+  }}
+/>
 ```
 
-### JavaScript (app.js)
+### JavaScript
 
 ```javascript
-import { initStaticCalendars } from "calendar_component/static";
+import {initStaticCalendars} from "calendar_component"
 
-// Define global event handlers
-window.EventCalendar = {
-  currentEvent: null,
+const csrfToken = document.querySelector("meta[name='csrf-token']").content
+const pad = n => String(n).padStart(2, "0")
+const wallClock = d =>
+  `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:00`
 
-  showEventDetails(info) {
-    this.currentEvent = info.event;
-
-    const modal = document.getElementById('event-modal');
-    modal.querySelector('.event-title').textContent = info.event.title;
-    modal.querySelector('.event-date').textContent =
-      info.event.start.toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-
-    modal.style.display = 'block';
-  },
-
-  createEvent(info) {
-    const title = prompt('Enter event title:');
-    if (!title) return;
-
-    fetch('/events', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-      },
-      body: JSON.stringify({
-        event: {
-          title: title,
-          start: info.dateStr
-        }
+window.MyApp = {
+  Calendar: {
+    async save(info) {
+      const response = await fetch(`/api/events/${info.event.id}`, {
+        method: "PUT",
+        headers: {"content-type": "application/json", "x-csrf-token": csrfToken},
+        body: JSON.stringify({start: wallClock(info.event.start), end: wallClock(info.event.end)})
       })
-    })
-    .then(response => response.json())
-    .then(event => {
-      // Add event to calendar
-      info.view.calendar.addEvent(event);
-    })
-    .catch(error => {
-      console.error('Error creating event:', error);
-      alert('Failed to create event');
-    });
-  },
 
-  loadMonthEvents(info) {
-    const start = info.start.toISOString().split('T')[0];
-    const end = info.end.toISOString().split('T')[0];
-
-    fetch(`/events?start=${start}&end=${end}`)
-      .then(response => response.json())
-      .then(events => {
-        const calendar = info.view.calendar;
-        calendar.removeAllEvents();
-        calendar.addEventSource(events);
-      })
-      .catch(error => {
-        console.error('Error loading events:', error);
-      });
-  },
-
-  editEvent() {
-    if (!this.currentEvent) return;
-
-    const newTitle = prompt('Edit event title:', this.currentEvent.title);
-    if (!newTitle) return;
-
-    // Update via API and refresh calendar
-    // Implementation depends on your backend
-  },
-
-  deleteEvent() {
-    if (!this.currentEvent || !confirm('Delete this event?')) return;
-
-    // Delete via API and remove from calendar
-    // Implementation depends on your backend
+      // Move the event back when the server rejects the change
+      if (!response.ok) info.revert()
+    }
   }
-};
+}
 
-// Initialize calendars when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-  initStaticCalendars();
-});
+initStaticCalendars()
 ```
 
-## 5. CSS Styling (optional)
+EventCalendar requests the URL with `start` and `end` query parameters whenever it needs
+events for a new range. `getStaticCalendar(el).refetchEvents()` reloads them.
+
+## 5. Styling
+
+Import the stylesheet in `assets/css/app.css`:
 
 ```css
-.calendar-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.modal {
-  position: fixed;
-  z-index: 1000;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.4);
-}
-
-.modal-content {
-  background-color: #fefefe;
-  margin: 15% auto;
-  padding: 20px;
-  border: 1px solid #888;
-  width: 300px;
-  border-radius: 8px;
-}
-
-.close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.close:hover {
-  color: black;
-}
+@import "../../deps/calendar_component/priv/static/assets/main.css";
 ```
 
-This approach gives you maximum flexibility while maintaining clean, maintainable code with proper separation between Elixir templates and JavaScript logic.
+Use the `ec-dark` / `ec-auto-dark` classes for the dark theme, or override the CSS variables
+of `.ec` (see the [EventCalendar theming docs](https://github.com/vkurko/calendar#theming)).

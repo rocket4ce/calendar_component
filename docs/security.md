@@ -68,21 +68,30 @@ For very simple cases only, with strict security restrictions:
 
 ### JavaScript-Side Protection
 
-1. **Dangerous Keyword Detection**:
-   - `function`, `eval`, `setTimeout`, `setInterval`
-   - `new Function`, `constructor`, `__proto__`, `prototype`
+1. **Global references only resolve functions**:
+   - Each part of `"MyApp.Calendar.onClick"` must be a valid JavaScript identifier
+   - `__proto__`, `prototype` and `constructor` are rejected
+   - The resolved value must be a function, otherwise the callback is dropped
 
-2. **Content Length Limits**:
-   - Function body strings limited to 200 characters
-   - Prevents complex malicious code injection
+2. **Short function bodies (static calendar only)**:
+   - Rejected when they contain `function`, `=>`, `eval`, `setTimeout`, `setInterval`,
+     `import`, `constructor`, `__proto__` or `prototype`
+   - Limited to 200 characters
+   - The LiveView calendar (`<.calendar>`) never compiles strings: it only accepts global
+     function references
 
-3. **Function Name Validation**:
-   - Global function references use regex validation
-   - Only allows valid JavaScript identifier names
+3. **Unresolved callbacks are removed**:
+   - EventCalendar never receives a string where it expects a function
+   - Violations are logged to the browser console
 
-4. **Error Logging**:
-   - All security violations are logged to console
-   - Clear error messages for debugging
+The keyword filter is a guard rail, not a sandbox: a short body is still JavaScript running in
+your page. Treat callback strings as code, hardcode them in your templates and never build them
+from user input.
+
+### Content Security Policy
+
+Short function bodies are compiled with `new Function`, which requires `'unsafe-eval'` in a
+`script-src` CSP. Global function references work with a strict CSP.
 
 ### Example Security Blocks
 
@@ -90,9 +99,9 @@ For very simple cases only, with strict security restrictions:
 // These are automatically blocked by the security system:
 
 "eval('alert(1)')"                    // ❌ Contains 'eval'
-"setTimeout(() => hack(), 1000)"      // ❌ Contains 'setTimeout'
+"setTimeout(() => hack(), 1000)"      // ❌ Contains 'setTimeout' and '=>'
 "function() { return 'blocked'; }"    // ❌ Contains 'function'
-"new Function('return alert(1)')()"   // ❌ Contains 'new Function'
+"new Function('return alert(1)')()"   // ❌ Contains 'function'
 "a".repeat(300)                       // ❌ Exceeds 200 char limit
 ```
 

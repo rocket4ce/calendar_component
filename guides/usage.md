@@ -1,145 +1,176 @@
 # Usage
 
-This guide shows how to render the calendar and handle events with Phoenix LiveView.
+This guide shows how to render the calendar and handle its events with Phoenix LiveView.
+For controllers without LiveView see the [static calendar guide](static_calendar_usage.md).
 
 ## 1) Basic render
-
-In your HEEx:
-
-```elixir
-<.calendar id="calendar" events={@events} />
-```
-
-In your LiveView:
 
 ```elixir
 def mount(_params, _session, socket) do
   events = [
-    %{id: 1, title: "Meeting", start: "2025-08-01T09:00:00"},
-    %{id: 2, title: "Demo", start: "2025-08-02"}
+    %{id: 1, title: "Meeting", start: ~N[2026-10-05 09:00:00], end: ~N[2026-10-05 10:00:00]},
+    %{id: 2, title: "Demo", start: ~D[2026-10-06]}
   ]
+
   {:ok, assign(socket, events: events)}
 end
 ```
 
-## 2) Handle events with Phoenix.LiveView.JS (Phoenix 1.8+)
+```heex
+<.calendar id="calendar" events={@events} options={%{view: "dayGridMonth"}} />
+```
 
-The calendar component supports Phoenix.LiveView.JS commands for client-side interactions with Phoenix LiveView 1.8+. This allows for rich client-side behavior without server round-trips:
+Without a `view` option the calendar opens in `timeGridWeek`.
+
+## 2) Server events
+
+Clicking an event, clicking a date and changing the visible period push `"event_clicked"`,
+`"date_clicked"` and `"month_changed"`:
+
+```elixir
+def handle_event("event_clicked", %{"id" => id, "event" => event}, socket), do: {:noreply, socket}
+def handle_event("date_clicked", %{"dateStr" => date, "allDay" => all_day}, socket), do: {:noreply, socket}
+def handle_event("month_changed", %{"month" => month, "year" => year, "view" => view}, socket), do: {:noreply, socket}
+```
+
+Rename them with a string, or disable them with `false`:
+
+```heex
+<.calendar id="calendar" events={@events} on_event_click="select_event" on_month_change={false} />
+```
+
+`"month_changed"` is also pushed when the calendar is first rendered, so the server knows the
+initial range.
+
+## 3) Phoenix.LiveView.JS commands
+
+Callback attributes accept JS commands. `JS.push/2` operations receive the callback payload
+merged into their `:value`:
 
 ```elixir
 alias Phoenix.LiveView.JS
 
+~H"""
 <.calendar
   id="calendar"
   events={@events}
   on_event_click={JS.push("select_event") |> JS.show(to: "#event-modal")}
-  on_date_click={JS.push("create_event") |> JS.add_class("highlight", to: ".selected-date")}
-  on_month_change={JS.push("month_changed") |> JS.dispatch("calendar:month_changed")}
+  on_date_click={JS.push("new_event", value: %{source: "calendar"}) |> JS.focus(to: "#title")}
+/>
+"""
+
+def handle_event("select_event", %{"id" => id}, socket), do: {:noreply, assign(socket, selected: id)}
+def handle_event("new_event", %{"dateStr" => date, "source" => "calendar"}, socket), do: {:noreply, socket}
+```
+
+When the commands contain a `JS.push/2`, the default event (`"event_clicked"`, ...) is not
+pushed. Commands without a push, like `JS.show/1` alone, still push the default event.
+
+## 4) Updating events and options
+
+Update the assigns as usual, the hook applies the changes:
+
+```elixir
+def handle_event("date_clicked", %{"dateStr" => date}, socket) do
+  event = %{id: System.unique_integer([:positive]), title: "New", start: date}
+  {:noreply, update(socket, :events, &[event | &1])}
+end
+
+def handle_event("show_weekends", %{"value" => value}, socket) do
+  {:noreply, assign(socket, hidden_days: if(value == "true", do: [], else: [0, 6]))}
+end
+```
+
+```heex
+<.calendar id="calendar" events={@events} options={%{view: "timeGridWeek", hiddenDays: @hidden_days}} />
+```
+
+Only options whose value changed are applied. Re-rendering for unrelated reasons doesn't move
+the calendar back to the `date` or `view` in `options` after the user navigated.
+
+The `views` option is only read when the calendar is created.
+
+## 5) Drag & drop, resizing and selections
+
+```heex
+<.calendar
+  id="calendar"
+  events={@events}
+  options={%{view: "timeGridWeek", editable: true, selectable: true}}
+  on_event_drop="event_dropped"
+  on_event_resize="event_resized"
+  on_select="range_selected"
 />
 ```
 
-The JavaScript commands are executed on the client first, then the server events are handled:
-
 ```elixir
-@impl true
-def handle_event("select_event", %{"id" => id}, socket) do
-  # Server-side logic after client-side JS commands
-  {:noreply, assign(socket, selected_event: id)}
+def handle_event("event_dropped", %{"id" => id, "event" => event, "newResource" => resource}, socket) do
+  case Events.move(id, event["start"], event["end"], resource && resource["id"]) do
+    {:ok, _event} -> {:noreply, assign(socket, events: Events.list())}
+    {:error, _reason} -> {:reply, %{revert: true}, socket}
+  end
 end
 
-@impl true
-def handle_event("create_event", %{"date" => date}, socket) do
-  # Server-side logic after client-side JS commands
-  {:noreply, assign(socket, new_event_date: date)}
+def handle_event("event_resized", %{"id" => id, "event" => %{"end" => finish}}, socket) do
+  {:ok, _event} = Events.resize(id, finish)
+  {:noreply, socket}
 end
-```
 
-## 3) Traditional event handling (backwards compatible)
-
-By default, the hook pushes these events to the server: "event_clicked", "date_clicked", and "month_changed".
-
-```elixir
-@impl true
-def handle_event("event_clicked", %{"id" => id}, socket), do: {:noreply, socket}
-
-@impl true
-def handle_event("date_clicked", %{"date" => iso}, socket), do: {:noreply, socket}
-
-@impl true
-def handle_event("month_changed", %{"month" => m, "year" => y}, socket), do: {:noreply, socket}
-```
-
-## 4) EventCalendar options
-
-Pass any supported EventCalendar option via `:options`:
-
-```elixir
-opts = %{
-  view: "dayGridMonth",
-  headerToolbar: %{start: "title", end: "today prev,next"},
-  nowIndicator: true,
-  firstDay: 1
-}
-
-~H"""
-<.calendar id="cal_toolbar" events={@events} options={opts} />
-"""
-```
-
-## 4) Live update events
-
-```elixir
-@impl true
-def handle_event("date_clicked", %{"date" => iso}, socket) do
-  new = %{id: System.unique_integer([:positive]), title: "New", start: iso}
-  {:noreply, update(socket, :events, fn ev -> [new | ev] end)}
+def handle_event("range_selected", %{"startStr" => start, "endStr" => finish, "allDay" => all_day}, socket) do
+  {:noreply, assign(socket, draft: %{start: start, end: finish, all_day: all_day})}
 end
 ```
 
-## 5) Rename events pushed by the hook
+Replying `%{revert: true}` moves the event back to its previous position.
 
-Use `options.lv` to change the event names the hook pushes:
+## 6) Driving the calendar from the server
 
 ```elixir
-opts = %{lv: %{onEventClick: "my_event_click", onDateClick: "my_date_click", onMonthChange: "my_month"}}
-
-~H"""
-<.calendar id="cal_lv" events={@events} options={opts} />
-"""
-
-@impl true
-def handle_event("my_event_click", payload, socket), do: {:noreply, socket}
+def handle_event("jump_to_next_month", _params, socket) do
+  {:noreply, CalendarComponent.push_command(socket, "calendar", :goto_date, [~D[2026-11-01]])}
+end
 ```
 
-## 6) List views and localization
+Commands: `:goto_date`, `:next`, `:prev`, `:today`, `:refetch_events`, `:refetch_resources`,
+`:unselect` and `:set_option` (`[name, value]`).
+
+## 7) List views and localization
 
 ```elixir
 opts = %{
   view: "listWeek",
   locale: "es",
-  height: "auto",
-  dayMaxEvents: true
+  firstDay: 1,
+  buttonText: %{today: "hoy", listWeek: "lista"},
+  noEventsContent: "Sin eventos"
 }
-
-~H"""
-<.calendar id="cal_list" events={@events} options={opts} />
-"""
 ```
 
-## 7) Editing (drag & drop, resize)
-
-Enable `editable: true` and handle `eventDrop`/`eventResize` client- or server-side.
+## 8) Resources and timelines
 
 ```elixir
 opts = %{
-  view: "timeGridWeek",
-  editable: true,
-  eventDurationEditable: true
+  view: "resourceTimelineWeek",
+  headerToolbar: %{start: "prev,next today", center: "title", end: "resourceTimelineDay,resourceTimelineWeek"},
+  resources: [%{id: "a", title: "Room A"}, %{id: "b", title: "Room B"}]
 }
 
-~H"""
-<.calendar id="cal_edit" events={@events} options={opts} />
-"""
+events = [
+  %{id: 1, title: "Workshop", start: "2026-10-05T09:00:00", end: "2026-10-05T12:00:00", resourceId: "a"}
+]
 ```
 
-Note: The hook does not push `eventDrop`/`eventResize` by default. You can compose `options.eventDrop`/`eventResize` and use `pushEvent` client-side if you copy/extend the hook in your app.
+Events with `resourceIds: ["a", "b"]` are shown in every listed resource.
+
+## 9) Time zones
+
+Event dates without offset (`NaiveDateTime`, `"2026-10-05T09:00:00"`) are shown as is. Dates
+with an offset (`DateTime`, `"...Z"`, `"...+02:00"`) are shifted to the calendar's `timeZone`,
+which is the browser's by default:
+
+```elixir
+%{timeZone: "UTC"}      # or "+02:00"
+```
+
+Payloads include both the instant (`"start"`) and the wall-clock time shown in the calendar
+(`"startStr"`).

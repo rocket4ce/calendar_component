@@ -4,8 +4,8 @@ See [demo](https://vkurko.github.io/calendar/) and [changelog](CHANGELOG.md).
 
 Full-sized drag & drop JavaScript event calendar with resource & timeline views:
 
-* Lightweight (33kb [br](https://en.wikipedia.org/wiki/Brotli) compressed)
-* 100% human-coded
+* Lightweight (35kb [br](https://en.wikipedia.org/wiki/Brotli) compressed)
+* Minimal DOM structure (thanks to [CSS Grid](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Grid_layout))
 * Zero-dependency (standalone bundle)
 * Used on over 70,000 websites with [Bookly](https://wordpress.org/plugins/bookly-responsive-appointment-booking-tool/)
 
@@ -15,6 +15,10 @@ Inspired by [FullCalendar](https://fullcalendar.io/), it implements similar opti
 
 <table>
 <tr>
+<td>
+
+[![@ekwi-tech](https://avatars.githubusercontent.com/u/146312349?s=52&v=4)](https://github.com/ekwi-tech)
+</td>
 <td>
 
 [![@steveb85](https://avatars.githubusercontent.com/u/50031994?s=52&v=4)](https://github.com/steveb85)
@@ -30,6 +34,7 @@ Inspired by [FullCalendar](https://fullcalendar.io/), it implements similar opti
 - [Usage](#usage)
   - [JavaScript module](#javascript-module)
   - [Svelte 5 component](#svelte-5-component)
+    - [Content snippets](#content-snippets)
   - [Standalone bundle](#standalone-bundle)
   - [Modifying options after initialization](#modifying-options-after-initialization)
 - [Options](#options)
@@ -39,11 +44,15 @@ Inspired by [FullCalendar](https://fullcalendar.io/), it implements similar opti
   - [allDayContent](#alldaycontent)
   - [allDaySlot](#alldayslot)
   - [buttonText](#buttontext)
+  - [columnWidth](#columnwidth)
   - [customButtons](#custombuttons)
+  - [customScrollbars](#customscrollbars)
   - [date](#date)
   - [dateClick](#dateclick)
+  - [dateIncrement](#dateincrement)
   - [datesAboveResources](#datesaboveresources)
   - [datesSet](#datesset)
+  - [dayCellContent](#daycellcontent)
   - [dayCellFormat](#daycellformat)
   - [dayHeaderAriaLabelFormat](#dayheaderarialabelformat)
   - [dayHeaderFormat](#dayheaderformat)
@@ -66,13 +75,16 @@ Inspired by [FullCalendar](https://fullcalendar.io/), it implements similar opti
   - [eventDragStart](#eventdragstart)
   - [eventDragStop](#eventdragstop)
   - [eventDrop](#eventdrop)
+  - [eventDurationEditable](#eventdurationeditable)
   </td><td>
 
-  - [eventDurationEditable](#eventdurationeditable)
   - [eventFilter](#eventfilter)
+  - [eventGap](#eventgap)
   - [eventLongPressDelay](#eventlongpressdelay)
   - [eventMouseEnter](#eventmouseenter)
   - [eventMouseLeave](#eventmouseleave)
+  - [eventOrder](#eventorder)
+  - [eventOrderStrict](#eventorderstrict)
   - [eventResizableFromStart](#eventresizablefromstart)
   - [eventResize](#eventresize)
   - [eventResizeStart](#eventresizestart)
@@ -89,12 +101,14 @@ Inspired by [FullCalendar](https://fullcalendar.io/), it implements similar opti
   - [height](#height)
   - [hiddenDays](#hiddendays)
   - [highlightedDates](#highlighteddates)
+  - [icons](#icons)
   - [lazyFetching](#lazyfetching)
   - [listDayFormat](#listdayformat)
   - [listDaySideFormat](#listdaysideformat)
   - [loading](#loading)
   - [locale](#locale)
   - [longPressDelay](#longpressdelay)
+  - [monthHeaderFormat](#monthheaderformat)
   - [moreLinkContent](#morelinkcontent)
   - [noEventsClick](#noeventsclick)
   - [noEventsContent](#noeventscontent)
@@ -102,8 +116,11 @@ Inspired by [FullCalendar](https://fullcalendar.io/), it implements similar opti
   </td><td>
 
   - [pointer](#pointer)
+  - [refetchResourcesOnNavigate](#refetchresourcesonnavigate)
   - [resizeConstraint](#resizeconstraint)
+  - [resourceExpand](#resourceexpand)
   - [resources](#resources)
+  - [resourcesInitiallyExpanded](#resourcesinitiallyexpanded)
   - [resourceLabelContent](#resourcelabelcontent)
   - [resourceLabelDidMount](#resourcelabeldidmount)
   - [scrollTime](#scrolltime)
@@ -121,7 +138,9 @@ Inspired by [FullCalendar](https://fullcalendar.io/), it implements similar opti
   - [slotMaxTime](#slotmaxtime)
   - [slotMinTime](#slotmintime)
   - [slotWidth](#slotwidth)
+  - [snapDuration](#snapduration)
   - [theme](#theme)
+  - [timeZone](#timezone)
   - [titleFormat](#titleformat)
   - [unselect](#unselect)
   - [unselectAuto](#unselectauto)
@@ -147,11 +166,15 @@ Inspired by [FullCalendar](https://fullcalendar.io/), it implements similar opti
   - [getEvents](#getevents)
   - [removeEventById](#removeeventbyid-id-)
   - [updateEvent](#updateevent-event-)
+  </td><td>
+
   - [refetchEvents](#refetchevents)
+  - [refetchResources](#refetchresources)
   </td><td>
 
   - [dateFromPoint](#datefrompoint-x-y-)
   - [getView](#getview)
+  - [gotoDate](#gotodate-date-)
   - [next](#next)
   - [prev](#prev)
   - [unselect](#unselect-1)
@@ -238,13 +261,51 @@ Then in your Svelte 5 component, use the calendar like this:
 ```
 The calendar is destroyed gracefully when the component containing it is destroyed.
 
+#### Content snippets
+The options that define content can also be given as Svelte snippets:
+
+* [allDayContent](#alldaycontent)
+* [dayCellContent](#daycellcontent)
+* [eventContent](#eventcontent)
+* [moreLinkContent](#morelinkcontent)
+* [noEventsContent](#noeventscontent)
+* [resourceLabelContent](#resourcelabelcontent)
+* [weekNumberContent](#weeknumbercontent)
+
+A snippet is passed to the `Calendar` component under the name of the option it defines:
+```html
+<Calendar plugins={[DayGrid]} {options}>
+    {#snippet eventContent({event, timeText})}
+        <b>{timeText}</b> {event.title}
+    {/snippet}
+</Calendar>
+```
+It can also be passed as a property, which is convenient when the snippet is declared elsewhere:
+```html
+<Calendar plugins={[DayGrid]} {options} eventContent={myEventContent}/>
+```
+A snippet receives the same argument as the function form of the option and is rendered in the same place.
+
+The `content` property of [customButtons](#custombuttons) is also supported, but since custom buttons have arbitrary names, such a snippet is named `customButton` followed by the name of the button with the first letter capitalized. The button itself does not have to be listed in the `customButtons` option:
+```html
+<Calendar plugins={[ResourceTimeline]} options={{headerToolbar: {end: 'myFilter'}}}>
+    {#snippet customButtonMyFilter()}
+        <input bind:value={query}>
+    {/snippet}
+</Calendar>
+```
+
+Unlike a function, a snippet is rendered by Svelte itself. It can contain components, event handlers and transitions, and it is updated reactively when the state it uses changes.
+
+If both a snippet and an option with the same name are given, the snippet takes precedence.
+
 ### Standalone bundle
 This bundle contains a version of the calendar that includes all plugins and is prepared for use in the browser via the `<script>` tag.
 
 The first step is to include the following lines of code in the `<head>` section of your page:
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@event-calendar/build@4.5.1/dist/event-calendar.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@event-calendar/build@4.5.1/dist/event-calendar.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@event-calendar/build@5.17.2/dist/event-calendar.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@event-calendar/build@5.17.2/dist/event-calendar.min.js"></script>
 ```
 
 <details>
@@ -324,6 +385,8 @@ The default text
 </tr>
 </table>
 
+In a Svelte component, this content can also be provided as a [snippet](#content-snippets).
+
 ### allDaySlot
 - Type `boolean`
 - Default `true`
@@ -334,9 +397,16 @@ When hidden with `false`, all-day events will not be displayed in `timeGrid`/`re
 
 ### buttonText
 - Type `object` or `function`
-- Default `{close: 'Close', dayGridMonth: 'month', listDay: 'list', listMonth: 'list', listWeek: 'list', listYear: 'list', resourceTimeGridDay: 'resources', resourceTimeGridWeek: 'resources', resourceTimelineDay: 'timeline', resourceTimelineMonth: 'timeline', resourceTimelineWeek: 'timeline', timeGridDay: 'day', timeGridWeek: 'week', today: 'today'}`
+<ul>
+<li>
+<details>
+    <summary>Default</summary>
+
+`{collapse: 'Collapse', close: 'Close', dayGridDay: 'day', dayGridMonth: 'month', dayGridWeek: 'week', expand: 'Expand', listDay: 'day', listMonth: 'month', listWeek: 'week', listYear: 'year', resourceTimeGridDay: 'day', resourceTimeGridWeek: 'week', resourceTimelineDay: 'day', resourceTimelineMonth: 'month', resourceTimelineWeek: 'week', resourceTimelineYear: 'year', timeGridDay: 'day', timeGridWeek: 'week', today: 'today'}`
 > Views override the default value as follows:
+> - dayGridDay `text => ({...text, next: 'Next day', prev: 'Previous day'})`
 > - dayGridMonth `text => ({...text, next: 'Next month', prev: 'Previous month'})`
+> - dayGridWeek `text => ({...text, next: 'Next week', prev: 'Previous week'})`
 > - listDay `text => ({...text, next: 'Next day', prev: 'Previous day'})`
 > - listMonth `text => ({...text, next: 'Next month', prev: 'Previous month'})`
 > - listWeek `text => ({...text, next: 'Next week', prev: 'Previous week'})`
@@ -346,8 +416,13 @@ When hidden with `false`, all-day events will not be displayed in `timeGrid`/`re
 > - resourceTimelineDay `text => ({...text, next: 'Next day', prev: 'Previous day'})`
 > - resourceTimelineMonth `text => ({...text, next: 'Next month', prev: 'Previous month'})`
 > - resourceTimelineWeek `text => ({...text, next: 'Next week', prev: 'Previous week'})`
+> - resourceTimelineYear `text => ({...text, next: 'Next year', prev: 'Previous year'})`
 > - timeGridDay `text => ({...text, next: 'Next day', prev: 'Previous day'})`
 > - timeGridWeek `text => ({...text, next: 'Next week', prev: 'Previous week'})`
+
+</details>
+</li>
+</ul>
 
 Text that is displayed in buttons of the header toolbar.
 
@@ -368,8 +443,18 @@ function (text) {
 </tr>
 </table>
 
+### columnWidth
+- Type `string`
+- Default `undefined`
+
+Defines the column width in `timeGrid`/`resourceTimeGrid` views.
+
+This option accepts a CSS [length](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/grid-template-columns#values) value, so be sure to include `px` if you specify the value in pixels.
+
+If this option is `undefined`, the column width will adjust to the calendar width.
+
 ### customButtons
-- Type `object`
+- Type `object` or `function`
 - Default `{}`
 
 Defines custom buttons that can be used in the [headerToolbar](#headertoolbar).
@@ -427,7 +512,75 @@ The text to be display on the button itself. See [Content](#content)
 If `true`, the button will appear pressed/active
 </td>
 </tr>
+<tr>
+<td>
+
+`content`
+</td>
+<td>
+
+Arbitrary content displayed in place of the button. See [Content](#content)
+
+This value can be either a [Content](#content) or a function that returns content:
+
+```js
+function () {
+  // return Content
+}
+```
+</td>
+</tr>
 </table>
+
+An entry with the `content` property is rendered as a plain `<div>` rather than a `<button>`, so it can hold any widget, such as an input or a select. Such an entry does not need the `text` and `click` properties, and if `content` is also given, it takes precedence over `text`.
+
+<details>
+  <summary>Example</summary>
+
+```js
+let input = document.createElement('input');
+
+let options = {
+    customButtons: {
+        myFilter: {
+            content: {domNodes: [input]}
+        }
+    },
+    headerToolbar: {
+        start: 'prev,next today',
+        center: 'title',
+        end: 'myFilter'
+    }
+};
+```
+</details>
+
+In a Svelte component, this content can also be provided as a [snippet](#content-snippets).
+
+The `customButtons` option can also be set as a callback function that receives default custom button object and should return a new one:
+
+```js
+function (customButtons) {
+  // return new custom buttons object
+}
+```
+<table>
+<tr>
+<td>
+
+`customButtons`
+</td>
+<td>An object with default custom buttons</td>
+</tr>
+</table>
+
+### customScrollbars
+- Type `boolean`
+- Default `false`
+
+Enables scrollbars styling, which in turn prevents the scrollbars from being hidden in [supported](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/::-webkit-scrollbar#browser_compatibility) browsers.
+
+This option can be useful, for example, for macOS users in `resourceTimeline` views to indicate that the calendar can be scrolled horizontally. On macOS, scrollbars can be hidden completely, and this option ensures they are always visible in [supported](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/::-webkit-scrollbar#browser_compatibility) browsers.
 
 ### date
 - Type `Date` or `string`
@@ -435,7 +588,7 @@ If `true`, the button will appear pressed/active
 
 Date that is currently displayed on the calendar.
 
-This value can be either a JavaScript Date object, or an ISO8601 date string like `'2022-12-31'`.
+This value can be either a JavaScript Date object, or an ISO8601 date string like `'2026-12-31'`.
 
 ### dateClick
 - Type `function`
@@ -508,6 +661,16 @@ If the current view is a resource view, the [Resource](#resource-object) object 
 </tr>
 </table>
 
+### dateIncrement
+- Type `string`, `integer` or `object`
+- Default `undefined`
+
+Defines the interval by which the displayed view is shifted when pressing the prev/next buttons or when the [prev()](#prev)/[next()](#next) methods are called.
+
+This should be a value that can be parsed into a [Duration](#duration-object) object.
+
+If not specified, then equal to [duration](#duration).
+
 ### datesAboveResources
 - Type `boolean`
 - Default `false`
@@ -565,11 +728,67 @@ The current [View](#view-object) object
 </tr>
 </table>
 
+### dayCellContent
+- Type `Content` or `function`
+- Default `undefined`
+
+Defines the content that is rendered inside the day cell.
+
+This value can be either a [Content](#content) or a function that returns content:
+
+```js
+function (arg) {
+    // return Content
+}
+```
+`arg` is an object with the following properties:
+<table>
+<tr>
+<td>
+
+`allDay`
+</td>
+<td>
+
+`true` or `false`. Determines if the cell is within `all-day` slot. Month and list views are also considered as all-day slots
+</td>
+</tr>
+<tr>
+<td>
+
+`date`
+</td>
+<td>JavaScript Date object corresponding to the day</td>
+</tr>
+<tr>
+<td>
+
+`isToday`
+</td>
+<td>
+
+`true` or `false`. Determines if the cell is for today
+</td>
+</tr>
+<tr>
+<td>
+
+`resource`
+</td>
+<td>
+
+If the current view is a resource view, the [Resource](#resource-object) object that owns this cell
+</td>
+</tr>
+</table>
+
+In a Svelte component, this content can also be provided as a [snippet](#content-snippets).
+
 ### dayCellFormat
 - Type `object` or `function`
 - Default `{day: 'numeric'}`
 
-Defines the text that is displayed inside the day cell in the `dayGrid` view.
+Defines the text that is displayed inside the day cell in the `dayGridMonth` view.
 
 This value can be either an object with options for the native JavaScript [Intl.DateTimeFormat](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat) object, or a callback function that returns a [Content](#content) with the formatted string:
 
@@ -617,8 +836,10 @@ function (date) {
 - Type `object` or `function`
 - Default `{weekday: 'short', month: 'numeric', day: 'numeric'}`
 > Views override the default value as follows:
+> - dayGridDay `{weekday: 'long'}`
 > - dayGridMonth `{weekday: 'short'}`
 > - resourceTimelineMonth `{weekday: 'short', day: 'numeric'}`
+> - resourceTimelineYear `{weekday: 'short', day: 'numeric'}`
 > - timeGridDay `{weekday: 'long'}`
 
 Defines the text that is displayed on the calendar’s column headings.
@@ -667,10 +888,13 @@ function (date) {
 - Type `boolean`
 - Default `true`
 > Views override the default value as follows:
+> - dayGridDay `false`
 > - dayGridMonth `false`
+> - dayGridWeek `false`
 > - resourceTimelineDay `false`
 > - resourceTimelineMonth `false`
 > - resourceTimelineWeek `false`
+> - resourceTimelineYear `false`
 
 Determines whether to display an event’s end time.
 
@@ -683,6 +907,8 @@ Callback function that limits the date/time range into which events are allowed 
 
 The function is triggered during dragging for each cursor movement and takes the same parameters as [eventDrop](#eventdrop). The function should return `true` if dragging to the new position is allowed, and `false` otherwise.
 
+While the position is not allowed, the event stays at the last allowed position and the cursor changes to `not-allowed`. Releasing the pointer there cancels the dragging.
+
 ### dragScroll
 - Type `boolean`
 - Default `true`
@@ -694,6 +920,7 @@ Determines whether the calendar should automatically scroll during the event dra
 - Type `string`, `integer` or `object`
 - Default `{weeks: 1}`
 > Views override the default value as follows:
+> - dayGridDay `{days: 1}`
 > - dayGridMonth `{months: 1}`
 > - listDay `{days: 1}`
 > - listMonth `{months: 1}`
@@ -701,6 +928,7 @@ Determines whether the calendar should automatically scroll during the event dra
 > - resourceTimeGridDay `{days: 1}`
 > - resourceTimelineDay `{days: 1}`
 > - resourceTimelineMonth `{months: 1}`
+> - resourceTimelineYear `{years: 1}`
 > - timeGridDay `{days: 1}`
 
 Sets the duration of a view.
@@ -720,7 +948,7 @@ If you don't need both, use the more specific [eventStartEditable](#eventstarted
 - Type `array`
 - Default `[]`
 
-Array of plain objects that will be parsed into [Event](#event-object) objects and displayed on the calendar.
+Array of plain objects that will be [parsed](#parsing-event-from-a-plain-object) into [Event](#event-object) objects and displayed on the calendar.
 
 This option is not used if the `eventSources` option is provided.
 
@@ -892,6 +1120,8 @@ The current [View](#view-object) object
 </table>
 
 In case the function returns `undefined`, the event will be rendered in the default way.
+
+In a Svelte component, this content can also be provided as a [snippet](#content-snippets).
 
 ### eventDidMount
 - Type `function`
@@ -1183,6 +1413,12 @@ The current [View](#view-object) object
 </tr>
 </table>
 
+### eventGap
+- Type `integer`
+- Default `1`
+
+Defines the vertical gap in pixels between events that are stacked on top of each other within the same day. Applies to `DayGrid`, the all-day section of `TimeGrid`/`ResourceTimeGrid`, and `ResourceTimeline` views.
+
 ### eventLongPressDelay
 - Type `integer`
 - Default `undefined`
@@ -1285,6 +1521,36 @@ The current [View](#view-object) object
 </td>
 </tr>
 </table>
+
+### eventOrder
+- Type `function`
+- Default `undefined`
+
+A function that determines the order in which events that visually intersect in the current view are displayed.
+
+When `eventOrder` is not specified, events are ordered by start time with all-day events appearing first.
+
+```js
+function (a, b) {
+    // Return a negative value if 'a' should come before 'b'
+    // Return a positive value if 'a' should come after 'b'
+    // Return zero if 'a' and 'b' are equal
+}
+```
+
+`a` and `b` are [Event](#event-object) objects.
+
+### eventOrderStrict
+- Type `boolean`
+- Default `false`
+
+Determines whether [eventOrder](#eventorder) is followed strictly in `resourceTimeline` views.
+
+By default, the layout prioritizes compactness: an event is placed in the topmost free slot, which means it can move above earlier-ordered events when there is empty space above them. When set to `true`, events keep their vertical order — an event is never placed above another event that comes before it in `eventOrder` and overlaps it, even if free space is available.
+
+This is useful, for example, when a parent event should always stay above its child events (order them so the parent comes first and enable this option).
+
+Events that don't overlap each other are laid out independently, even with this option enabled. To keep related events on the same line, give them the same `layoutGroup`.
 
 ### eventResizableFromStart
 - Type `boolean`
@@ -1479,7 +1745,7 @@ This option is used instead of the `events` option.
 </td>
 <td>
 
-A URL that the calendar will fetch [Event](#event-object) objects from. HTTP requests with the following parameters will be sent to this URL whenever the calendar needs new event data:
+A URL from which the calendar will fetch an array of [parsable](#parsing-event-from-a-plain-object) [Event](#event-object) objects in JSON format. HTTP requests with the following parameters will be sent to this URL whenever the calendar needs new event data:
 <table>
 <tr>
 <td>
@@ -1497,6 +1763,15 @@ Start date of the range the calendar needs events for
 </td>
 <td>
 End date of the range the calendar needs events for
+</td>
+</tr>
+<tr>
+<td>
+
+`timeZone`
+</td>
+<td>
+The value of the calendar's [timeZone](#timezone) option. Sent only when `timeZone` is not `'local'`
 </td>
 </tr>
 </table>
@@ -1568,9 +1843,16 @@ function(fetchInfo, successCallback, failureCallback) { }
 </td>
 <td>ISO8601 string representation of the end date</td>
 </tr>
+<tr>
+<td>
+
+`timeZone`
+</td>
+<td>The value of the calendar's [timeZone](#timezone) option</td>
+</tr>
 </table>
 
-The `successCallback` function must be called by the custom function with an array of parsable [Event](#event-object) objects.
+The `successCallback` function must be called by the custom function with an array of [parsable](#parsing-event-from-a-plain-object) [Event](#event-object) objects.
 
 If there is any failure (e.g., if an AJAX request fails), then call the `failureCallback` instead. It accepts an argument with information about the failure.
 
@@ -1612,7 +1894,7 @@ function (start, end) {
 
 `end`
 </td>
-<td>JavaScript Date object containing the end of the time span to be formatted</td>
+<td>JavaScript Date object containing the end of the time span to be formatted, or `null` if the end time is not displayed (see [displayEventEnd](#displayeventend))</td>
 </tr>
 </table>
 
@@ -1634,7 +1916,7 @@ Determines whether events that do not belong to the current array of [resources]
 - Type `boolean`
 - Default `false`
 
-Determines whether resources with no events for the current range should be hidden in the resource view.
+Determines whether resources with no events for the current range should be hidden in the resource view. Background events are not taken into account.
 
 ### firstDay
 - Type `integer`
@@ -1751,17 +2033,44 @@ Exclude certain days-of-the-week from being displayed, where Sunday is `0`, Mond
 
 Array of dates that need to be highlighted in the calendar.
 
-Each date can be either an ISO8601 date string like `'2022-12-31'`, or a JavaScript Date object.
+Each date can be either an ISO8601 date string like `'2026-12-31'`, or a JavaScript Date object.
+
+### icons
+- Type `object`
+- Default `{collapse: {html: '&minus;'}, expand: {html: '&plus;'}}`
+
+Defines icons used in some buttons, such as those for expanding nested resources in `resourceTimeline` views.
+
+Each icon is specified as a [Content](#content) value.
+
+This option can be either a plain object with all necessary properties, or a callback function that receives default icons object and should return a new one:
+
+```js
+function (icons) {
+  // return new icons object
+}
+```
+<table>
+<tr>
+<td>
+
+`icons`
+</td>
+<td>An object with default icons</td>
+</tr>
+</table>
 
 ### lazyFetching
 - Type `boolean`
 - Default `true`
 
-Determines when event fetching should occur.
+Determines when event and resource fetching should occur.
 
 When set to `true` (the default), the calendar will only fetch events when it absolutely needs to, minimizing HTTP requests. For example, say your calendar starts out in month view, in February. EventCalendar will fetch events for the entire month of February and store them in its internal storage. Then, say the user switches to week view and begins browsing the weeks in February. The calendar will avoid fetching events because it already has this information stored.
 
-When set to `false`, the calendar will fetch events any time the view is switched, or any time the current date changes (for example, as a result of the user clicking prev/next).
+When set to `false`, the calendar will fetch events any time the current date changes (for example, as a result of the user clicking prev/next).
+
+This also applies to resources if [refetchResourcesOnNavigate](#refetchresourcesonnavigate) is enabled.
 
 ### listDayFormat
 - Type `object` or `function`
@@ -1813,7 +2122,7 @@ function (date) {
 - Type `function`
 - Default `undefined`
 
-Callback function that is triggered when event fetching starts/stops.
+Callback function that is triggered when event or resource fetching starts/stops.
 
 ```js
 function (isLoading) { }
@@ -1826,7 +2135,7 @@ function (isLoading) { }
 </td>
 <td>
 
-`true` when the calendar begins fetching events, `false` when it’s done.
+`true` when the calendar begins fetching events or resources, `false` when it’s done.
 </td>
 </tr>
 </table>
@@ -1844,6 +2153,31 @@ Defines the `locales` parameter for the native JavaScript [Intl.DateTimeFormat](
 For touch devices, the amount of time (in milliseconds) the user must hold down a tap before the event becomes draggable/resizable or the date becomes selectable.
 
 For a more granular configuration, see [eventLongPressDelay](#eventlongpressdelay) and [selectLongPressDelay](#selectlongpressdelay).
+
+### monthHeaderFormat
+- Type `object` or `function`
+- Default `{month: 'long'}`
+
+Defines the text that is displayed in month headings in `resourceTimelineMonth` and `resourceTimelineYear` views.
+
+The month heading row is hidden when the view spans exactly one whole month, since the month is already shown in the calendar title.
+
+This value can be either an object with options for the native JavaScript [Intl.DateTimeFormat](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat) object, or a callback function that returns a [Content](#content) with the formatted string:
+
+```js
+function (date) {
+  // return Content with the formatted date string
+}
+```
+<table>
+<tr>
+<td>
+
+`date`
+</td>
+<td>JavaScript Date object that needs to be formatted</td>
+</tr>
+</table>
 
 ### moreLinkContent
 - Type `Content` or `function`
@@ -1878,6 +2212,8 @@ The default text like `+2 more`
 </td>
 </tr>
 </table>
+
+In a Svelte component, this content can also be provided as a [snippet](#content-snippets).
 
 ### noEventsClick
 - Type `function`
@@ -1923,6 +2259,8 @@ function () {
 }
 ```
 
+In a Svelte component, this content can also be provided as a [snippet](#content-snippets).
+
 ### nowIndicator
 - Type `boolean`
 - Default `false`
@@ -1936,6 +2274,12 @@ Enables a marker indicating the current time in `timeGrid`/`resourceTimeGrid` vi
 
 Enables mouse cursor pointer in `timeGrid`/`resourceTimeGrid` and other views.
 
+### refetchResourcesOnNavigate
+- Type `boolean`
+- Default `false`
+
+Determines whether to refetch [resources](#resources) when the user navigates to a different date.
+
 ### resizeConstraint
 - Type `function`
 - Default `undefined`
@@ -1945,11 +2289,169 @@ Callback function that limits the date/time range within which the event is allo
 
 The function is triggered during resizing for each cursor movement and takes the same parameters as [eventResize](#eventresize). The function should return `true` if the new size is allowed, and `false` otherwise.
 
+While the size is not allowed, the event keeps the last allowed size and the cursor changes to `not-allowed`. Releasing the pointer there cancels the resizing.
+
+### resourceExpand
+- Type `function`
+- Default `undefined`
+
+Callback function that is triggered when a resource with nested children is expanded or collapsed in `resourceTimeline` views.
+
+
+```js
+function (info) { }
+```
+`info` is an object with the following properties:
+<table>
+<tr>
+<td>
+
+`resource`
+</td>
+<td>
+
+The associated [Resource](#resource-object) object
+</td>
+</tr>
+<tr>
+<td>
+
+`jsEvent`
+</td>
+<td>JavaScript native event object with low-level information such as click coordinates</td>
+</tr>
+<tr>
+<td>
+
+`view`
+</td>
+<td>
+
+The current [View](#view-object) object
+</td>
+</tr>
+</table>
+
 ### resources
-- Type `array`
+- Type `array`, `object` or `function`
 - Default `[]`
 
-Array of plain objects that will be parsed into [Resource](#resource-object) objects for displaying in the resource view.
+Defines the source of resource data displayed in resource views. It can be provided in one of three ways:
+
+#### 1. Array of plain objects
+If the resources are predefined and do not change, then pass them as an array of plain objects. The provided plain objects will be [parsed](#parsing-resource-from-a-plain-object) into [Resource](#resource-object) objects.
+
+#### 2. Fetch resources from a URL
+To make the calendar load resources from a URL, specify `resources` option as an object with the following properties:
+<table>
+<tr>
+<td>
+
+`url`
+</td>
+<td>
+
+A URL from which the calendar will fetch an array of [parsable](#parsing-resource-from-a-plain-object) [Resource](#resource-object) objects in JSON format. If [refetchResourcesOnNavigate](#refetchresourcesonnavigate) is enabled then HTTP requests with the following parameters will be sent to the URL whenever the user navigates to a different date:
+<table>
+<tr>
+<td>
+
+`start`
+</td>
+<td>
+Start date of the range the calendar needs resources for
+</td>
+</tr>
+<tr>
+<td>
+
+`end`
+</td>
+<td>
+End date of the range the calendar needs resources for
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+
+`method`
+</td>
+<td>
+
+HTTP request method. Default `'GET'`
+</td>
+</tr>
+<tr>
+<td>
+
+`extraParams`
+</td>
+<td>
+
+Other GET/POST data you want to send to the server. Can be a plain object or a function that returns an object. Default `{}`
+</td>
+</tr>
+</table>
+
+#### 3. Execute custom function
+You can also specify `resources` as a custom function that provides resource data.
+```js
+function(fetchInfo, successCallback, failureCallback) { }
+```
+If [refetchResourcesOnNavigate](#refetchresourcesonnavigate) is enabled, the function will be called every time the user navigates to a different date. In this case,
+`fetchInfo` will be an object with the following properties (it is an empty object otherwise):
+<table>
+<tr>
+<td>
+
+`start`
+</td>
+<td>JavaScript Date object for the beginning of the range the calendar needs resources for</td>
+</tr>
+<tr>
+<td>
+
+`end`
+</td>
+<td>JavaScript Date object for the end of the range the calendar needs resources for. Note: This value is exclusive</td>
+</tr>
+<tr>
+<td>
+
+`startStr`
+</td>
+<td>ISO8601 string representation of the start date</td>
+</tr>
+<tr>
+<td>
+
+`endStr`
+</td>
+<td>ISO8601 string representation of the end date</td>
+</tr>
+<tr>
+<td>
+
+`timeZone`
+</td>
+<td>The value of the calendar's [timeZone](#timezone) option</td>
+</tr>
+</table>
+
+The `successCallback` function must be called by the custom function with an array of [parsable](#parsing-resource-from-a-plain-object) [Resource](#resource-object) objects.
+
+If there is any failure (e.g., if an AJAX request fails), then call the `failureCallback` instead. It accepts an argument with information about the failure.
+
+Instead of calling `successCallback` and `failureCallback`, you may return the resulting array of resources or return a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) (or [thenable](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/resolve)) object instead.
+
+### resourcesInitiallyExpanded
+- Type `boolean`
+- Default `true`
+
+Determines whether resources with nested children are expanded or collapsed in `resourceTimeline` views. Applies to resources whose `expanded` property has not been specified and that have not yet been expanded or collapsed by the user.
 
 ### resourceLabelContent
 - Type `string`, `object`or `function`
@@ -1984,6 +2486,8 @@ The associated [Resource](#resource-object) object
 <td>If it is a column that is within a specific date, this will be a Date object</td>
 </tr>
 </table>
+
+In a Svelte component, this content can also be provided as a [snippet](#content-snippets).
 
 ### resourceLabelDidMount
 - Type `function`
@@ -2124,6 +2628,8 @@ Callback function that limits the date/time range that can be selected.
 
 The function is triggered during selection for each cursor movement and takes the same parameters as [select](#select). The function should return `true` if the selected range is allowed, and `false` otherwise.
 
+While the range is not allowed, the selection keeps the last allowed range and the cursor changes to `not-allowed`. Releasing the pointer there cancels the selection.
+
 ### selectBackgroundColor
 - Type `string`
 - Default `undefined`
@@ -2154,6 +2660,7 @@ Defines how many pixels the user’s mouse must move before the selection begins
 - Default `'00:30:00'`
 > Views override the default value as follows:
 > - resourceTimelineMonth `{days: 1}`
+> - resourceTimelineYear `{days: 1}`
 
 Defines the frequency for displaying time slots.
 
@@ -2171,13 +2678,7 @@ If set to `false`, then intersecting events will be placed next to each other.
 - Type `integer`
 - Default `24`
 
-Defines the time slot height in pixels in the `timeGrid`/`resourceTimeGrid` views. When changing the setting, you must additionally override the following CSS styles:
-
-```css
-.ec-time-grid .ec-time, .ec-time-grid .ec-line {
-  height: 24px;  /* override this value */
-}
-```
+Defines the time slot height in pixels in the `timeGrid`/`resourceTimeGrid` views.
 
 ### slotLabelFormat
 - Type `object` or `function`
@@ -2210,7 +2711,7 @@ The interval at which slot labels should be displayed in `timeGrid`/`resourceTim
 
 This should be a value that can be parsed into a [Duration](#duration-object) object.
 
-If not specified, then if `slotDuration` is less than 1 hour, the interval is considered to be twice as long, i.e. the labels are displayed every other time.
+If not specified, then if [slotDuration](#slotduration) is less than 1 hour, the interval is considered to be twice as long, i.e. the labels are displayed every other time.
 
 If the interval is set to zero, then labels are displayed for all slots, including the very first one, which is not normally displayed in `timeGrid` views.
 
@@ -2232,32 +2733,47 @@ This should be a value that can be parsed into a [Duration](#duration-object) ob
 
 ### slotWidth
 - Type `integer`
-- Default `72`
+- Default `32`
 
-Defines the time slot width in pixels in `resourceTimeline` views. When changing the setting, you must additionally override the following CSS styles:
+Defines the time slot width in pixels in `resourceTimeline` views.
 
-```css
-.ec-timeline .ec-time, .ec-timeline .ec-line {
-  width: 72px;  /* override this value */
-}
-```
+### snapDuration
+- Type `string`, `integer` or `object`
+- Default `undefined`
+
+Defines the step for the time axis along which an event is [dragged](#editable), [resized](#editable) or [selection](#selectable) is made.
+
+This should be a value that can be parsed into a [Duration](#duration-object) object.
+
+If not specified, then equal to [slotDuration](#slotduration).
 
 ### theme
 - Type `object` or `function`
-- Default `{allDay: 'ec-all-day', active: 'ec-active', bgEvent: 'ec-bg-event', bgEvents: 'ec-bg-events', body: 'ec-body', button: 'ec-button', buttonGroup: 'ec-button-group', calendar: 'ec', container: 'ec-container', content: 'ec-content', day: 'ec-day', dayHead: 'ec-day-head', dayFoot: 'ec-day-foot', days: 'ec-days', daySide: 'ec-day-side', draggable: 'ec-draggable', dragging: 'ec-dragging', event: 'ec-event', eventBody: 'ec-event-body', eventTag: 'ec-event-tag', eventTime: 'ec-event-time', eventTitle: 'ec-event-title', events: 'ec-events', expander: 'ec-expander', extra: 'ec-extra', ghost: 'ec-ghost', handle: 'ec-handle', header: 'ec-header', hiddenScroll: 'ec-hidden-scroll', highlight: 'ec-highlight', icon: 'ec-icon', line: 'ec-line', lines: 'ec-lines', main: 'ec-main', minor: 'ec-minor', noEvents: 'ec-no-events', nowIndicator: 'ec-now-indicator', otherMonth: 'ec-other-month', pointer: 'ec-pointer', popup: 'ec-popup', preview: 'ec-preview', resizer: 'ec-resizer', resizingX: 'ec-resizing-x', resizingY: 'ec-resizing-y', resource: 'ec-resource', selecting: 'ec-selecting', sidebar: 'ec-sidebar', sidebarTitle: 'ec-sidebar-title', today: 'ec-today', time: 'ec-time', times: 'ec-times', title: 'ec-title', toolbar: 'ec-toolbar', view: 'ec-timeline ec-resource-week-view', weekdays: ['ec-sun', 'ec-mon', 'ec-tue', 'ec-wed', 'ec-thu', 'ec-fri', 'ec-sat'], withScroll: 'ec-with-scroll', uniform: 'ec-uniform'}`
+<ul>
+<li>
+<details>
+    <summary>Default</summary>
+
+`{allDay: 'ec-all-day', active: 'ec-active', bgEvent: 'ec-bg-event', bgEvents: 'ec-bg-events', body: 'ec-body', button: 'ec-button', buttonGroup: 'ec-button-group', calendar: 'ec', colHead: 'ec-col-head', day: 'ec-day', dayHead: 'ec-day-head', disabled: 'ec-disabled', endClipped: 'ec-end-clipped', event: 'ec-event', eventBody: 'ec-event-body', eventTime: 'ec-event-time', eventTitle: 'ec-event-title', events: 'ec-events', grid: 'ec-grid', header: 'ec-header', hidden: 'ec-hidden', highlight: 'ec-highlight', icon: 'ec-icon', main: 'ec-main', noIeb: 'ec-no-ieb', noBeb: 'ec-no-beb', today: 'ec-today', title: 'ec-title', toolbar: 'ec-toolbar', view: 'ec-list ec-week-view', weekdays: ['ec-sun', ec-mon', ec-tue', ec-wed', ec-thu', ec-fri', ec-sat'], draggable: 'ec-draggable', ghost: 'ec-ghost', preview: 'ec-preview', pointer: 'ec-pointer', resizer: 'ec-resizer', start: 'ec-start', dragging: 'ec-dragging', resizingY: 'ec-resizing-y', resizingX: 'ec-resizing-x', selecting: 'ec-selecting', notAllowed: 'ec-not-allowed', startClipped: 'ec-start-clipped', uniform: 'ec-uniform', dayFoot: 'ec-day-foot', otherMonth: 'ec-other-month', popup: 'ec-popup', weekNumber: 'ec-week-number', daySide: 'ec-day-side', eventTag: 'ec-event-tag', noEvents: 'ec-no-events', nowIndicator: 'ec-now-indicator', sidebar: 'ec-sidebar', slot: 'ec-slot', colGroup: 'ec-col-group', expander: 'ec-expander', rowHead: 'ec-row-head', slots: 'ec-slots'}`
 > Views override the default value as follows:
+> - dayGridDay `theme => ({...theme, view: 'ec-day-grid ec-day-view'})`
 > - dayGridMonth `theme => ({...theme, view: 'ec-day-grid ec-month-view'})`
+> - dayGridWeek `theme => ({...theme, view: 'ec-day-grid ec-week-view'})`
 > - listDay `theme => ({...theme, view: 'ec-list ec-day-view'})`
 > - listMonth `theme => ({...theme, view: 'ec-list ec-month-view'})`
 > - listWeek `theme => ({...theme, view: 'ec-list ec-week-view'})`
 > - listYear `theme => ({...theme, view: 'ec-list ec-year-view'})`
-> - resourceTimeGridDay `theme => ({...theme, view: 'ec-time-grid ec-resource-day-view'})`
-> - resourceTimeGridWeek `theme => ({...theme, view: 'ec-time-grid ec-resource-week-view'})`
-> - resourceTimelineDay `theme => ({...theme, view: 'ec-timeline ec-resource-day-view'})`
-> - resourceTimelineMonth `theme => ({...theme, view: 'ec-timeline ec-resource-month-view'})`
-> - resourceTimelineWeek `theme => ({...theme, view: 'ec-timeline ec-resource-week-view'})`
+> - resourceTimeGridDay `theme => ({...theme, view: 'ec-resource ec-time-grid ec-day-view'})`
+> - resourceTimeGridWeek `theme => ({...theme, view: 'ec-resource ec-time-grid ec-week-view'})`
+> - resourceTimelineDay `theme => ({...theme, view: 'ec-resource ec-timeline ec-day-view'})`
+> - resourceTimelineMonth `theme => ({...theme, view: 'ec-resource ec-timeline ec-month-view'})`
+> - resourceTimelineWeek `theme => ({...theme, view: 'ec-resource ec-timeline ec-week-view'})`
+> - resourceTimelineYear `theme => ({...theme, view: 'ec-resource ec-timeline ec-year-view'})`
 > - timeGridDay `theme => ({...theme, view: 'ec-time-grid ec-day-view'})`
 > - timeGridWeek `theme => ({...theme, view: 'ec-time-grid ec-week-view'})`
+</details>
+</li>
+</ul>
 
 Defines the CSS classes that EventCalendar uses to generate HTML markup.
 
@@ -2278,11 +2794,47 @@ function (theme) {
 </tr>
 </table>
 
+### timeZone
+- Type `string`
+- Default `'local'`
+
+The time zone the calendar uses to display dates and times.
+
+The following values are accepted:
+- `'local'` — uses the browser's local time zone
+- `'UTC'` — uses UTC (zero offset)
+- A UTC offset string in the form `'±HH:MM'`, e.g. `'+05:30'` or `'-06:00'`
+
+Event dates that contain an explicit timezone offset in their ISO string (e.g. `'2028-06-01T10:00:00+02:00'` or `'2028-06-01T08:00:00Z'`) will be shifted to the calendar's timezone. Event dates without timezone info (e.g. `'2028-06-01T10:00:00'`) are treated as floating — they display their wall-clock time as-is and will be interpreted in the calendar's timezone from that point forward.
+
+When the `timeZone` option changes at runtime, all already-loaded events and the current `date` option are automatically shifted to the new timezone. Events from [eventSources](#eventsources) are re-fetched automatically.
+
+```js
+let ec = new EventCalendar(document.getElementById('ec'), {
+    timeZone: '+02:00',
+    events: [
+        {
+            start: '2028-06-01T10:00:00',        // floating — displayed as 10:00
+            end:   '2028-06-01T12:00:00',
+            title: 'Meeting'
+        },
+        {
+            start: '2028-06-01T10:00:00+00:00',  // UTC — displayed as 12:00 in +02:00
+            end:   '2028-06-01T12:00:00+00:00',
+            title: 'Call'
+        }
+    ]
+});
+```
+
 ### titleFormat
 - Type `object` or `function`
 - Default `{year: 'numeric', month: 'short', day: 'numeric'}`
 > Views override the default value as follows:
 > - dayGridMonth `{year: 'numeric', month: 'long'}`
+> - listDay `{year: 'numeric', month: 'long', day: 'numeric'}`
+> - listMonth `{year: 'numeric', month: 'long'}`
+> - listYear `{year: 'numeric'}`
 > - timeGridDay `{year: 'numeric', month: 'long', day: 'numeric'}`
 
 Defines the text that is displayed in the header toolbar’s title.
@@ -2384,7 +2936,7 @@ The range should be an object with the following properties:
 </td>
 <td>
 
-`string` or `Date` This should be either an ISO8601 date string like `'2025-12-31'`, or a JavaScript Date object holding the range start date
+`string` or `Date` This should be either an ISO8601 date string like `'2026-12-31'`, or a JavaScript Date object holding the range start date
 </td>
 </tr>
 <tr>
@@ -2394,7 +2946,7 @@ The range should be an object with the following properties:
 </td>
 <td>
 
-`string` or `Date` This should be either an ISO8601 date string like `'2025-12-31'`, or a JavaScript Date object holding the range end date
+`string` or `Date` This should be either an ISO8601 date string like `'2026-12-31'`, or a JavaScript Date object holding the range end date
 </td>
 </tr>
 </table>
@@ -2403,9 +2955,26 @@ It is not necessary to specify both properties. The range may have only `start` 
 
 ### view
 - Type `string`
-- Default `'resourceTimeGridWeek'`
+- Default `'timeGridWeek'`
 
-The view that is displayed in the calendar. Can be `'dayGridMonth'`, `'listDay'`, `'listWeek'`, `'listMonth'`, `'listYear'`, `'resourceTimeGridDay'`, `'resourceTimeGridWeek'`, `'resourceTimelineDay'`, `'resourceTimelineWeek'`, `'resourceTimelineMonth'`, `'timeGridDay'` or `'timeGridWeek'`.
+The view that is displayed in the calendar.
+
+The following values are available:
+- `'dayGridDay'`
+- `'dayGridWeek'`
+- `'dayGridMonth'`
+- `'listDay'`
+- `'listWeek'`
+- `'listMonth'`
+- `'listYear'`
+- `'resourceTimeGridDay'`
+- `'resourceTimeGridWeek'`
+- `'resourceTimelineDay'`
+- `'resourceTimelineWeek'`
+- `'resourceTimelineMonth'`
+- `'resourceTimelineYear'`
+- `'timeGridDay'`
+- `'timeGridWeek'`
 
 ### viewDidMount
 - Type `function`
@@ -2435,6 +3004,20 @@ The mounted [View](#view-object) object
 - Default `{}`
 
 You can specify options that apply only to specific views. To do so provide separate options objects within the `views` option, keyed by the name of the view.
+
+If you want to create a custom view, you can use the `type` property to inherit options from a standard view.
+
+```js
+views: {
+    resourceTimelineThreeDays: {
+        type: 'resourceTimelineDay',
+        duration: {days: 3}
+    }
+}
+```
+
+This option is only read when the calendar is created. Changing it afterwards, either with [setOption](#setoption-name-value-) or reactively in Svelte, has no effect.
+
 
 ### weekNumberContent
 - Type `Content` or `function`
@@ -2467,11 +3050,13 @@ function (arg) {
 </tr>
 </table>
 
+In a Svelte component, this content can also be provided as a [snippet](#content-snippets).
+
 ### weekNumbers
 - Type `boolean`
 - Default `false`
 
-Determines whether week numbers should be displayed in the `dayGrid` view.
+Determines whether week numbers should be displayed in `dayGrid`/`resourceTimeline` views.
 
 The numbering of weeks depends on the value of [firstDay](#firstday). When `firstDay` is `0`, the [Western](https://en.wikipedia.org/wiki/Week#Other_week_numbering_systems) system is used. Any other value uses the [ISO](https://en.wikipedia.org/wiki/Week#The_ISO_week_date_system) system.
 
@@ -2481,20 +3066,20 @@ Methods allow you to manipulate EventCalendar after initialization. They are acc
 In Svelte, methods are available from a component instance:
 ```html
 <script>
-    import {Calendar, TimeGrid} from '@event-calendar/core';
+  import {Calendar, TimeGrid} from '@event-calendar/core';
 
-    let ec = $state();
-    let options = $state({
-        view: 'timeGridWeek',
-        eventSources: [{events: function() {
-            console.log('fetching...');
-            return [];
-        }}]
-    });
+  let ec = $state();
+  let options = $state({
+    view: 'timeGridWeek',
+    eventSources: [{events: function() {
+        console.log('fetching...');
+        return [];
+      }}]
+  });
 
-    function invokeMethod() {
-        ec.refetchEvents();
-    }
+  function invokeMethod() {
+    ec.refetchEvents();
+  }
 </script>
 
 <button onclick={invokeMethod}>Refetch events</button>
@@ -2562,7 +3147,12 @@ Updates a single event with the matching `event`.`id`.
 ### refetchEvents()
 - Return value `EventCalendar` The calendar instance for chaining
 
-Refetches events from all sources.
+Refetches events from all [sources](#eventsources).
+
+### refetchResources()
+- Return value `EventCalendar` The calendar instance for chaining
+
+Refetches [resources](#resources) from URL or custom function.
 
 ### dateFromPoint( x, y )
 - Return value `object` or `null`
@@ -2612,6 +3202,20 @@ Using this method, you can, for example, find out on which day a click occurred 
 - Return value `View`
 
 Returns the [View](#view-object) object for the current view.
+
+### gotoDate( date )
+- Parameters
+  - `date` `Date` or `string` This value can be either a JavaScript Date object, or an ISO8601 date string like `'2026-12-31'`
+- Return value `EventCalendar` The calendar instance for chaining
+
+Moves the current calendar date to the given date and, in views with horizontal scrolling (`resourceTimeline` views and `resourceTimeGrid` views with [datesAboveResources](#datesaboveresources) enabled), additionally scrolls the view to make this date visible.
+
+Unlike `setOption('date', date)`, which scrolls the view to today whenever today is inside the new visible period, this method always scrolls to the given date.
+
+```js
+// E.g. Scroll to the date of the found event
+ec.gotoDate(event.start);
+```
 
 ### next()
 - Return value `EventCalendar` The calendar instance for chaining
@@ -2725,7 +3329,21 @@ Here are all properties that exist in Event object:
 
 The rendering type of the event. Can be `'auto'` or `'background'`
 
+In month-based views such as `dayGridMonth` or `resourceTimelineMonth`, background events are displayed only if their `allDay` property is set to `true`
+
 In addition, in your callback functions, you may get the `'ghost'`, `'preview'` and `'pointer'` for this property, which are internal values and are used, for example, to display events during drag-and-drop operations
+</td>
+</tr>
+<tr>
+<td>
+
+`layoutGroup`
+</td>
+<td>
+
+The layout group the event belongs to
+
+Events of the same layout group within a resource row are laid out as a unit: they are placed on the same line whenever they don't overlap each other. Only applies in `resourceTimeline` views with [eventOrderStrict](#eventorderstrict) enabled
 </td>
 </tr>
 <tr>
@@ -2812,7 +3430,7 @@ Here are all admissible fields for the event’s input object:
 </td>
 <td>
 
-`string` or `Date` This should be either an ISO8601 datetime string like `'2022-12-31 09:00:00'`, or a JavaScript Date object holding the event’s start time
+`string` or `Date` This should be either an ISO8601 datetime string like `'2026-12-31 09:00:00'`, or a JavaScript Date object holding the event’s start time
 </td>
 </tr>
 <tr>
@@ -2822,7 +3440,7 @@ Here are all admissible fields for the event’s input object:
 </td>
 <td>
 
-`string` or `Date` This should be either an ISO8601 datetime string like `'2022-12-31 13:00:00'`, or a JavaScript Date object holding the event’s end time
+`string` or `Date` This should be either an ISO8601 datetime string like `'2026-12-31 13:00:00'`, or a JavaScript Date object holding the event’s end time
 </td>
 </tr>
 <tr>
@@ -2883,6 +3501,18 @@ Here are all admissible fields for the event’s input object:
 <td>
 
 `string` The rendering type of the event. Can be `'auto'` or `'background'`. Default `'auto'`
+
+In month-based views such as `dayGridMonth` or `resourceTimelineMonth`, background events are displayed only if their `allDay` property is set to `true`
+</td>
+</tr>
+<tr>
+<td>
+
+`layoutGroup`
+</td>
+<td>
+
+`string` or `number` The layout group the event belongs to. Events of the same layout group within a resource row are laid out as a unit: they are placed on the same line whenever they don't overlap each other. Only applies in `resourceTimeline` views with [eventOrderStrict](#eventorderstrict) enabled
 </td>
 </tr>
 <tr>
@@ -3036,6 +3666,16 @@ The title of the resource. See [Content](#content)
 <tr>
 <td>
 
+`expanded`
+</td>
+<td>
+
+A flag indicating whether the resource is expanded or collapsed if it has nested children. `undefined` means the [resourcesInitiallyExpanded](#resourcesinitiallyexpanded) option applies
+</td>
+</tr>
+<tr>
+<td>
+
 `extendedProps`
 </td>
 <td>
@@ -3093,6 +3733,16 @@ Here are all admissible fields for the resource’s input object:
 <tr>
 <td>
 
+`expanded`
+</td>
+<td>
+
+`boolean` Specifies whether the resource with nested children will be expanded or collapsed. Default `undefined`, which means the [resourcesInitiallyExpanded](#resourcesinitiallyexpanded) option applies
+</td>
+</tr>
+<tr>
+<td>
+
 `extendedProps`
 </td>
 <td>
@@ -3109,7 +3759,7 @@ Here are all admissible fields for the resource’s input object:
 </tr>
 </table>
 
-The `timeline` views support displaying nested resources. Nested resources can be collapsed or expanded using an additional button that appears before the parent resource name. To pass nested resources, use the `children` field:
+The `resourceTimeline` views support displaying nested resources. Nested resources can be collapsed or expanded using an additional button that appears before the parent resource name. To pass nested resources, use the `children` field:
 
 ```js
 resources: [
@@ -3185,16 +3835,14 @@ The library provides a built-in dark theme. You can activate it by adding the `e
 
 If you want the dark theme to be activated automatically based on the [preferred color scheme](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-color-scheme), then use the `ec-auto-dark` CSS class instead.
 
-Please note that the dark theme does not change the background and font color in the calendar. These are assumed to be set by the page styles, and the calendar inherits these styles.
-
-If you do need to set the background or font color of the calendar, use local CSS variables for this:
+You can also customize the colors in the calendar by overriding CSS variables, for example:
 ```css
 .ec {
   --ec-bg-color: #22272e;
   --ec-text-color: #adbac7;
 }
 ```
-A list of all available CSS variables can be found [here](packages/core/src/styles/theme.scss).
+A list of all available CSS variables can be found [here](packages/core/src/styles/theme.css).
 
 ## Browser support
 

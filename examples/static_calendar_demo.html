@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Static Calendar Example</title>
+    <!--
+      Serve the repository root and open /examples/static_calendar_demo.html, e.g.:
+        python3 -m http.server 8000
+        open http://localhost:8000/examples/static_calendar_demo.html
+      (ES modules cannot be loaded from file:// URLs.)
+    -->
+    <link rel="stylesheet" href="../priv/static/assets/static-main.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -77,7 +84,7 @@
                  {"id": 1, "title": "Team Meeting", "start": "2025-08-15T10:00:00", "backgroundColor": "#3b82f6"},
                  {"id": 2, "title": "Project Demo", "start": "2025-08-16T14:00:00", "backgroundColor": "#10b981"}
              ]'
-             data-options='{"view": "dayGridMonth", "eventClick": "CalendarCallbacks.showEventDetails", "dateClick": "CalendarCallbacks.selectDate"}'>
+             data-options='{"view": "dayGridMonth", "date": "2025-08-01", "eventClick": "CalendarCallbacks.showEventDetails", "dateClick": "CalendarCallbacks.selectDate"}'>
         </div>
 
         <div class="callback-demo">
@@ -101,7 +108,7 @@
              data-events='[
                  {"id": 3, "title": "Simple Event", "start": "2025-08-17T09:00:00", "backgroundColor": "#f59e0b"}
              ]'
-             data-options='{"view": "dayGridMonth", "eventClick": "console.log(\"Simple event:\", info.event.title)", "dateClick": "console.log(\"Date:\", info.dateStr)"}'>
+             data-options='{"view": "dayGridMonth", "date": "2025-08-01", "eventClick": "console.log(\"Simple event:\", info.event.title)", "dateClick": "console.log(\"Date:\", info.dateStr)"}'>
         </div>
 
         <div class="callback-demo">
@@ -126,7 +133,7 @@
              data-events='[
                  {"id": 4, "title": "Complex Event", "start": "2025-08-18T11:30:00", "backgroundColor": "#8b5cf6"}
              ]'
-             data-options='{"view": "dayGridMonth", "eventClick": "ComplexCallbacks.handleEventClick"}'>
+             data-options='{"view": "dayGridMonth", "date": "2025-08-01", "eventClick": "ComplexCallbacks.handleEventClick"}'>
         </div>
 
         <div id="event-info" class="event-info">
@@ -163,8 +170,8 @@
     </div>
 
     <script type="module">
-        // Simulate the calendar_component/static import
-        console.log('Loading static calendar functionality...');
+        // In a Phoenix app: import {initStaticCalendars} from "calendar_component/static"
+        import {initStaticCalendars} from "../priv/static/assets/static-main.js";
 
         // Global callback functions (Example 1)
         window.CalendarCallbacks = {
@@ -207,11 +214,8 @@
             }
         });
 
-        console.log('✅ Static calendar callbacks loaded successfully!');
-        console.log('This demonstrates the improved callback system:');
-        console.log('1. Global function references (cleanest)');
-        console.log('2. Function body strings (for simple cases)');
-        console.log('3. Complete function strings (for complex logic)');
+        // Callbacks are resolved when the calendars are created, so define them first.
+        initStaticCalendars();
     </script>
 </body>
 </html>

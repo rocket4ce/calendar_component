@@ -1,7 +1,7 @@
 {
   "name": "calendar_component",
-  "version": "0.2.0",
-  "description": "Phoenix LiveView calendar component with EventCalendar integration",
+  "version": "0.3.0",
+  "description": "Phoenix LiveView calendar components powered by EventCalendar",
   "main": "index.js",
   "module": "index.js",
   "type": "module",
@@ -32,7 +32,8 @@
     "phoenix",
     "liveview",
     "calendar",
-    "elixir"
+    "elixir",
+    "event-calendar"
   ],
   "author": "rocket4ce",
   "license": "MIT",
@@ -45,7 +46,7 @@
   },
   "homepage": "https://github.com/rocket4ce/calendar_component#readme",
   "peerDependencies": {
-    "phoenix": "^1.6.0",
-    "phoenix_live_view": "^0.18.0"
+    "phoenix": "^1.7.0",
+    "phoenix_live_view": "^1.0.0"
   }
 }
