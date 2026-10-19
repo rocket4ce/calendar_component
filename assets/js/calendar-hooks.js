@@ -1,302 +1,294 @@
-import "phoenix_html"
-// Establish Phoenix Socket and LiveView configuration (left to host app).
-// Library exposes hooks only; host app should register them in LiveSocket.
+// LiveView hook for `<.calendar>` (see `LiveCalendar.Components.calendar/1`).
+//
+// The host app registers it in its LiveSocket:
+//
+//   import CalendarHooks from "calendar_component"
+//   new LiveSocket("/live", Socket, {hooks: {...CalendarHooks}})
 
-import {
-	createCalendar,
-	destroyCalendar,
-	TimeGrid,
-	DayGrid,
-	List,
-	Interaction,
-	ResourceTimeGrid,
-	ResourceTimeline
-} from "@event-calendar/core"
+import {createCalendar, destroyCalendar} from "@event-calendar/core"
 import "@event-calendar/core/index.css"
+import {
+	CREATE_ONLY_OPTIONS,
+	PLUGINS,
+	isPlainObject,
+	normalizeEvents,
+	normalizeOptions,
+	parseJSON,
+	resolveCallbacks,
+	serializeDuration,
+	serializeEvent,
+	serializeResource,
+	serializeView,
+	toInstant
+} from "./lib/core.js"
 
-function parseJSON(value, fallback) {
-	try {
-		return value ? JSON.parse(value) : fallback
-	} catch (_e) {
-		return fallback
-	}
+const DEFAULT_VIEW = "timeGridWeek"
+
+// Server events pushed when the component does not configure a name
+// (kept for backwards compatibility). The other callbacks are opt-in.
+const DEFAULT_PUSH_EVENTS = {
+	eventClick: "event_clicked",
+	dateClick: "date_clicked",
+	datesSet: "month_changed"
 }
 
-function pluginsForView(view) {
-	const set = new Set([Interaction])
-	if (typeof view === "string") {
-		if (view.startsWith("timeGrid")) set.add(TimeGrid)
-		if (view.startsWith("dayGrid")) set.add(DayGrid)
-		if (view.startsWith("list")) set.add(List)
-		if (view.startsWith("resourceTimeGrid")) set.add(ResourceTimeGrid)
-		if (view.startsWith("resourceTimeline")) set.add(ResourceTimeline)
-	}
-	// Default to TimeGrid for week/day views
-	if (set.size === 1) set.add(TimeGrid)
-	return Array.from(set)
-}
-
-function getAllPluginsFromOptions(options) {
-	const set = new Set([Interaction])
-
-	// Check initial view
-	const view = options.view || options.initialView || "timeGridWeek"
-	if (view.startsWith("timeGrid")) set.add(TimeGrid)
-	if (view.startsWith("dayGrid")) set.add(DayGrid)
-	if (view.startsWith("list")) set.add(List)
-	if (view.startsWith("resourceTimeGrid")) set.add(ResourceTimeGrid)
-	if (view.startsWith("resourceTimeline")) set.add(ResourceTimeline)
-
-	// Check headerToolbar for additional views
-	const headerToolbar = options.headerToolbar || {}
-	const toolbarValues = Object.values(headerToolbar).join(" ")
-
-	if (toolbarValues.includes("dayGridMonth") || toolbarValues.includes("dayGridWeek")) set.add(DayGrid)
-	if (toolbarValues.includes("timeGridWeek") || toolbarValues.includes("timeGridDay")) set.add(TimeGrid)
-	if (toolbarValues.includes("listWeek") || toolbarValues.includes("listMonth") || toolbarValues.includes("listDay")) set.add(List)
-	if (toolbarValues.includes("resourceTimeGrid")) set.add(ResourceTimeGrid)
-	if (toolbarValues.includes("resourceTimeline")) set.add(ResourceTimeline)
-
-	// Check footerToolbar as well
-	const footerToolbar = options.footerToolbar || {}
-	const footerValues = Object.values(footerToolbar).join(" ")
-
-	if (footerValues.includes("dayGridMonth") || footerValues.includes("dayGridWeek")) set.add(DayGrid)
-	if (footerValues.includes("timeGridWeek") || footerValues.includes("timeGridDay")) set.add(TimeGrid)
-	if (footerValues.includes("listWeek") || footerValues.includes("listMonth") || footerValues.includes("listDay")) set.add(List)
-	if (footerValues.includes("resourceTimeGrid")) set.add(ResourceTimeGrid)
-	if (footerValues.includes("resourceTimeline")) set.add(ResourceTimeline)
-
-	// Default to TimeGrid for week/day views if nothing else is specified
-	if (set.size === 1) set.add(TimeGrid)
-	return Array.from(set)
-}
-
-function validateEvent(event) {
-	if (!event) return null
-
-	// Ensure we have valid dates
-	if (event.start && typeof event.start === 'string') {
-		try {
-			new Date(event.start).toISOString()
-		} catch (e) {
-			console.warn('Invalid start date for event:', event.id, event.start)
-			return null
+// EventCalendar callbacks the hook forwards to LiveView, with the payload sent for each one.
+const PAYLOADS = {
+	eventClick: (info, tz) => ({
+		id: info.event?.id,
+		event: serializeEvent(info.event, tz),
+		view: serializeView(info.view)
+	}),
+	dateClick: (info, tz) => ({
+		date: toInstant(info.date, tz),
+		dateStr: info.dateStr,
+		allDay: !!info.allDay,
+		resource: serializeResource(info.resource),
+		view: serializeView(info.view)
+	}),
+	datesSet: (info, tz) => {
+		const current = info.view?.currentStart || info.start
+		return {
+			month: current ? current.getMonth() + 1 : null,
+			year: current ? current.getFullYear() : null,
+			start: toInstant(info.start, tz),
+			end: toInstant(info.end, tz),
+			startStr: info.startStr,
+			endStr: info.endStr,
+			view: serializeView(info.view)
 		}
-	}
-
-	if (event.end && typeof event.end === 'string') {
-		try {
-			new Date(event.end).toISOString()
-		} catch (e) {
-			console.warn('Invalid end date for event:', event.id, event.end)
-			event = { ...event, end: undefined } // Remove invalid end date
-		}
-	}
-
-	return event
+	},
+	eventDrop: (info, tz) => ({
+		id: info.event?.id,
+		event: serializeEvent(info.event, tz),
+		oldEvent: serializeEvent(info.oldEvent, tz),
+		delta: serializeDuration(info.delta),
+		oldResource: serializeResource(info.oldResource),
+		newResource: serializeResource(info.newResource),
+		view: serializeView(info.view)
+	}),
+	eventResize: (info, tz) => ({
+		id: info.event?.id,
+		event: serializeEvent(info.event, tz),
+		oldEvent: serializeEvent(info.oldEvent, tz),
+		startDelta: serializeDuration(info.startDelta),
+		endDelta: serializeDuration(info.endDelta),
+		view: serializeView(info.view)
+	}),
+	select: (info, tz) => ({
+		start: toInstant(info.start, tz),
+		end: toInstant(info.end, tz),
+		startStr: info.startStr,
+		endStr: info.endStr,
+		allDay: !!info.allDay,
+		resource: serializeResource(info.resource),
+		view: serializeView(info.view)
+	})
 }
 
-function validateEventsForResources(events, options) {
-	const view = options.view || options.initialView || "timeGridWeek"
-	const isResourceView = view.startsWith("resource")
+const MANAGED_CALLBACKS = Object.keys(PAYLOADS)
 
-	if (!isResourceView) {
-		return events.map(validateEvent).filter(Boolean)
-	}
+// Calendar methods the server can call with
+// `push_event(socket, "calendar:command", %{id: id, command: ..., args: [...]})`
+// (see `CalendarComponent.push_command/4`).
+const COMMANDS = {
+	gotoDate: (ec, date) => ec.gotoDate(date),
+	next: ec => ec.next(),
+	prev: ec => ec.prev(),
+	today: ec => ec.gotoDate(new Date()),
+	refetchEvents: ec => ec.refetchEvents(),
+	refetchResources: ec => ec.refetchResources(),
+	unselect: ec => ec.unselect(),
+	setOption: (ec, name, value) => ec.setOption(name, value)
+}
 
-	// For resource views, ensure we have resources defined
-	if (!options.resources || !Array.isArray(options.resources) || options.resources.length === 0) {
-		console.warn('Resource view requires options.resources to be defined')
-		return []
-	}
+const LiveCalendar = {
+	mounted() {
+		this._eventsJSON = this.el.dataset.events || "[]"
+		this._optionsJSON = this.el.dataset.options || "{}"
+		this._readCallbackConfig()
 
-	const resourceIds = new Set()
-	function collectResourceIds(resources) {
-		resources.forEach(resource => {
-			resourceIds.add(resource.id)
-			if (resource.children) {
-				collectResourceIds(resource.children)
-			}
+		const options = this._prepareOptions(parseJSON(this._optionsJSON, {}))
+		const handlers = Object.fromEntries(
+			MANAGED_CALLBACKS.map(name => [name, info => this._dispatch(name, info)])
+		)
+
+		this._ec = createCalendar(this.el, PLUGINS, {
+			...options,
+			...handlers,
+			events: normalizeEvents(parseJSON(this._eventsJSON, []))
 		})
-	}
-	collectResourceIds(options.resources)
+		this.el._calendarInstance = this._ec
 
-	// Filter events and ensure they have valid resourceId
-	return events.map(event => {
-		const validated = validateEvent(event)
-		if (!validated) return null
-
-		// For resource views, events must have a valid resourceId
-		if (validated.resourceId === undefined || validated.resourceId === null) {
-			console.warn('Event in resource view missing resourceId:', validated.id)
-			return null
-		}
-
-		if (!resourceIds.has(validated.resourceId)) {
-			console.warn('Event has invalid resourceId:', validated.id, validated.resourceId)
-			return null
-		}
-
-		return validated
-	}).filter(Boolean)
-}
-
-		const LiveCalendar = {
-		mounted() {
-			const rawEvents = parseJSON(this.el.dataset.events, [])
-			const options = parseJSON(this.el.dataset.options, {})
-			const jsCallbacks = parseJSON(this.el.dataset.jsCallbacks, {})
-			const view = options.view || options.initialView || "timeGridWeek"
-			const plugins = getAllPluginsFromOptions(options)
-
-			// Debug: log the options to see what we're getting
-			console.log('Calendar options received:', options)
-			console.log('Resolved view:', view)
-
-			// Store JS callbacks for use in event handlers
-			this._jsCallbacks = jsCallbacks
-
-			// Validate events based on view type and resources
-			const events = validateEventsForResources(rawEvents, options)
-
-			// Extract LiveView integration options
-			const lv = options.lv || {}
-			const onEventClickName = lv.onEventClick || "event_clicked"
-			const onDateClickName = lv.onDateClick || "date_clicked"
-			const onMonthChangeName = lv.onMonthChange || "month_changed"
-
-			// Keep user handlers if provided to compose with them
-			const userEventClick = typeof options.eventClick === "function" ? options.eventClick : null
-			const userDateClick = typeof options.dateClick === "function" ? options.dateClick : null
-			const userDatesSet = typeof options.datesSet === "function" ? options.datesSet : null
-
-			// Avoid passing internal lv key and invalid view option to calendar
-			const { lv: _lv, view: _view, ...baseOptions } = options
-
-			console.log('Filtered out lv:', _lv, 'and view:', _view)
-			console.log('BaseOptions after filtering:', baseOptions)
-
-			const merged = {
-				...baseOptions,
-				initialView: view,
-				events,
-				// Compose user handlers with LiveView pushes and JS commands
-				eventClick: (arg) => {
-					try { userEventClick?.(arg) } catch (_e) {}
-
-					// Execute JS command if provided
-					if (this._jsCallbacks?.onEventClick) {
-						try {
-							this.liveSocket.execJS(this.el, this._jsCallbacks.onEventClick, "click")
-						} catch (_e) {}
-					}
-
-					// Still push the event for backwards compatibility
-					const payload = { id: arg?.event?.id, event: safeEvent(arg?.event) }
-					this.pushEvent(onEventClickName, payload)
-				},
-				dateClick: (arg) => {
-					try { userDateClick?.(arg) } catch (_e) {}
-
-					// Execute JS command if provided
-					if (this._jsCallbacks?.onDateClick) {
-						try {
-							this.liveSocket.execJS(this.el, this._jsCallbacks.onDateClick, "click")
-						} catch (_e) {}
-					}
-
-					// Still push the event for backwards compatibility
-					const payload = { date: arg?.date?.toISOString?.() || arg?.date || null }
-					this.pushEvent(onDateClickName, payload)
-				},
-				datesSet: (arg) => {
-					try { userDatesSet?.(arg) } catch (_e) {}
-
-					// Execute JS command if provided
-					if (this._jsCallbacks?.onMonthChange) {
-						try {
-							this.liveSocket.execJS(this.el, this._jsCallbacks.onMonthChange, "change")
-						} catch (_e) {}
-					}
-
-					// Still push the event for backwards compatibility
-					const start = toISODate(arg?.start)
-					const month = arg?.start?.getMonth ? arg.start.getMonth() + 1 : null
-					const year = arg?.start?.getFullYear?.() || null
-					this.pushEvent(onMonthChangeName, { month, year, start })
-				}
-			}
-
-			console.log('Final merged options for calendar:', merged)
-			this._ec = createCalendar(this.el, plugins, merged)
-			this._hasEvents = events.length > 0  // Track if we have events
-			console.log('Calendar created with view:', this._ec.getOption?.('initialView') || 'unknown')
-		},
+		this.handleEvent("calendar:command", payload => this._runCommand(payload))
+	},
 
 	updated() {
 		if (!this._ec) return
-		const rawEvents = parseJSON(this.el.dataset.events, [])
-		const options = parseJSON(this.el.dataset.options, {})
-		const jsCallbacks = parseJSON(this.el.dataset.jsCallbacks, {})
+		this._readCallbackConfig()
 
-		// Validate events based on current view type and resources
-		const events = validateEventsForResources(rawEvents, options)
+		const optionsJSON = this.el.dataset.options || "{}"
+		if (optionsJSON !== this._optionsJSON) {
+			this._optionsJSON = optionsJSON
+			const previous = this._snapshot
+			const options = this._prepareOptions(parseJSON(optionsJSON, {}))
 
-		// Defensive: Don't clear calendar if we receive empty events but had events before
-		const shouldUpdateEvents = events.length > 0 || !this._hasEvents
-		this._hasEvents = events.length > 0
-
-		console.log('Updated called - rawEvents count:', rawEvents.length, 'shouldUpdateEvents:', shouldUpdateEvents)
-
-		try {
-			if (shouldUpdateEvents) {
-				console.log('Updating events to:', events)
-				this._ec.setOption("events", events)
-			} else {
-				console.log('Skipping events update - would clear existing events with empty array')
+			// Only changed options are applied, so re-renders don't reset what the user
+			// did on the client (navigated dates, switched views, ...).
+			for (const [name, value] of Object.entries(options)) {
+				if (CREATE_ONLY_OPTIONS.includes(name)) continue
+				if (previous[name] === this._snapshot[name]) continue
+				this._ec.setOption(name, value)
 			}
-
-			for (const [k, v] of Object.entries(options || {})) {
-				if (k === "events") continue
-				if (k === "lv") continue
-				if (k === "view") continue  // Filter out invalid view option
-				this._ec.setOption(k, v)
-			}
-		} catch (_e) {
-			// no-op fallback if calendar not ready
 		}
 
-		// Store updated JS callbacks for next interaction
-		this._jsCallbacks = jsCallbacks
+		const eventsJSON = this.el.dataset.events || "[]"
+		if (eventsJSON !== this._eventsJSON) {
+			this._eventsJSON = eventsJSON
+			this._ec.setOption("events", normalizeEvents(parseJSON(eventsJSON, [])))
+		}
 	},
 
 	destroyed() {
-		if (this._ec) {
-			try { destroyCalendar(this._ec) } catch (_e) {}
-			this._ec = null
+		if (!this._ec) return
+		try {
+			destroyCalendar(this._ec)
+		} catch (_e) {
+			// The calendar may already be gone together with its element.
+		}
+		this.el._calendarInstance = null
+		this._ec = null
+	},
+
+	// Normalizes options, keeps a JSON snapshot of each one for change detection and
+	// separates user callbacks for the events this hook manages.
+	_prepareOptions(rawOptions) {
+		const normalized = normalizeOptions(rawOptions, DEFAULT_VIEW)
+		delete normalized.events
+
+		this._snapshot = Object.fromEntries(
+			Object.entries(normalized).map(([name, value]) => [name, JSON.stringify(value)])
+		)
+
+		const options = resolveCallbacks(normalized)
+		this._userCallbacks = {}
+		for (const name of MANAGED_CALLBACKS) {
+			if (options[name]) this._userCallbacks[name] = options[name]
+			delete options[name]
+		}
+
+		if (isPlainObject(options.customButtons)) {
+			options.customButtons = this._withPushButtons(options.customButtons)
+		}
+
+		return options
+	},
+
+	// Custom buttons may declare `push: "event_name"` to notify the server when clicked.
+	_withPushButtons(buttons) {
+		return Object.fromEntries(
+			Object.entries(buttons).map(([name, button]) => {
+				if (!isPlainObject(button) || typeof button.push !== "string") return [name, button]
+				const {push, ...rest} = button
+				const click = rest.click
+				return [
+					name,
+					{
+						...rest,
+						click: (...args) => {
+							if (click) click(...args)
+							this._push(push, {button: name, view: serializeView(this._ec?.getView())})
+						}
+					}
+				]
+			})
+		)
+	},
+
+	_readCallbackConfig() {
+		const pushEvents = parseJSON(this.el.dataset.pushEvents, null)
+		this._pushEvents = isPlainObject(pushEvents) ? pushEvents : DEFAULT_PUSH_EVENTS
+		this._jsCallbacks = parseJSON(this.el.dataset.jsCallbacks, {}) || {}
+	},
+
+	_dispatch(name, info) {
+		const userCallback = this._userCallbacks[name]
+		if (userCallback) {
+			try {
+				userCallback(info)
+			} catch (e) {
+				console.error(`[calendar_component] ${name} callback failed:`, e)
+			}
+		}
+
+		const ops = this._jsCallbacks[name]
+		const eventName = this._pushEvents[name]
+		if (!ops && !eventName) return
+
+		const payload = PAYLOADS[name](info, this._ec?.getOption("timeZone"))
+
+		if (ops) this._execJS(ops, payload)
+
+		if (eventName) {
+			// `{:reply, %{revert: true}, socket}` undoes a drop/resize the server rejected.
+			this._push(eventName, payload, reply => {
+				if (reply?.revert && typeof info.revert === "function") info.revert()
+			})
+		}
+	},
+
+	// Runs the JS commands given to the component; `JS.push` operations receive the
+	// callback payload merged into their `value` (explicit values win).
+	_execJS(ops, payload) {
+		if (!Array.isArray(ops)) return
+
+		const encoded = JSON.stringify(
+			ops.map(([kind, args]) =>
+				kind === "push" ? [kind, {...args, value: {...payload, ...(args?.value || {})}}] : [kind, args]
+			)
+		)
+
+		try {
+			if (typeof this.js === "function") this.js().exec(encoded)
+			else this.liveSocket.execJS(this.el, encoded, "hook")
+		} catch (e) {
+			console.error("[calendar_component] Failed to execute JS commands:", e)
+		}
+	},
+
+	_push(eventName, payload, onReply = () => {}) {
+		try {
+			// Passing a reply callback makes LiveView swallow errors when disconnected.
+			this.pushEvent(eventName, payload, onReply)
+		} catch (e) {
+			console.error(`[calendar_component] Failed to push "${eventName}":`, e)
+		}
+	},
+
+	_runCommand(payload) {
+		const {id, command, args} = payload || {}
+		if (id !== this.el.id || !this._ec) return
+
+		const run = COMMANDS[command]
+		if (!run) {
+			console.warn(`[calendar_component] Unknown calendar command "${command}"`)
+			return
+		}
+
+		try {
+			run(this._ec, ...(Array.isArray(args) ? args : []))
+		} catch (e) {
+			console.error(`[calendar_component] Calendar command "${command}" failed:`, e)
 		}
 	}
 }
 
-function toISODate(d) {
-	try { return d?.toISOString?.() || null } catch (_e) { return null }
-}
-
-function safeEvent(ev) {
-	if (!ev) return null
-	// pick common fields to avoid circular/json issues
-	const { id, title, start, end, allDay } = ev
-	return { id, title, start, end, allDay }
-}
-
-// Expose hooks for host app LiveSocket registration
-// Example in host app:
-//   import Hooks from "calendar_component"; new LiveSocket("/live", Socket, { hooks: Hooks })
-const Hooks = { LiveCalendar }
+// Kept for apps that read the hooks from the global scope.
+const Hooks = {LiveCalendar}
 
 if (typeof window !== "undefined") {
 	window.LiveCalendarHooks = Hooks
 }
 
+export {LiveCalendar}
 export default Hooks

@@ -1,12 +1,14 @@
 {
-  "name": "calendar_component",
-  "version": "1.0.0",
+  "name": "calendar_component_assets",
+  "private": true,
   "type": "module",
-  "author": "",
-  "license": "ISC",
-  "description": "A calendar component for Phoenix applications",
+  "description": "JavaScript sources of the calendar_component Phoenix library",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
   "dependencies": {
-    "@event-calendar/core": "^4.5.1",
+    "@event-calendar/core": "^5.17.2",
     "phoenix": "../deps/phoenix",
     "phoenix_html": "../deps/phoenix_html",
     "phoenix_live_view": "../deps/phoenix_live_view"

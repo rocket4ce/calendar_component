@@ -1,6 +1,4 @@
-// Static calendar entry point that bundles both JavaScript and CSS
-import StaticCalendar from "./static-calendar.js";
-import "@event-calendar/core/index.css";
-
-// Re-export the static calendar functions as default export
-export default StaticCalendar;
+// Entry point of the static calendar bundle (priv/static/assets/static-main.{js,css}).
+// The EventCalendar stylesheet is imported by the module and emitted as static-main.css.
+export * from "./static-calendar.js"
+export {default} from "./static-calendar.js"

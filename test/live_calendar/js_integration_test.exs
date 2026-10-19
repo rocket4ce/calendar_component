@@ -82,23 +82,35 @@ defmodule LiveCalendar.JSIntegrationTest do
 
   test "JS commands are properly converted and passed to the client" do
     conn = build_conn()
-    {:ok, view, html} = live_isolated(conn, LV)
+    {:ok, view, _html} = live_isolated(conn, LV)
 
-    # Check that the calendar component includes the JS callbacks
-    assert html =~ ~s(data-js-callbacks)
-    assert html =~ ~s(&quot;onEventClick&quot;)
-    assert html =~ ~s(&quot;onDateClick&quot;)
-    assert html =~ ~s(&quot;onMonthChange&quot;)
+    [callbacks] =
+      view |> element("#cal") |> render() |> LazyHTML.from_fragment() |> LazyHTML.attribute("data-js-callbacks")
 
-    # The JS commands should contain the push commands
-    assert html =~ ~s(select_event)
-    assert html =~ ~s(select_date)
-    assert html =~ ~s(month_changed)
+    callbacks = Jason.decode!(callbacks)
 
-    # And should also contain client-side JS commands
-    assert html =~ ~s(show)
-    assert html =~ ~s(add_class)
-    assert html =~ ~s(dispatch)
+    assert callbacks["eventClick"] == [["push", %{"event" => "select_event"}], ["show", %{"to" => "#event-modal"}]]
+
+    assert callbacks["dateClick"] == [
+             ["push", %{"event" => "select_date"}],
+             ["add_class", %{"names" => ["highlighted"], "to" => ".fc-day"}]
+           ]
+
+    assert callbacks["datesSet"] == [["push", %{"event" => "month_changed"}], ["dispatch", %{"event" => "month:changed"}]]
+
+    # Every callback pushes through its JS commands, so no default events are pushed
+    [push_events] =
+      view |> element("#cal") |> render() |> LazyHTML.from_fragment() |> LazyHTML.attribute("data-push-events")
+
+    assert Jason.decode!(push_events) == %{}
+  end
+
+  test "JS.push handlers receive the callback payload" do
+    conn = build_conn()
+    {:ok, view, _html} = live_isolated(conn, LV)
+
+    render_hook(view, "select_event", %{"id" => "event-2", "event" => %{"id" => "event-2"}})
+    assert render(view) =~ ~s(data-selected-event="event-2")
   end
 
   test "event handlers still work for backwards compatibility" do
