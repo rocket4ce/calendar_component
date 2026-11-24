@@ -19,7 +19,7 @@ Add `calendar_component` to your dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:calendar_component, "~> 0.3.0"}
+    {:calendar_component, "~> 0.4.0"}
   ]
 end
 ```
@@ -46,7 +46,8 @@ esbuild configuration.
 
 ### CSS
 
-Import the EventCalendar stylesheet in `assets/css/app.css`:
+The JavaScript entry point does **not** import the stylesheet, so esbuild never writes a CSS
+file next to your `app.js`. Import it in `assets/css/app.css` instead:
 
 ```css
 @import "../../deps/calendar_component/priv/static/assets/main.css";
@@ -104,6 +105,23 @@ The container is rendered with `phx-update="ignore"`: LiveView never touches the
 while changes to `events` and `options` are still applied by the hook. Only options whose value
 changed are re-applied, so unrelated re-renders don't reset the date or the view the user
 navigated to.
+
+> [!IMPORTANT]
+> On a `phx-update="ignore"` element LiveView merges `data-*` attributes only. Anything passed
+> to `<.calendar>` through global attributes (`class`, `style`, `aria-*`, ...) is rendered once
+> and never updated again. Put dynamic classes on a wrapper element:
+>
+> ```heex
+> <div class={@theme}>
+>   <.calendar id="calendar" events={@events} />
+> </div>
+> ```
+
+Removing an option from `options` restores the value it had before the hook first applied it.
+EventCalendar cannot recover the built-in default of an option that was already set when the
+calendar was created, so the browser console warns and keeps the current value; send the option
+with an explicit value instead of removing it. `views` is only read at creation time and
+changing it later is ignored (also with a warning).
 
 ### Callbacks
 
@@ -190,6 +208,12 @@ def handle_event("range_selected", %{"start" => start, "end" => finish}, socket)
 end
 ```
 
+> [!NOTE]
+> `%{revert: true}` travels back on the hook's own push, so it only works when `on_event_drop`
+> and `on_event_resize` are given a **string**. A `JS.push/2` goes through LiveView's command
+> pipeline and its reply never reaches the hook; the console warns when the component is
+> configured that way.
+
 ### Driving the calendar from the server
 
 ```elixir
@@ -198,9 +222,20 @@ socket
 |> CalendarComponent.push_command("calendar", :set_option, ["view", "timeGridDay"])
 ```
 
-Commands: `:goto_date`, `:next`, `:prev`, `:today`, `:refetch_events`, `:refetch_resources`,
-`:unselect` and `:set_option`. Changing an option in `options` works as well, it is applied
-whenever its value changes.
+| Command | Arguments | Does |
+| --- | --- | --- |
+| `:goto_date` | `[date]` | Moves to a `Date`, `DateTime` or ISO8601 string |
+| `:next`, `:prev`, `:today` | — | Navigates the current view |
+| `:set_option` | `[name, value]` | Sets any EventCalendar option |
+| `:add_event` | `[event]` | Adds one event |
+| `:update_event` | `[event]` | Replaces the event with the same `id` |
+| `:remove_event` | `[id]` | Removes one event |
+| `:refetch_events`, `:refetch_resources` | — | Reloads `eventSources` / `resources` given as URLs |
+| `:unselect` | — | Clears the current selection |
+
+Changing an option in `options` works as well, it is applied whenever its value changes.
+`:add_event`, `:update_event` and `:remove_event` avoid re-sending the whole `events` list for
+a single change; keep the `events` assign in sync if a later re-render may change it.
 
 ### Custom buttons
 
@@ -255,9 +290,9 @@ initStaticCalendars()  // optional, calendars are also initialized on page load
 ```
 
 Callback options given as strings are resolved to global functions. Short function bodies
-receiving `info` are also accepted (max. 200 characters, keywords such as `function`, `eval`
-or `setTimeout` are rejected), but global function references are recommended. See the
-[static calendar guide](guides/static_calendar_usage.md) and [security notes](docs/security.md).
+receiving `info` still work but are **deprecated** and log a warning: they are compiled with
+`new Function`, need `'unsafe-eval'` in a `script-src` CSP, and are removed in 1.0. See the
+[static calendar guide](guides/static_calendar_usage.md) and the [security notes](docs/security.md).
 
 `initStaticCalendar(el)`, `getStaticCalendar(el)`, `updateStaticCalendarEvents(el, events)` and
 `destroyStaticCalendar(el)` manage single calendars.
@@ -335,6 +370,18 @@ events = [%{id: 1, title: "Workshop", start: "2026-10-05T09:00:00", end: "2026-1
 `resources` and `eventSources` can also be URLs (`%{url: "/api/resources"}`), refreshed with
 `push_command(socket, id, :refetch_resources)` / `:refetch_events`.
 
+## Upgrading from 0.3.x
+
+- **The JavaScript entry no longer imports the stylesheet.** It used to make esbuild write the
+  EventCalendar CSS to `priv/static/assets/app.css` in the host app, which is the file Tailwind
+  writes in the Phoenix 1.7 layout; since `mix assets.deploy` runs esbuild after tailwind, the
+  Tailwind build was overwritten. Make sure your `assets/css/app.css` has the `@import` shown
+  in the [CSS section](#css) and rebuild.
+- Removing an option from `options` now restores its previous value instead of leaving the last
+  one applied.
+- Inline callback bodies in `static_calendar/1` are deprecated and log a warning.
+- The npm package no longer declares `require` conditions; it is ESM only.
+
 ## Upgrading from 0.2.x
 
 - EventCalendar was upgraded from 4.5 to 5.17. Its CSS Grid layout and styles changed, so
@@ -352,15 +399,34 @@ events = [%{id: 1, title: "Workshop", start: "2026-10-05T09:00:00", end: "2026-1
   the first visible day).
 - The unused `tzdata` and `mimerl` dependencies and the placeholder `hello` function were removed.
 
+## Example application
+
+`examples/calendar_demo` is a Phoenix 1.8.17 app wired to this library with a path dependency.
+It serves a LiveView calendar and a static one, and doubles as the end-to-end test bed:
+
+```bash
+cd examples/calendar_demo
+mix setup
+mix phx.server     # http://localhost:4000
+mix test
+```
+
+See its [README](examples/calendar_demo/README.md) for how the hook, the stylesheet and the npm
+resolution are wired.
+
 ## Development
 
 ```bash
 mix setup                 # deps, esbuild, assets and format
-cd assets && npm install  # EventCalendar sources
+cd assets && npm ci       # EventCalendar sources, from the lockfile
 mix assets.build          # builds priv/static/assets
 mix test                  # Elixir tests
 cd assets && npm test     # JavaScript tests
+mix format --check-formatted
 ```
+
+`priv/static/assets` is committed and shipped in the package, so rebuild it whenever you change
+anything under `assets/js`. CI fails when the bundles and the sources disagree.
 
 ## Acknowledgments
 

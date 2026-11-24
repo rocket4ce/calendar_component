@@ -4,9 +4,9 @@
 //   import {initStaticCalendars} from "calendar_component"           // controllers
 //   import {initStaticCalendars} from "calendar_component/static"    // controllers, without hooks
 //
-// The EventCalendar stylesheet is shipped as priv/static/assets/main.css.
-
-import "./priv/static/assets/main.css"
+// The stylesheet is NOT imported here on purpose: in a standard Phoenix app esbuild would
+// then emit it next to app.js as priv/static/assets/app.css, overwriting the Tailwind output.
+// Import it from your CSS instead (see the installation guide), or from "calendar_component/css".
 
 import CalendarHooks, {
   destroyStaticCalendar,

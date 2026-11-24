@@ -1,23 +1,14 @@
 {
   "name": "calendar_component",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Phoenix LiveView calendar components powered by EventCalendar",
   "main": "index.js",
   "module": "index.js",
   "type": "module",
   "exports": {
-    ".": {
-      "import": "./index.js",
-      "require": "./index.js"
-    },
-    "./hooks": {
-      "import": "./priv/static/assets/main.js",
-      "require": "./priv/static/assets/main.js"
-    },
-    "./static": {
-      "import": "./priv/static/assets/static-main.js",
-      "require": "./priv/static/assets/static-main.js"
-    },
+    ".": "./index.js",
+    "./hooks": "./priv/static/assets/main.js",
+    "./static": "./priv/static/assets/static-main.js",
     "./css": "./priv/static/assets/main.css",
     "./static-css": "./priv/static/assets/static-main.css"
   },

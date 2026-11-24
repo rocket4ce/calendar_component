@@ -3,6 +3,9 @@
 `static_calendar/1` renders a calendar in regular controller templates, without LiveView.
 Interactions are handled with JavaScript callbacks.
 
+> This component has no hook and no `phx-update="ignore"`, so inside a LiveView the next DOM
+> patch wipes the calendar. Use `calendar/1` there.
+
 ## 1. Basic setup
 
 ```elixir
@@ -105,7 +108,7 @@ References are resolved when the calendar is created, so define the functions be
 page finishes loading (for example in `app.js`). References that don't exist are ignored with
 a console warning.
 
-### Short function bodies (limited)
+### Short function bodies (deprecated)
 
 ```heex
 <LiveCalendar.Components.static_calendar
@@ -117,7 +120,12 @@ a console warning.
 
 The body receives `info`. It is limited to 200 characters and bodies containing `function`,
 `=>`, `eval`, `setTimeout`, `setInterval`, `import`, `constructor` or `prototype` are
-rejected. Never build these strings from user input; see the [security notes](../docs/security.md).
+rejected.
+
+**This format is deprecated and will be removed in 1.0.** It logs a warning, it is compiled
+with `new Function` (so it needs `'unsafe-eval'` in a `script-src` CSP), and the keyword filter
+is a guard rail, not a sandbox. Never build these strings from user input; see the
+[security notes](../docs/security.md). Use a global function reference instead.
 
 ## 4. Complete example: loading and saving events over HTTP
 

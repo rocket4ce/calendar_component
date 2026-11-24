@@ -22,6 +22,10 @@ calendar_component-*.tar
 # Temporary files, for example, from tests.
 /tmp/
 /assets/node_modules/
-/assets/package-lock.json
 .todos.md
 /.github/PLAN.md
+
+# Editor and local tooling configuration.
+/.vscode/
+/.elixir_ls/
+/.lexical/

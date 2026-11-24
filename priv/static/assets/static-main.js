@@ -12723,6 +12723,9 @@ var DANGEROUS_KEYWORDS = [
 ];
 var MAX_INLINE_LENGTH = 200;
 function compileInlineCallback(body, name) {
+  console.warn(
+    `[calendar_component] Inline callback bodies are deprecated and will be removed in 1.0. Use a global function reference for ${name} (e.g. "MyApp.Calendar.onEventClick").`
+  );
   const lower = body.toLowerCase();
   const keyword = DANGEROUS_KEYWORDS.find((k) => lower.includes(k));
   if (keyword) {
@@ -12743,6 +12746,116 @@ function compileInlineCallback(body, name) {
     return null;
   }
 }
+var pad = (n) => String(n).padStart(2, "0");
+function toWallClock(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return null;
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
+function toInstant(date, timeZone) {
+  const wallClock = toWallClock(date);
+  if (!wallClock) return null;
+  if (timeZone === "UTC") return `${wallClock}Z`;
+  if (typeof timeZone === "string" && /^[+-]\d{2}:\d{2}$/.test(timeZone)) return `${wallClock}${timeZone}`;
+  return date.toISOString();
+}
+function serializeEvent(event2, timeZone) {
+  if (!event2) return null;
+  return {
+    id: event2.id,
+    title: typeof event2.title === "string" ? event2.title : null,
+    start: toInstant(event2.start, timeZone),
+    end: toInstant(event2.end, timeZone),
+    startStr: toWallClock(event2.start),
+    endStr: toWallClock(event2.end),
+    allDay: !!event2.allDay,
+    resourceIds: event2.resourceIds || [],
+    display: event2.display,
+    backgroundColor: event2.backgroundColor,
+    textColor: event2.textColor,
+    extendedProps: event2.extendedProps || {}
+  };
+}
+function serializeResource(resource) {
+  if (!resource) return null;
+  return {
+    id: resource.id,
+    title: typeof resource.title === "string" ? resource.title : null,
+    extendedProps: resource.extendedProps || {}
+  };
+}
+function serializeView(view2) {
+  if (!view2) return null;
+  return {
+    type: view2.type,
+    title: view2.title,
+    currentStart: toWallClock(view2.currentStart),
+    currentEnd: toWallClock(view2.currentEnd),
+    activeStart: toWallClock(view2.activeStart),
+    activeEnd: toWallClock(view2.activeEnd)
+  };
+}
+function serializeDuration(duration) {
+  if (!duration) return null;
+  return {
+    years: duration.years || 0,
+    months: duration.months || 0,
+    days: duration.days || 0,
+    seconds: duration.seconds || 0
+  };
+}
+var PAYLOADS = {
+  eventClick: (info, tz) => ({
+    id: info.event?.id,
+    event: serializeEvent(info.event, tz),
+    view: serializeView(info.view)
+  }),
+  dateClick: (info, tz) => ({
+    date: toInstant(info.date, tz),
+    dateStr: info.dateStr,
+    allDay: !!info.allDay,
+    resource: serializeResource(info.resource),
+    view: serializeView(info.view)
+  }),
+  datesSet: (info, tz) => {
+    const current = info.view?.currentStart || info.start;
+    return {
+      month: current ? current.getMonth() + 1 : null,
+      year: current ? current.getFullYear() : null,
+      start: toInstant(info.start, tz),
+      end: toInstant(info.end, tz),
+      startStr: info.startStr,
+      endStr: info.endStr,
+      view: serializeView(info.view)
+    };
+  },
+  eventDrop: (info, tz) => ({
+    id: info.event?.id,
+    event: serializeEvent(info.event, tz),
+    oldEvent: serializeEvent(info.oldEvent, tz),
+    delta: serializeDuration(info.delta),
+    oldResource: serializeResource(info.oldResource),
+    newResource: serializeResource(info.newResource),
+    view: serializeView(info.view)
+  }),
+  eventResize: (info, tz) => ({
+    id: info.event?.id,
+    event: serializeEvent(info.event, tz),
+    oldEvent: serializeEvent(info.oldEvent, tz),
+    startDelta: serializeDuration(info.startDelta),
+    endDelta: serializeDuration(info.endDelta),
+    view: serializeView(info.view)
+  }),
+  select: (info, tz) => ({
+    start: toInstant(info.start, tz),
+    end: toInstant(info.end, tz),
+    startStr: info.startStr,
+    endStr: info.endStr,
+    allDay: !!info.allDay,
+    resource: serializeResource(info.resource),
+    view: serializeView(info.view)
+  })
+};
+var MANAGED_CALLBACKS = Object.keys(PAYLOADS);
 
 // js/static-calendar.js
 var DEFAULT_VIEW = "dayGridMonth";

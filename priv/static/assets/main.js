@@ -12724,6 +12724,9 @@ var DANGEROUS_KEYWORDS = [
 ];
 var MAX_INLINE_LENGTH = 200;
 function compileInlineCallback(body, name) {
+  console.warn(
+    `[calendar_component] Inline callback bodies are deprecated and will be removed in 1.0. Use a global function reference for ${name} (e.g. "MyApp.Calendar.onEventClick").`
+  );
   const lower = body.toLowerCase();
   const keyword = DANGEROUS_KEYWORDS.find((k) => lower.includes(k));
   if (keyword) {
@@ -12801,14 +12804,42 @@ function serializeDuration(duration) {
     seconds: duration.seconds || 0
   };
 }
-
-// js/calendar-hooks.js
-var DEFAULT_VIEW = "timeGridWeek";
-var DEFAULT_PUSH_EVENTS = {
-  eventClick: "event_clicked",
-  dateClick: "date_clicked",
-  datesSet: "month_changed"
-};
+function snapshotOptions(options) {
+  return Object.fromEntries(Object.entries(options).map(([name, value]) => [name, JSON.stringify(value)]));
+}
+function diffOptions(previous, next2) {
+  return {
+    changed: Object.keys(next2).filter((name) => previous[name] !== next2[name]),
+    removed: Object.keys(previous).filter((name) => !(name in next2))
+  };
+}
+function cloneOptionValue(value) {
+  if (value === null || typeof value !== "object") return value;
+  try {
+    return structuredClone(value);
+  } catch (_e) {
+    return value;
+  }
+}
+function withPushButtons(buttons, onPush) {
+  return Object.fromEntries(
+    Object.entries(buttons).map(([name, button]) => {
+      if (!isPlainObject2(button) || typeof button.push !== "string") return [name, button];
+      const { push: push2, ...rest } = button;
+      const click = rest.click;
+      return [
+        name,
+        {
+          ...rest,
+          click: (...args) => {
+            if (click) click(...args);
+            onPush(push2, name);
+          }
+        }
+      ];
+    })
+  );
+}
 var PAYLOADS = {
   eventClick: (info, tz) => ({
     id: info.event?.id,
@@ -12862,6 +12893,27 @@ var PAYLOADS = {
   })
 };
 var MANAGED_CALLBACKS = Object.keys(PAYLOADS);
+var REVERTABLE_CALLBACKS = ["eventDrop", "eventResize"];
+function buildPayload(name, info, timeZone) {
+  const build = PAYLOADS[name];
+  return build ? build(info, timeZone) : null;
+}
+function encodeJSOps(ops, payload) {
+  if (!Array.isArray(ops)) return null;
+  return JSON.stringify(
+    ops.map(
+      ([kind, args]) => kind === "push" ? [kind, { ...args, value: { ...payload, ...args?.value || {} } }] : [kind, args]
+    )
+  );
+}
+
+// js/calendar-hooks.js
+var DEFAULT_VIEW = "timeGridWeek";
+var DEFAULT_PUSH_EVENTS = {
+  eventClick: "event_clicked",
+  dateClick: "date_clicked",
+  datesSet: "month_changed"
+};
 var COMMANDS = {
   gotoDate: (ec, date) => ec.gotoDate(date),
   next: (ec) => ec.next(),
@@ -12870,12 +12922,21 @@ var COMMANDS = {
   refetchEvents: (ec) => ec.refetchEvents(),
   refetchResources: (ec) => ec.refetchResources(),
   unselect: (ec) => ec.unselect(),
-  setOption: (ec, name, value) => ec.setOption(name, value)
+  setOption: (ec, name, value) => ec.setOption(name, value),
+  addEvent: (ec, event2) => withEvent(event2, (normalized) => ec.addEvent(normalized)),
+  updateEvent: (ec, event2) => withEvent(event2, (normalized) => ec.updateEvent(normalized)),
+  removeEventById: (ec, id) => ec.removeEventById(id)
 };
+function withEvent(event2, run4) {
+  const [normalized] = normalizeEvents([event2]);
+  if (normalized) run4(normalized);
+}
 var LiveCalendar = {
   mounted() {
     this._eventsJSON = this.el.dataset.events || "[]";
     this._optionsJSON = this.el.dataset.options || "{}";
+    this._warned = /* @__PURE__ */ new Set();
+    this._baselines = {};
     this._readCallbackConfig();
     const options = this._prepareOptions(parseJSON(this._optionsJSON, {}));
     const handlers = Object.fromEntries(
@@ -12897,11 +12958,9 @@ var LiveCalendar = {
       this._optionsJSON = optionsJSON;
       const previous = this._snapshot;
       const options = this._prepareOptions(parseJSON(optionsJSON, {}));
-      for (const [name, value] of Object.entries(options)) {
-        if (CREATE_ONLY_OPTIONS.includes(name)) continue;
-        if (previous[name] === this._snapshot[name]) continue;
-        this._ec.setOption(name, value);
-      }
+      const { changed, removed } = diffOptions(previous, this._snapshot);
+      this._applyOptions(changed, options);
+      this._restoreOptions(removed);
     }
     const eventsJSON = this.el.dataset.events || "[]";
     if (eventsJSON !== this._eventsJSON) {
@@ -12918,14 +12977,45 @@ var LiveCalendar = {
     this.el._calendarInstance = null;
     this._ec = null;
   },
+  _applyOptions(names, options) {
+    for (const name of names) {
+      if (!(name in options)) continue;
+      if (CREATE_ONLY_OPTIONS.includes(name)) {
+        this._warnOnce(
+          `create-only:${name}`,
+          `"${name}" is only read when the calendar is created, so its new value was ignored. Change the calendar's \`id\` to force a remount.`
+        );
+        continue;
+      }
+      if (!(name in this._baselines)) {
+        this._baselines[name] = cloneOptionValue(this._ec.getOption(name));
+      }
+      this._ec.setOption(name, options[name]);
+    }
+  },
+  // EventCalendar has no "unset option" API, so an option that disappears from the map is
+  // restored to the value it had before this hook first applied it. Options that were
+  // already set when the calendar was created have no recoverable baseline.
+  _restoreOptions(names) {
+    for (const name of names) {
+      if (CREATE_ONLY_OPTIONS.includes(name)) continue;
+      if (name in this._baselines) {
+        this._ec.setOption(name, this._baselines[name]);
+        delete this._baselines[name];
+      } else {
+        this._warnOnce(
+          `removed:${name}`,
+          `"${name}" was removed from the options map but EventCalendar keeps its current value. Send the option with an explicit value instead of removing it.`
+        );
+      }
+    }
+  },
   // Normalizes options, keeps a JSON snapshot of each one for change detection and
   // separates user callbacks for the events this hook manages.
   _prepareOptions(rawOptions) {
     const normalized = normalizeOptions(rawOptions, DEFAULT_VIEW);
     delete normalized.events;
-    this._snapshot = Object.fromEntries(
-      Object.entries(normalized).map(([name, value]) => [name, JSON.stringify(value)])
-    );
+    this._snapshot = snapshotOptions(normalized);
     const options = resolveCallbacks(normalized);
     this._userCallbacks = {};
     for (const name of MANAGED_CALLBACKS) {
@@ -12933,34 +13023,26 @@ var LiveCalendar = {
       delete options[name];
     }
     if (isPlainObject2(options.customButtons)) {
-      options.customButtons = this._withPushButtons(options.customButtons);
+      options.customButtons = withPushButtons(
+        options.customButtons,
+        (event2, button) => this._push(event2, { button, view: serializeView(this._ec?.getView()) })
+      );
     }
     return options;
-  },
-  // Custom buttons may declare `push: "event_name"` to notify the server when clicked.
-  _withPushButtons(buttons) {
-    return Object.fromEntries(
-      Object.entries(buttons).map(([name, button]) => {
-        if (!isPlainObject2(button) || typeof button.push !== "string") return [name, button];
-        const { push: push2, ...rest } = button;
-        const click = rest.click;
-        return [
-          name,
-          {
-            ...rest,
-            click: (...args) => {
-              if (click) click(...args);
-              this._push(push2, { button: name, view: serializeView(this._ec?.getView()) });
-            }
-          }
-        ];
-      })
-    );
   },
   _readCallbackConfig() {
     const pushEvents = parseJSON(this.el.dataset.pushEvents, null);
     this._pushEvents = isPlainObject2(pushEvents) ? pushEvents : DEFAULT_PUSH_EVENTS;
     this._jsCallbacks = parseJSON(this.el.dataset.jsCallbacks, {}) || {};
+    for (const name of REVERTABLE_CALLBACKS) {
+      const ops = this._jsCallbacks[name];
+      if (!this._pushEvents[name] && Array.isArray(ops) && ops.some(([kind]) => kind === "push")) {
+        this._warnOnce(
+          `revert:${name}`,
+          `${name} is configured with JS commands, so a "%{revert: true}" reply cannot undo the change. Pass a server event name (e.g. on_event_drop="event_dropped") if you need to revert.`
+        );
+      }
+    }
   },
   _dispatch(name, info) {
     const userCallback = this._userCallbacks[name];
@@ -12974,7 +13056,7 @@ var LiveCalendar = {
     const ops = this._jsCallbacks[name];
     const eventName = this._pushEvents[name];
     if (!ops && !eventName) return;
-    const payload = PAYLOADS[name](info, this._ec?.getOption("timeZone"));
+    const payload = buildPayload(name, info, this._ec?.getOption("timeZone"));
     if (ops) this._execJS(ops, payload);
     if (eventName) {
       this._push(eventName, payload, (reply) => {
@@ -12985,12 +13067,8 @@ var LiveCalendar = {
   // Runs the JS commands given to the component; `JS.push` operations receive the
   // callback payload merged into their `value` (explicit values win).
   _execJS(ops, payload) {
-    if (!Array.isArray(ops)) return;
-    const encoded = JSON.stringify(
-      ops.map(
-        ([kind, args]) => kind === "push" ? [kind, { ...args, value: { ...payload, ...args?.value || {} } }] : [kind, args]
-      )
-    );
+    const encoded = encodeJSOps(ops, payload);
+    if (!encoded) return;
     try {
       if (typeof this.js === "function") this.js().exec(encoded);
       else this.liveSocket.execJS(this.el, encoded, "hook");
@@ -13019,6 +13097,11 @@ var LiveCalendar = {
     } catch (e) {
       console.error(`[calendar_component] Calendar command "${command}" failed:`, e);
     }
+  },
+  _warnOnce(key2, message) {
+    if (this._warned.has(key2)) return;
+    this._warned.add(key2);
+    console.warn(`[calendar_component] ${message}`);
   }
 };
 var Hooks = { LiveCalendar };

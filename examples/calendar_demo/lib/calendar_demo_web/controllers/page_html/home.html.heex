@@ -1,0 +1,32 @@
+<Layouts.app flash={@flash}>
+  <div class="mx-auto max-w-3xl space-y-6 py-8">
+    <header class="space-y-2">
+      <h1 class="text-3xl font-semibold">calendar_component demo</h1>
+      <p class="opacity-70">
+        A Phoenix {Application.spec(:phoenix, :vsn)} app wired to <code>calendar_component</code>, taken from this repository with a path dependency.
+      </p>
+    </header>
+
+    <ul class="space-y-3">
+      <li class="rounded border p-4">
+        <a href={~p"/calendar"} class="link link-primary font-semibold">LiveView calendar &rarr;</a>
+        <p class="mt-1 text-sm opacity-70">
+          Every callback attribute, drag &amp; drop with <code>%&#123;revert: true&#125;</code>,
+          custom toolbar buttons and <code>push_command/4</code>.
+        </p>
+      </li>
+      <li class="rounded border p-4">
+        <a href={~p"/static-calendar"} class="link link-primary font-semibold">
+          Static calendar &rarr;
+        </a>
+        <p class="mt-1 text-sm opacity-70">
+          <code>static_calendar/1</code> in a plain controller, with global JavaScript callbacks.
+        </p>
+      </li>
+    </ul>
+
+    <p class="text-sm opacity-70">
+      In dev this app also serves Tidewave MCP at <code>http://localhost:4000/tidewave/mcp</code>.
+    </p>
+  </div>
+</Layouts.app>

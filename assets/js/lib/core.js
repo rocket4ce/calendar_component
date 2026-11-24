@@ -214,8 +214,16 @@ const DANGEROUS_KEYWORDS = [
 const MAX_INLINE_LENGTH = 200
 
 // Compiles a short function body like "console.log(info.event.title)".
-// Kept for backwards compatibility with the static calendar; prefer global function references.
+//
+// Deprecated: kept for backwards compatibility with the static calendar only. The keyword
+// filter below is a guard rail, not a sandbox, and `new Function` requires 'unsafe-eval' in a
+// script-src CSP. Use a global function reference instead; inline bodies are removed in 1.0.
 function compileInlineCallback(body, name) {
+	console.warn(
+		`[calendar_component] Inline callback bodies are deprecated and will be removed in 1.0. ` +
+			`Use a global function reference for ${name} (e.g. "MyApp.Calendar.onEventClick").`
+	)
+
 	const lower = body.toLowerCase()
 	const keyword = DANGEROUS_KEYWORDS.find(k => lower.includes(k))
 
@@ -315,4 +323,146 @@ export function serializeDuration(duration) {
 		days: duration.days || 0,
 		seconds: duration.seconds || 0
 	}
+}
+
+// --- Option diffing (LiveView hook) ---------------------------------------------------
+
+// A JSON snapshot of every option, used to detect which ones actually changed between
+// two renders so re-renders don't reset what the user did on the client.
+export function snapshotOptions(options) {
+	return Object.fromEntries(Object.entries(options).map(([name, value]) => [name, JSON.stringify(value)]))
+}
+
+/**
+ * Compares two option snapshots.
+ *
+ * Returns the names whose value changed and the names that disappeared from the
+ * options map (see `restoreOptionValue` for what the hook can do about those).
+ */
+export function diffOptions(previous, next) {
+	return {
+		changed: Object.keys(next).filter(name => previous[name] !== next[name]),
+		removed: Object.keys(previous).filter(name => !(name in next))
+	}
+}
+
+// EventCalendar hands out reactive proxies, so a value kept as a baseline is detached
+// from the calendar before it is stored.
+export function cloneOptionValue(value) {
+	if (value === null || typeof value !== "object") return value
+
+	try {
+		return structuredClone(value)
+	} catch (_e) {
+		return value
+	}
+}
+
+// --- Custom toolbar buttons -----------------------------------------------------------
+
+/**
+ * Wraps `customButtons` whose definition carries `push: "event_name"` so clicking them
+ * also notifies the server. `onPush` receives the event name and the button name.
+ */
+export function withPushButtons(buttons, onPush) {
+	return Object.fromEntries(
+		Object.entries(buttons).map(([name, button]) => {
+			if (!isPlainObject(button) || typeof button.push !== "string") return [name, button]
+
+			const {push, ...rest} = button
+			const click = rest.click
+
+			return [
+				name,
+				{
+					...rest,
+					click: (...args) => {
+						if (click) click(...args)
+						onPush(push, name)
+					}
+				}
+			]
+		})
+	)
+}
+
+// --- LiveView callback payloads -------------------------------------------------------
+
+// EventCalendar callbacks the LiveView hook forwards to the server, with the payload
+// built for each one. See `LiveCalendar.Components.calendar/1`.
+export const PAYLOADS = {
+	eventClick: (info, tz) => ({
+		id: info.event?.id,
+		event: serializeEvent(info.event, tz),
+		view: serializeView(info.view)
+	}),
+	dateClick: (info, tz) => ({
+		date: toInstant(info.date, tz),
+		dateStr: info.dateStr,
+		allDay: !!info.allDay,
+		resource: serializeResource(info.resource),
+		view: serializeView(info.view)
+	}),
+	datesSet: (info, tz) => {
+		const current = info.view?.currentStart || info.start
+		return {
+			month: current ? current.getMonth() + 1 : null,
+			year: current ? current.getFullYear() : null,
+			start: toInstant(info.start, tz),
+			end: toInstant(info.end, tz),
+			startStr: info.startStr,
+			endStr: info.endStr,
+			view: serializeView(info.view)
+		}
+	},
+	eventDrop: (info, tz) => ({
+		id: info.event?.id,
+		event: serializeEvent(info.event, tz),
+		oldEvent: serializeEvent(info.oldEvent, tz),
+		delta: serializeDuration(info.delta),
+		oldResource: serializeResource(info.oldResource),
+		newResource: serializeResource(info.newResource),
+		view: serializeView(info.view)
+	}),
+	eventResize: (info, tz) => ({
+		id: info.event?.id,
+		event: serializeEvent(info.event, tz),
+		oldEvent: serializeEvent(info.oldEvent, tz),
+		startDelta: serializeDuration(info.startDelta),
+		endDelta: serializeDuration(info.endDelta),
+		view: serializeView(info.view)
+	}),
+	select: (info, tz) => ({
+		start: toInstant(info.start, tz),
+		end: toInstant(info.end, tz),
+		startStr: info.startStr,
+		endStr: info.endStr,
+		allDay: !!info.allDay,
+		resource: serializeResource(info.resource),
+		view: serializeView(info.view)
+	})
+}
+
+export const MANAGED_CALLBACKS = Object.keys(PAYLOADS)
+
+// Callbacks whose server handler may reply `%{revert: true}` to undo the change.
+export const REVERTABLE_CALLBACKS = ["eventDrop", "eventResize"]
+
+export function buildPayload(name, info, timeZone) {
+	const build = PAYLOADS[name]
+	return build ? build(info, timeZone) : null
+}
+
+/**
+ * Encodes the `Phoenix.LiveView.JS` operations given to a callback attribute, merging the
+ * callback payload into the `value` of every `JS.push/2` (explicit values win).
+ */
+export function encodeJSOps(ops, payload) {
+	if (!Array.isArray(ops)) return null
+
+	return JSON.stringify(
+		ops.map(([kind, args]) =>
+			kind === "push" ? [kind, {...args, value: {...payload, ...(args?.value || {})}}] : [kind, args]
+		)
+	)
 }

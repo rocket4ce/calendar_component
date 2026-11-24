@@ -43,6 +43,13 @@ defmodule LiveCalendar.Components do
           {:error, _} -> {:reply, %{revert: true}, socket}
         end
       end
+
+  > #### Reverting needs a server event name {: .warning}
+  >
+  > The reply travels back on the hook's own push, so `%{revert: true}` only works when
+  > `on_event_drop` / `on_event_resize` is given a string. A `JS.push/2` goes through
+  > LiveView's command pipeline and its reply never reaches the hook; the browser console
+  > warns about it when the component is configured that way.
   """
   use Phoenix.Component
 
@@ -67,6 +74,27 @@ defmodule LiveCalendar.Components do
   while `events` and `options` changes are still applied by the hook. Only options whose
   value changed are re-applied, so re-renders don't reset the date or view the user
   navigated to.
+
+  > #### Only `data-*` attributes are patched {: .warning}
+  >
+  > On an element marked `phx-update="ignore"`, LiveView merges `data-*` attributes only.
+  > Everything passed through `:global` (`class`, `style`, `aria-*`, ...) is rendered once
+  > and never updated again. Put dynamic classes on a wrapper element instead:
+  >
+  >     <div class={@theme}>
+  >       <.calendar id="calendar" events={@events} />
+  >     </div>
+
+  ## Removing an option
+
+  EventCalendar has no API to unset an option. When an option disappears from `options`,
+  the hook restores the value it had before the hook first applied it; an option that was
+  already present when the calendar was created has no recoverable baseline, and the
+  browser console warns that its current value is kept. Send the option with an explicit
+  value instead of removing it.
+
+  `views` is only read when the calendar is created: changing it later is ignored (with a
+  console warning). Change the calendar's `id` to force a remount.
 
   ## Payloads
 
@@ -173,14 +201,20 @@ defmodule LiveCalendar.Components do
   `calendar_component/static` module (automatically on page load, or with
   `initStaticCalendars()`).
 
+  > #### Not for LiveView {: .error}
+  >
+  > This component has no hook and no `phx-update="ignore"`, so inside a LiveView the next
+  > DOM patch wipes the calendar. Use `calendar/1` there.
+
   ## Callbacks
 
   Callback options (`eventClick`, `dateClick`, `datesSet`, `eventDrop`, `eventResize`,
   `select`, `eventDidMount`, ... and `customButtons.*.click`) can be given as strings:
 
     * a global function reference (recommended): `"MyApp.Calendar.onEventClick"`
-    * a short function body that receives `info` (max. 200 characters, keywords like
-      `function`, `eval` or `setTimeout` are rejected): `"console.log(info.event.title)"`
+    * a short function body that receives `info`, **deprecated**: it is compiled with
+      `new Function`, needs `'unsafe-eval'` in a `script-src` CSP, and is removed in 1.0.
+      It logs a deprecation warning. See `docs/security.md`.
 
   ## Example
 

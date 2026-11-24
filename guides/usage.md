@@ -88,7 +88,17 @@ end
 Only options whose value changed are applied. Re-rendering for unrelated reasons doesn't move
 the calendar back to the `date` or `view` in `options` after the user navigated.
 
-The `views` option is only read when the calendar is created.
+Removing an option from the map restores the value it had before the hook first applied it.
+EventCalendar cannot recover the built-in default of an option that was already set when the
+calendar was created: the console warns and the current value is kept, so send the option with
+an explicit value instead of dropping it.
+
+The `views` option is only read when the calendar is created; changing it later is ignored with
+a console warning. Change the calendar's `id` to force a remount.
+
+> On a `phx-update="ignore"` element LiveView merges `data-*` attributes only, so `class`,
+> `style` and other global attributes of `<.calendar>` are rendered once and never updated.
+> Put dynamic classes on a wrapper element.
 
 ## 5) Drag & drop, resizing and selections
 
@@ -121,7 +131,9 @@ def handle_event("range_selected", %{"startStr" => start, "endStr" => finish, "a
 end
 ```
 
-Replying `%{revert: true}` moves the event back to its previous position.
+Replying `%{revert: true}` moves the event back to its previous position. The reply travels
+back on the hook's own push, so it only works when `on_event_drop` / `on_event_resize` is given
+a string; with `JS.push/2` the reply never reaches the hook and the console warns about it.
 
 ## 6) Driving the calendar from the server
 
@@ -132,7 +144,21 @@ end
 ```
 
 Commands: `:goto_date`, `:next`, `:prev`, `:today`, `:refetch_events`, `:refetch_resources`,
-`:unselect` and `:set_option` (`[name, value]`).
+`:unselect`, `:set_option` (`[name, value]`), `:add_event` / `:update_event` (`[event]`) and
+`:remove_event` (`[id]`).
+
+The single event commands change one event without re-sending the whole list:
+
+```elixir
+def handle_event("confirm", %{"id" => id}, socket) do
+  {:ok, event} = Events.confirm(id)
+
+  {:noreply,
+   socket
+   |> assign(:events, Events.list())
+   |> CalendarComponent.push_command("calendar", :update_event, [event])}
+end
+```
 
 ## 7) List views and localization
 

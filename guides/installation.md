@@ -7,7 +7,7 @@ Add the library to your dependencies in `mix.exs` and fetch it:
 ```elixir
 def deps do
   [
-    {:calendar_component, "~> 0.3.0"}
+    {:calendar_component, "~> 0.4.0"}
   ]
 end
 ```
@@ -71,9 +71,14 @@ Import the EventCalendar stylesheet in `assets/css/app.css`:
 @import "../../deps/calendar_component/priv/static/assets/main.css";
 ```
 
-esbuild also emits the stylesheet next to `app.js` when the package is imported, but the
-default Phoenix layout only links the Tailwind output, so the `@import` above is the reliable
-way to load it.
+This import is required: the JavaScript entry point deliberately does **not** import the
+stylesheet. If it did, esbuild would emit it next to `app.js` as
+`priv/static/assets/app.css` — the same path Tailwind writes in the Phoenix 1.7 layout, and
+since `mix assets.deploy` runs esbuild after tailwind, your whole Tailwind build would be
+overwritten.
+
+If you bundle the CSS yourself, `calendar_component/css` and `calendar_component/static-css`
+point at the same files.
 
 ## 4) Verification
 
@@ -123,7 +128,7 @@ end
 
 ## 5) Versions and compatibility
 
-- Elixir >= 1.18
+- Elixir >= 1.18 (CI runs 1.18/OTP 27 and 1.19/OTP 28)
 - Phoenix LiveView ~> 1.1 (tested with 1.2)
 - EventCalendar 5.17.2 (bundled, see `CalendarComponent.event_calendar_version/0`)
 - Current versions of Chrome, Firefox, Safari and Edge

@@ -1,0 +1,8 @@
+{
+  "name": "calendar_demo_assets",
+  "private": true,
+  "description": "Resolves calendar_component from this repository instead of deps/.",
+  "dependencies": {
+    "calendar_component": "file:../../.."
+  }
+}

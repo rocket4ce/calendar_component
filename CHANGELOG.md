@@ -5,6 +5,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-11-24
+
+### Fixed
+- **The package no longer emits a stylesheet next to `app.js`.** `index.js` imported the
+  EventCalendar CSS, so esbuild wrote it to `priv/static/assets/app.css` in the host app. In
+  the Phoenix 1.7 layout that is the same file Tailwind writes, and because `mix assets.deploy`
+  runs esbuild after tailwind, the whole Tailwind build was overwritten. Import the stylesheet
+  from your CSS (or from `calendar_component/css`) as the installation guide describes.
+- Options that disappear from `options` are restored to the value they had before the hook
+  first applied them, instead of staying at their last value forever. Options already set when
+  the calendar was created have no recoverable baseline and now log a console warning.
+- Changing `views` after the calendar was created logs a console warning instead of being
+  ignored in silence.
+- Configuring a `%{revert: true}`-capable callback with `Phoenix.LiveView.JS` commands logs a
+  console warning: the reply only reaches the hook when the callback pushes a named server
+  event.
+- `config :esbuild` is only set in `:dev`, so `mix test` no longer warns that the `:esbuild`
+  application is not available.
+
+### Added
+- `push_command/4` commands `:add_event`, `:update_event` and `:remove_event`, to change a
+  single event without re-sending the whole `events` list.
+- A GitHub Actions workflow running the Elixir and JavaScript suites, the formatter and a
+  check that the committed bundles in `priv/static/assets` match the sources.
+- `assets/package-lock.json` is versioned, and a test checks the installed EventCalendar
+  version against `CalendarComponent.event_calendar_version/0`.
+- Documented that LiveView only patches `data-*` attributes on a `phx-update="ignore"`
+  element, so `class`, `style` and other `:global` attributes of `calendar/1` are rendered
+  once and never updated.
+
+### Changed
+- Inline callback bodies in `static_calendar/1` are **deprecated** and log a warning. They are
+  compiled with `new Function`, need `'unsafe-eval'` in a `script-src` CSP and the keyword
+  filter around them is a guard rail, not a sandbox. Use global function references; inline
+  bodies are removed in 1.0.
+- The payload builders, the option diffing and the JS command encoding moved from
+  `calendar-hooks.js` to `assets/js/lib/core.js`, where they are unit tested.
+- The npm `exports` no longer declare `require` conditions: the package is ESM only.
+- Dropped the unused `igniter` and `usage_rules` dev dependencies.
+
 ## [0.3.0] - 2026-10-19
 
 ### Changed

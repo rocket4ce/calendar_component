@@ -1,217 +1,98 @@
-# Security Guidelines for Static Calendar Components
+# Security
 
-This document outlines the security measures implemented in the static calendar component to prevent code injection vulnerabilities.
+Both components turn JSON in `data-*` attributes into EventCalendar options. Options such as
+`eventClick` or `dateClick` have to be *functions*, so the JavaScript side has to turn the
+strings coming from Elixir into callables. This document describes how that works and what the
+limits are.
 
-## Security Principles
+## Callback formats
 
-### ❌ **PROHIBITED: Complete Function Strings**
+### Global function references — recommended
 
-**Never** use complete function declarations in callback options:
-
-```elixir
-# 🚨 DANGEROUS - Code injection vulnerability
-<.static_calendar
-  id="calendar"
-  events={@events}
-  options={%{
-    eventClick: "function(info) { eval('malicious code'); }"
-  }}
-/>
-```
-
-This approach is **completely blocked** in the current implementation to prevent JavaScript code injection attacks.
-
-## ✅ **Approved Callback Formats**
-
-### 1. Global Function References (Recommended)
-
-**Safest approach** - Define functions in separate JavaScript files:
+Define the function in a JavaScript file and reference it by name:
 
 ```javascript
-// In your app.js
+// assets/js/app.js
 window.MyApp = {
   Calendar: {
     handleEventClick(info) {
-      console.log('Safe event handling:', info.event.title);
+      console.log("Event:", info.event.title)
     }
   }
-};
+}
 ```
 
 ```elixir
-# In your Elixir template
 <.static_calendar
   id="calendar"
   events={@events}
-  options={%{
-    eventClick: "MyApp.Calendar.handleEventClick"
-  }}
+  options={%{eventClick: "MyApp.Calendar.handleEventClick"}}
 />
 ```
 
-### 2. Simple Function Body Strings (Limited)
+The string is resolved by walking `window` one property at a time:
 
-For very simple cases only, with strict security restrictions:
+- every segment must be a valid JavaScript identifier
+- `__proto__`, `prototype` and `constructor` are rejected
+- the resolved value must be a function, otherwise the option is dropped with a console warning
 
-```elixir
-# ✅ SAFE - Simple expression, under 200 chars
-<.static_calendar
-  id="calendar"
-  events={@events}
-  options={%{
-    eventClick: "console.log('Event:', info.event.title)"
-  }}
-/>
-```
+Nothing is compiled, so this works under a strict `script-src` CSP. This is the **only**
+format `calendar/1` (LiveView) accepts.
 
-## 🛡️ **Security Measures Implemented**
+### Inline function bodies — deprecated
 
-### JavaScript-Side Protection
-
-1. **Global references only resolve functions**:
-   - Each part of `"MyApp.Calendar.onClick"` must be a valid JavaScript identifier
-   - `__proto__`, `prototype` and `constructor` are rejected
-   - The resolved value must be a function, otherwise the callback is dropped
-
-2. **Short function bodies (static calendar only)**:
-   - Rejected when they contain `function`, `=>`, `eval`, `setTimeout`, `setInterval`,
-     `import`, `constructor`, `__proto__` or `prototype`
-   - Limited to 200 characters
-   - The LiveView calendar (`<.calendar>`) never compiles strings: it only accepts global
-     function references
-
-3. **Unresolved callbacks are removed**:
-   - EventCalendar never receives a string where it expects a function
-   - Violations are logged to the browser console
-
-The keyword filter is a guard rail, not a sandbox: a short body is still JavaScript running in
-your page. Treat callback strings as code, hardcode them in your templates and never build them
-from user input.
-
-### Content Security Policy
-
-Short function bodies are compiled with `new Function`, which requires `'unsafe-eval'` in a
-`script-src` CSP. Global function references work with a strict CSP.
-
-### Example Security Blocks
-
-```javascript
-// These are automatically blocked by the security system:
-
-"eval('alert(1)')"                    // ❌ Contains 'eval'
-"setTimeout(() => hack(), 1000)"      // ❌ Contains 'setTimeout' and '=>'
-"function() { return 'blocked'; }"    // ❌ Contains 'function'
-"new Function('return alert(1)')()"   // ❌ Contains 'function'
-"a".repeat(300)                       // ❌ Exceeds 200 char limit
-```
-
-## 🎯 **Best Practices**
-
-### ✅ **DO:**
-
-1. **Use Global Function References**:
-   ```elixir
-   options: %{eventClick: "MyApp.handleEvent"}
-   ```
-
-2. **Keep JavaScript in .js Files**:
-   ```javascript
-   // calendar-handlers.js
-   window.CalendarHandlers = {
-     onEventClick(info) { /* complex logic here */ }
-   };
-   ```
-
-3. **Validate User Input**:
-   ```elixir
-   # In your controller/context
-   def build_calendar_options(user_preferences) do
-     %{
-       view: sanitize_view(user_preferences.view),
-       eventClick: "MyApp.handleEvent"  # Always hardcoded, never from user input
-     }
-   end
-   ```
-
-### ❌ **DON'T:**
-
-1. **Never Pass User Input to Callbacks**:
-   ```elixir
-   # 🚨 DANGEROUS - User input could contain malicious code
-   options: %{eventClick: user_provided_callback}
-   ```
-
-2. **Don't Use Complex Strings**:
-   ```elixir
-   # 🚨 BAD - Complex logic should be in JS files
-   options: %{eventClick: "if(confirm('Delete?')){fetch('/delete/'+info.event.id)}"}
-   ```
-
-3. **Don't Bypass Security**:
-   ```elixir
-   # 🚨 DON'T try to work around the security measures
-   # Use proper global function references instead
-   ```
-
-## 🔍 **Security Testing**
-
-The library includes comprehensive security tests:
+`static_calendar/1` also accepts a short function body that receives `info`:
 
 ```elixir
-# Security measures are tested to ensure they work
-test "rejects dangerous function strings for security" do
-  # Verifies that dangerous keywords are rejected
-  # Confirms length limits are enforced
-  # Validates function name restrictions
-end
+options={%{eventClick: "console.log('Event:', info.event.title)"}}
 ```
 
-## 📋 **Migration Guide**
+> **Deprecated.** This format logs a warning and is removed in 1.0. Use a global function
+> reference instead.
 
-If you have existing code using function strings, migrate as follows:
+Before compiling, the body is rejected when it is longer than 200 characters or contains
+`function`, `=>`, `eval`, `setTimeout`, `setInterval`, `import`, `constructor`, `__proto__`
+or `prototype`.
 
-### Before (Insecure):
+**That keyword filter is a guard rail against mistakes, not a sandbox.** It is a substring
+check on the source text, so it can be worked around (string concatenation, unicode escapes,
+computed property access). It stops an accidental `eval(...)`; it does not contain an attacker
+who controls the string.
+
+Two consequences:
+
+- The body is compiled with `new Function`, so it needs `'unsafe-eval'` in your `script-src`
+  CSP. Global function references do not.
+- A callback string is **code**. Hardcode it in your template. Never build one from user input,
+  database content, query parameters or anything else outside your source tree.
+
 ```elixir
-<.static_calendar
-  options={%{
-    eventClick: "function(info) { showModal(info.event); }"
-  }}
-/>
+# Fine: the string is a literal in your template
+options = %{eventClick: "MyApp.handleEvent"}
+
+# Not fine: this is arbitrary JavaScript execution
+options = %{eventClick: user_params["callback"]}
 ```
 
-### After (Secure):
+Callbacks that cannot be resolved are removed, so EventCalendar never receives a string where
+it expects a function.
 
-1. **Move to JavaScript file**:
-```javascript
-window.MyCalendar = {
-  showEventModal(info) {
-    showModal(info.event);
-  }
-};
-```
+## Events and options
 
-2. **Reference by name**:
-```elixir
-<.static_calendar
-  options={%{
-    eventClick: "MyCalendar.showEventModal"
-  }}
-/>
-```
+`events` and `options` are serialized with `Jason.encode!/1` into HEEx attributes, which escape
+their content, so event titles and `extendedProps` coming from your database cannot break out
+of the attribute. They are rendered by EventCalendar as text.
 
-## 🆘 **Reporting Security Issues**
+The exception is EventCalendar's own content options (`eventContent`, `dayCellContent`,
+`noEventsContent`, ...), which accept `%{html: "..."}` and insert raw HTML. Sanitize anything
+user-provided before putting it there.
 
-If you discover a security vulnerability in the calendar component:
+## Reporting a vulnerability
 
-1. **Do NOT** open a public issue
-2. Contact the maintainers directly
-3. Provide detailed reproduction steps
-4. Allow time for patching before disclosure
+Do not open a public issue. Contact the maintainers directly with reproduction steps and allow
+time for a patch before disclosing.
 
-## 📚 **Additional Resources**
+## Further reading
 
-- [OWASP JavaScript Security](https://owasp.org/www-community/attacks/DOM_Based_XSS)
-- [Phoenix Security Guidelines](https://hexdocs.pm/phoenix/security.html)
 - [Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)
-
-Remember: **Security is everyone's responsibility**. Always prefer explicit, separated JavaScript functions over inline string-based code.
+- [Phoenix security guidelines](https://hexdocs.pm/phoenix/security.html)

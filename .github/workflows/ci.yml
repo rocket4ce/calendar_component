@@ -1,0 +1,141 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  MIX_ENV: test
+
+jobs:
+  test:
+    name: Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - elixir: "1.18"
+            otp: "27"
+          - elixir: "1.19"
+            otp: "28"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: ${{ matrix.elixir }}
+          otp-version: ${{ matrix.otp }}
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-
+
+      - run: mix deps.get
+
+      - name: Check formatting
+        run: mix format --check-formatted
+
+      - name: Check for unused dependencies
+        run: mix deps.unlock --check-unused
+
+      - name: Check dependencies for security advisories
+        run: mix hex.audit
+
+      - name: Compile without warnings
+        run: mix compile --warnings-as-errors
+
+      - run: mix test
+
+  assets:
+    name: JavaScript
+    runs-on: ubuntu-latest
+    env:
+      MIX_ENV: dev
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19"
+          otp-version: "28"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: assets/package-lock.json
+
+      # assets/package.json resolves phoenix, phoenix_html and phoenix_live_view from deps/.
+      - run: mix deps.get
+
+      - run: npm ci
+        working-directory: assets
+
+      - name: JavaScript unit tests
+        run: npm test
+        working-directory: assets
+
+      # The bundles in priv/static/assets are committed and shipped in the Hex package,
+      # so a change to assets/js must come with a rebuild.
+      - run: mix esbuild.install --if-missing
+
+      - run: mix assets.build
+
+      - name: Verify the committed bundles are up to date
+        run: git diff --exit-code --stat priv/static/assets
+
+  example:
+    name: Example app (Phoenix 1.8)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: examples/calendar_demo
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19"
+          otp-version: "28"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - run: mix deps.get
+
+      - name: Check formatting
+        run: mix format --check-formatted
+
+      - name: Compile without warnings
+        run: mix compile --warnings-as-errors
+        env:
+          MIX_ENV: test
+
+      - run: mix test
+
+      # Builds the real asset pipeline, which is what catches a broken npm entry point
+      # or a stylesheet leaking out of the JavaScript bundle.
+      - run: npm install
+        working-directory: examples/calendar_demo/assets
+
+      - run: mix assets.setup
+
+      - run: mix assets.build
+
+      - name: esbuild must not emit a stylesheet next to app.js
+        run: test ! -f priv/static/assets/js/app.css

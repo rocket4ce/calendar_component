@@ -1,7 +1,7 @@
 defmodule CalendarComponent.MixProject do
   use Mix.Project
 
-  @version "0.3.0"
+  @version "0.4.0"
 
   def project do
     [
@@ -33,8 +33,6 @@ defmodule CalendarComponent.MixProject do
       {:phoenix_live_view, "~> 1.1"},
       {:jason, "~> 1.4"},
       {:esbuild, "~> 0.10", only: :dev, runtime: false},
-      {:usage_rules, "~> 1.2", only: :dev},
-      {:igniter, "~> 0.8", only: [:dev, :test]},
       {:lazy_html, ">= 0.1.0", only: :test},
       {:styler, "~> 1.5", only: [:dev, :test], runtime: false},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}

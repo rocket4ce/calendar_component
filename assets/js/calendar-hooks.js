@@ -9,17 +9,21 @@ import {createCalendar, destroyCalendar} from "@event-calendar/core"
 import "@event-calendar/core/index.css"
 import {
 	CREATE_ONLY_OPTIONS,
+	MANAGED_CALLBACKS,
 	PLUGINS,
+	REVERTABLE_CALLBACKS,
+	buildPayload,
+	cloneOptionValue,
+	diffOptions,
+	encodeJSOps,
 	isPlainObject,
 	normalizeEvents,
 	normalizeOptions,
 	parseJSON,
 	resolveCallbacks,
-	serializeDuration,
-	serializeEvent,
-	serializeResource,
 	serializeView,
-	toInstant
+	snapshotOptions,
+	withPushButtons
 } from "./lib/core.js"
 
 const DEFAULT_VIEW = "timeGridWeek"
@@ -32,62 +36,6 @@ const DEFAULT_PUSH_EVENTS = {
 	datesSet: "month_changed"
 }
 
-// EventCalendar callbacks the hook forwards to LiveView, with the payload sent for each one.
-const PAYLOADS = {
-	eventClick: (info, tz) => ({
-		id: info.event?.id,
-		event: serializeEvent(info.event, tz),
-		view: serializeView(info.view)
-	}),
-	dateClick: (info, tz) => ({
-		date: toInstant(info.date, tz),
-		dateStr: info.dateStr,
-		allDay: !!info.allDay,
-		resource: serializeResource(info.resource),
-		view: serializeView(info.view)
-	}),
-	datesSet: (info, tz) => {
-		const current = info.view?.currentStart || info.start
-		return {
-			month: current ? current.getMonth() + 1 : null,
-			year: current ? current.getFullYear() : null,
-			start: toInstant(info.start, tz),
-			end: toInstant(info.end, tz),
-			startStr: info.startStr,
-			endStr: info.endStr,
-			view: serializeView(info.view)
-		}
-	},
-	eventDrop: (info, tz) => ({
-		id: info.event?.id,
-		event: serializeEvent(info.event, tz),
-		oldEvent: serializeEvent(info.oldEvent, tz),
-		delta: serializeDuration(info.delta),
-		oldResource: serializeResource(info.oldResource),
-		newResource: serializeResource(info.newResource),
-		view: serializeView(info.view)
-	}),
-	eventResize: (info, tz) => ({
-		id: info.event?.id,
-		event: serializeEvent(info.event, tz),
-		oldEvent: serializeEvent(info.oldEvent, tz),
-		startDelta: serializeDuration(info.startDelta),
-		endDelta: serializeDuration(info.endDelta),
-		view: serializeView(info.view)
-	}),
-	select: (info, tz) => ({
-		start: toInstant(info.start, tz),
-		end: toInstant(info.end, tz),
-		startStr: info.startStr,
-		endStr: info.endStr,
-		allDay: !!info.allDay,
-		resource: serializeResource(info.resource),
-		view: serializeView(info.view)
-	})
-}
-
-const MANAGED_CALLBACKS = Object.keys(PAYLOADS)
-
 // Calendar methods the server can call with
 // `push_event(socket, "calendar:command", %{id: id, command: ..., args: [...]})`
 // (see `CalendarComponent.push_command/4`).
@@ -99,13 +47,27 @@ const COMMANDS = {
 	refetchEvents: ec => ec.refetchEvents(),
 	refetchResources: ec => ec.refetchResources(),
 	unselect: ec => ec.unselect(),
-	setOption: (ec, name, value) => ec.setOption(name, value)
+	setOption: (ec, name, value) => ec.setOption(name, value),
+	addEvent: (ec, event) => withEvent(event, normalized => ec.addEvent(normalized)),
+	updateEvent: (ec, event) => withEvent(event, normalized => ec.updateEvent(normalized)),
+	removeEventById: (ec, id) => ec.removeEventById(id)
+}
+
+// `addEvent` / `updateEvent` take a single event, normalized like the ones in `events`.
+// `normalizeEvents` drops entries EventCalendar cannot render.
+function withEvent(event, run) {
+	const [normalized] = normalizeEvents([event])
+	if (normalized) run(normalized)
 }
 
 const LiveCalendar = {
 	mounted() {
 		this._eventsJSON = this.el.dataset.events || "[]"
 		this._optionsJSON = this.el.dataset.options || "{}"
+		this._warned = new Set()
+		// Baseline values of the options this hook has applied, so an option that later
+		// disappears from the options map can be restored (see `_restoreOptions`).
+		this._baselines = {}
 		this._readCallbackConfig()
 
 		const options = this._prepareOptions(parseJSON(this._optionsJSON, {}))
@@ -132,14 +94,12 @@ const LiveCalendar = {
 			this._optionsJSON = optionsJSON
 			const previous = this._snapshot
 			const options = this._prepareOptions(parseJSON(optionsJSON, {}))
+			const {changed, removed} = diffOptions(previous, this._snapshot)
 
 			// Only changed options are applied, so re-renders don't reset what the user
 			// did on the client (navigated dates, switched views, ...).
-			for (const [name, value] of Object.entries(options)) {
-				if (CREATE_ONLY_OPTIONS.includes(name)) continue
-				if (previous[name] === this._snapshot[name]) continue
-				this._ec.setOption(name, value)
-			}
+			this._applyOptions(changed, options)
+			this._restoreOptions(removed)
 		}
 
 		const eventsJSON = this.el.dataset.events || "[]"
@@ -160,15 +120,55 @@ const LiveCalendar = {
 		this._ec = null
 	},
 
+	_applyOptions(names, options) {
+		for (const name of names) {
+			if (!(name in options)) continue
+
+			if (CREATE_ONLY_OPTIONS.includes(name)) {
+				this._warnOnce(
+					`create-only:${name}`,
+					`"${name}" is only read when the calendar is created, so its new value was ignored. ` +
+						"Change the calendar's `id` to force a remount."
+				)
+				continue
+			}
+
+			// Remember what the option looked like before we touched it for the first time.
+			if (!(name in this._baselines)) {
+				this._baselines[name] = cloneOptionValue(this._ec.getOption(name))
+			}
+
+			this._ec.setOption(name, options[name])
+		}
+	},
+
+	// EventCalendar has no "unset option" API, so an option that disappears from the map is
+	// restored to the value it had before this hook first applied it. Options that were
+	// already set when the calendar was created have no recoverable baseline.
+	_restoreOptions(names) {
+		for (const name of names) {
+			if (CREATE_ONLY_OPTIONS.includes(name)) continue
+
+			if (name in this._baselines) {
+				this._ec.setOption(name, this._baselines[name])
+				delete this._baselines[name]
+			} else {
+				this._warnOnce(
+					`removed:${name}`,
+					`"${name}" was removed from the options map but EventCalendar keeps its current value. ` +
+						"Send the option with an explicit value instead of removing it."
+				)
+			}
+		}
+	},
+
 	// Normalizes options, keeps a JSON snapshot of each one for change detection and
 	// separates user callbacks for the events this hook manages.
 	_prepareOptions(rawOptions) {
 		const normalized = normalizeOptions(rawOptions, DEFAULT_VIEW)
 		delete normalized.events
 
-		this._snapshot = Object.fromEntries(
-			Object.entries(normalized).map(([name, value]) => [name, JSON.stringify(value)])
-		)
+		this._snapshot = snapshotOptions(normalized)
 
 		const options = resolveCallbacks(normalized)
 		this._userCallbacks = {}
@@ -178,37 +178,32 @@ const LiveCalendar = {
 		}
 
 		if (isPlainObject(options.customButtons)) {
-			options.customButtons = this._withPushButtons(options.customButtons)
+			options.customButtons = withPushButtons(options.customButtons, (event, button) =>
+				this._push(event, {button, view: serializeView(this._ec?.getView())})
+			)
 		}
 
 		return options
-	},
-
-	// Custom buttons may declare `push: "event_name"` to notify the server when clicked.
-	_withPushButtons(buttons) {
-		return Object.fromEntries(
-			Object.entries(buttons).map(([name, button]) => {
-				if (!isPlainObject(button) || typeof button.push !== "string") return [name, button]
-				const {push, ...rest} = button
-				const click = rest.click
-				return [
-					name,
-					{
-						...rest,
-						click: (...args) => {
-							if (click) click(...args)
-							this._push(push, {button: name, view: serializeView(this._ec?.getView())})
-						}
-					}
-				]
-			})
-		)
 	},
 
 	_readCallbackConfig() {
 		const pushEvents = parseJSON(this.el.dataset.pushEvents, null)
 		this._pushEvents = isPlainObject(pushEvents) ? pushEvents : DEFAULT_PUSH_EVENTS
 		this._jsCallbacks = parseJSON(this.el.dataset.jsCallbacks, {}) || {}
+
+		// `{:reply, %{revert: true}, socket}` travels on the reply of a hook push, which only
+		// exists when the callback pushes a named server event. A `JS.push/2` goes through
+		// LiveView's own command pipeline and never comes back to this hook.
+		for (const name of REVERTABLE_CALLBACKS) {
+			const ops = this._jsCallbacks[name]
+			if (!this._pushEvents[name] && Array.isArray(ops) && ops.some(([kind]) => kind === "push")) {
+				this._warnOnce(
+					`revert:${name}`,
+					`${name} is configured with JS commands, so a "%{revert: true}" reply cannot undo the change. ` +
+						`Pass a server event name (e.g. on_event_drop="event_dropped") if you need to revert.`
+				)
+			}
+		}
 	},
 
 	_dispatch(name, info) {
@@ -225,7 +220,7 @@ const LiveCalendar = {
 		const eventName = this._pushEvents[name]
 		if (!ops && !eventName) return
 
-		const payload = PAYLOADS[name](info, this._ec?.getOption("timeZone"))
+		const payload = buildPayload(name, info, this._ec?.getOption("timeZone"))
 
 		if (ops) this._execJS(ops, payload)
 
@@ -240,13 +235,8 @@ const LiveCalendar = {
 	// Runs the JS commands given to the component; `JS.push` operations receive the
 	// callback payload merged into their `value` (explicit values win).
 	_execJS(ops, payload) {
-		if (!Array.isArray(ops)) return
-
-		const encoded = JSON.stringify(
-			ops.map(([kind, args]) =>
-				kind === "push" ? [kind, {...args, value: {...payload, ...(args?.value || {})}}] : [kind, args]
-			)
-		)
+		const encoded = encodeJSOps(ops, payload)
+		if (!encoded) return
 
 		try {
 			if (typeof this.js === "function") this.js().exec(encoded)
@@ -280,6 +270,12 @@ const LiveCalendar = {
 		} catch (e) {
 			console.error(`[calendar_component] Calendar command "${command}" failed:`, e)
 		}
+	},
+
+	_warnOnce(key, message) {
+		if (this._warned.has(key)) return
+		this._warned.add(key)
+		console.warn(`[calendar_component] ${message}`)
 	}
 }
 

@@ -18,7 +18,10 @@ defmodule CalendarComponent do
     refetch_events: "refetchEvents",
     refetch_resources: "refetchResources",
     unselect: "unselect",
-    set_option: "setOption"
+    set_option: "setOption",
+    add_event: "addEvent",
+    update_event: "updateEvent",
+    remove_event: "removeEventById"
   }
 
   @doc """
@@ -42,12 +45,20 @@ defmodule CalendarComponent do
     * `:refetch_events`, `:refetch_resources` - reload `eventSources` / `resources` given as URLs
     * `:unselect` - clears the current selection
     * `:set_option` - `[name, value]`, sets any EventCalendar option
+    * `:add_event` - `[event]`, adds a single event
+    * `:update_event` - `[event]`, replaces the event with the same `id`
+    * `:remove_event` - `[id]`, removes the event with that `id`
+
+  `:add_event`, `:update_event` and `:remove_event` change one event without re-sending the
+  whole `events` list. The calendar is then out of sync with the `events` assign, so keep the
+  assign updated as well if a later re-render may change it.
 
   ## Examples
 
       socket
       |> CalendarComponent.push_command("calendar", :goto_date, [~D[2026-12-01]])
       |> CalendarComponent.push_command("calendar", :set_option, ["view", "timeGridWeek"])
+      |> CalendarComponent.push_command("calendar", :remove_event, ["event-7"])
   """
   @spec push_command(Socket.t(), String.t(), atom(), list()) ::
           Socket.t()
